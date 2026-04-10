@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.consultationonline.MainControllerArij"
+            stylesheets="@/css/consultationonline/arij-styles.css">
+    <left>
+        <VBox spacing="8" prefWidth="200" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="20" right="10" bottom="20" left="10"/>
+            </padding>
+            <Button text="My Consultations" onAction="#showMyConsultations" maxWidth="Infinity"/>
+            <Button text="Book Appointment" fx:id="bookAppointmentButton" onAction="#showBookAppointment" maxWidth="Infinity"/>
+            <Button text="Prescriptions" onAction="#showPrescriptions" maxWidth="Infinity"/>
+            <Button text="Invoices" onAction="#showInvoices" maxWidth="Infinity"/>
+            <Button text="Dashboard" onAction="#showDashboard" maxWidth="Infinity"/>
+            <Button text="Notifications" onAction="#showNotifications" maxWidth="Infinity"/>
+            <Button text="Chat &amp; AI" onAction="#showChatAi" maxWidth="Infinity"/>
+        </VBox>
+    </left>
+    <center>
+        <StackPane fx:id="contentArea" BorderPane.alignment="CENTER"/>
+    </center>
+</BorderPane>

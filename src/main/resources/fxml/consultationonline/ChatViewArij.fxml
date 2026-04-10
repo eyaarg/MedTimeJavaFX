@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.controllers.consultationonline.ChatControllerArij"
+      spacing="10" stylesheets="@/css/consultationonline/arij-styles.css">
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15"/>
+    </padding>
+
+    <VBox spacing="10" HBox.hgrow="ALWAYS">
+        <Label text="Chat" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+            <content>
+                <VBox fx:id="messagesBox" spacing="8"/>
+            </content>
+        </ScrollPane>
+        <HBox spacing="8">
+            <TextField fx:id="messageInput" promptText="Type a message..." HBox.hgrow="ALWAYS"/>
+            <Button text="Send" onAction="#handleSend"/>
+        </HBox>
+    </VBox>
+
+    <VBox spacing="10" HBox.hgrow="ALWAYS">
+        <Label text="AI Assistant" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+        <TextArea fx:id="questionInput" promptText="Ask a question..." prefRowCount="4"/>
+        <HBox spacing="6">
+            <Button text="Explain diagnosis" onAction="#presetExplain"/>
+            <Button text="Drug side effects" onAction="#presetSideEffects"/>
+            <Button text="Next steps" onAction="#presetNextSteps"/>
+        </HBox>
+        <Button text="Ask AI" onAction="#handleAskAi"/>
+        <Label fx:id="loadingLabel" text="Loading..." visible="false" managed="false"/>
+        <TextArea fx:id="aiResponse" promptText="AI response" editable="false" prefRowCount="8"/>
+    </VBox>
+</HBox>

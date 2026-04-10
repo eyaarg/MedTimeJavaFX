@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.controllers.consultationonline.OrdonnanceFormControllerArij"
+      spacing="10" stylesheets="@/css/consultationonline/arij-styles.css">
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15"/>
+    </padding>
+
+    <Label text="Content"/>
+    <TextArea fx:id="contentArea" prefRowCount="4"/>
+    <Label fx:id="contentError" text="Content must be at least 10 characters." textFill="red" visible="false" managed="false"/>
+
+    <Label text="Diagnosis"/>
+    <TextField fx:id="diagnosisField"/>
+    <Label fx:id="diagnosisError" text="Diagnosis is required." textFill="red" visible="false" managed="false"/>
+
+    <Label text="Validity Date"/>
+    <DatePicker fx:id="dateValiditePicker"/>
+    <Label fx:id="dateError" text="Please choose a validity date." textFill="red" visible="false" managed="false"/>
+
+    <Label text="Instructions"/>
+    <TextArea fx:id="instructionsArea" prefRowCount="3"/>
+
+    <Label text="Medications"/>
+    <VBox fx:id="medicationsContainer" spacing="8"/>
+    <Label fx:id="medicationsError" text="Add at least one medication." textFill="red" visible="false" managed="false"/>
+
+    <Button text="Add Medication" onAction="#addMedicationRow"/>
+
+    <HBox spacing="10">
+        <Button text="Save" onAction="#handleSave"/>
+        <Button text="Cancel" onAction="#handleCancel"/>
+    </HBox>
+</VBox>

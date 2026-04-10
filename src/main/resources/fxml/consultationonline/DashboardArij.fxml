@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.controllers.consultationonline.DashboardControllerArij"
+      spacing="12" stylesheets="@/css/consultationonline/arij-styles.css">
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15"/>
+    </padding>
+
+    <VBox fx:id="patientSection" spacing="10">
+        <Label text="Patient Dashboard" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+        <VBox spacing="8" styleClass="card">
+            <Label fx:id="totalConsultationsLabel" text="Total consultations: 0"/>
+            <Label fx:id="nextConsultationLabel" text="Next consultation: N/A"/>
+        </VBox>
+        <PieChart fx:id="patientStatusPie" title="Consultations by status" />
+    </VBox>
+
+    <VBox fx:id="doctorSection" spacing="10">
+        <Label text="Doctor Dashboard" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+        <VBox spacing="8" styleClass="card">
+            <Label fx:id="totalReceivedLabel" text="Total consultations received: 0"/>
+            <Label fx:id="acceptanceRateLabel" text="Acceptance rate: 0%"/>
+            <Label fx:id="totalOrdonnancesLabel" text="Total ordonnances: 0"/>
+        </VBox>
+        <BarChart fx:id="weeklyBarChart" title="Consultations per week (last 4 weeks)">
+            <xAxis>
+                <CategoryAxis label="Week"/>
+            </xAxis>
+            <yAxis>
+                <NumberAxis label="Count"/>
+            </yAxis>
+        </BarChart>
+        <PieChart fx:id="doctorStatusPie" title="Consultations by status"/>
+    </VBox>
+</VBox>

@@ -1,10 +1,11 @@
 package tn.esprit.controllers.consultationonline;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import tn.esprit.entities.consultationonline.ConsultationArij;
 import tn.esprit.entities.consultationonline.LigneOrdonnanceArij;
 import tn.esprit.entities.consultationonline.OrdonnanceArij;
@@ -18,17 +19,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OrdonnanceListControllerArij {
-    private static final int CURRENT_USER_ID = 1;
     private static final String CURRENT_USER_ROLE = "PATIENT";
+    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
-    @FXML
-    private FlowPane cardsContainer;
-    @FXML
-    private Button newOrdonnanceButton;
+    @FXML private FlowPane cardsContainer;
+    @FXML private Button newOrdonnanceButton;
 
     private final ConsultationServiceArij consultationService = new ConsultationServiceArij();
-    private final OrdonnanceServiceArij ordonnanceService = new OrdonnanceServiceArij();
-    private final LigneOrdonnanceRepositoryArij ligneRepo = new LigneOrdonnanceRepositoryArij();
+    private final OrdonnanceServiceArij ordonnanceService     = new OrdonnanceServiceArij();
+    private final LigneOrdonnanceRepositoryArij ligneRepo     = new LigneOrdonnanceRepositoryArij();
 
     @FXML
     private void initialize() {
@@ -36,73 +35,100 @@ public class OrdonnanceListControllerArij {
         loadOrdonnances();
     }
 
-    @FXML
-    private void openNewOrdonnance() {
-        // Placeholder for navigation; could be wired to open form.
-    }
+    @FXML private void openNewOrdonnance() { /* wire to form */ }
 
     private void loadOrdonnances() {
         cardsContainer.getChildren().clear();
         List<OrdonnanceArij> ordonnances = new ArrayList<>();
-        List<ConsultationArij> consultations = consultationService.getMyConsultations();
-        for (ConsultationArij c : consultations) {
+        for (ConsultationArij c : consultationService.getMyConsultations()) {
             OrdonnanceArij o = ordonnanceService.getByConsultationId(c.getId());
-            if (o != null) {
-                ordonnances.add(o);
-            }
+            if (o != null) ordonnances.add(o);
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        if (ordonnances.isEmpty()) {
+            cardsContainer.getChildren().add(emptyState());
+            return;
+        }
+
         for (OrdonnanceArij o : ordonnances) {
-            VBox card = new VBox(6);
-            card.getStyleClass().add("card");
-            card.setPrefWidth(260);
-
-            Label numero = new Label("Numéro: " + (o.getNumeroOrdonnance() != null ? o.getNumeroOrdonnance() : o.getId()));
-            Label date = new Label("Date: " + (o.getDateEmission() != null ? o.getDateEmission().format(formatter) : "N/A"));
-            Label medecin = new Label("Médecin: " + o.getDoctorId());
-            Label diag = new Label("Diagnostic: " + (o.getDiagnosis() != null ? o.getDiagnosis() : ""));
-
-            Button viewBtn = new Button("View Details");
-            viewBtn.setOnAction(e -> viewDetails(o));
-
-            Button editBtn = new Button("Edit");
-            editBtn.setVisible("DOCTOR".equalsIgnoreCase(CURRENT_USER_ROLE));
-            editBtn.setOnAction(e -> editOrdonnance(o));
-
-            Button deleteBtn = new Button("Delete");
-            deleteBtn.setVisible("DOCTOR".equalsIgnoreCase(CURRENT_USER_ROLE));
-            deleteBtn.setOnAction(e -> {
-                ordonnanceService.deleteOrdonnance(o.getId());
-                loadOrdonnances();
-            });
-
-            Button printBtn = new Button("Print PDF");
-            printBtn.setOnAction(e -> printOrdonnance(o));
-
-            card.getChildren().addAll(numero, date, medecin, diag, viewBtn);
-            if (editBtn.isVisible()) {
-                card.getChildren().add(editBtn);
-            }
-            if (deleteBtn.isVisible()) {
-                card.getChildren().add(deleteBtn);
-            }
-            card.getChildren().add(printBtn);
-
-            cardsContainer.getChildren().add(card);
+            cardsContainer.getChildren().add(buildCard(o));
         }
     }
 
-    private void viewDetails(OrdonnanceArij o) {
-        // Could open a detail view; keeping lightweight per instructions.
+    private VBox buildCard(OrdonnanceArij o) {
+        VBox card = new VBox(0);
+        card.getStyleClass().add("rx-card");
+        card.setPrefWidth(280);
+
+        // Accent bar
+        Region bar = new Region();
+        bar.setPrefHeight(4);
+        bar.setStyle("-fx-background-color:#10b981;-fx-background-radius:12 12 0 0;");
+
+        VBox body = new VBox(10);
+        body.setPadding(new Insets(16, 18, 8, 18));
+
+        // Header
+        HBox header = new HBox(8);
+        header.setAlignment(Pos.CENTER_LEFT);
+        Label icon = new Label("💊");
+        icon.setStyle("-fx-font-size:20px;");
+        Label num = new Label("Rx #" + (o.getNumeroOrdonnance() != null ? o.getNumeroOrdonnance() : o.getId()));
+        num.setStyle("-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#0f172a;");
+        header.getChildren().addAll(icon, num);
+
+        Label dateLabel = new Label("📅  " + (o.getDateEmission() != null
+                ? o.getDateEmission().format(FMT) : "N/A"));
+        dateLabel.setStyle("-fx-font-size:12px;-fx-text-fill:#64748b;");
+
+        Label doctorLabel = new Label("👨‍⚕️  Médecin #" + o.getDoctorId());
+        doctorLabel.setStyle("-fx-font-size:12px;-fx-text-fill:#64748b;");
+
+        if (o.getDiagnosis() != null && !o.getDiagnosis().isEmpty()) {
+            Label diag = new Label("🩺  " + o.getDiagnosis());
+            diag.setStyle("-fx-font-size:12px;-fx-text-fill:#1e293b;-fx-font-weight:bold;");
+            diag.setWrapText(true);
+            body.getChildren().addAll(header, dateLabel, doctorLabel, diag);
+        } else {
+            body.getChildren().addAll(header, dateLabel, doctorLabel);
+        }
+
+        // Actions
+        HBox actions = new HBox(8);
+        actions.setPadding(new Insets(4, 18, 16, 18));
+
+        Button printBtn = new Button("⬇  Imprimer PDF");
+        printBtn.getStyleClass().addAll("action-btn", "btn-action-edit");
+        printBtn.setOnAction(e -> {
+            List<LigneOrdonnanceArij> lignes = ligneRepo.findByOrdonnanceId(o.getId());
+            String path = System.getProperty("user.home") + "/ordonnance-" + o.getId() + ".pdf";
+            PdfExporterArij.exportOrdonnance(o, lignes, path);
+        });
+
+        if ("DOCTOR".equalsIgnoreCase(CURRENT_USER_ROLE)) {
+            Button deleteBtn = new Button("🗑");
+            deleteBtn.getStyleClass().addAll("action-btn", "btn-action-delete");
+            deleteBtn.setOnAction(e -> { ordonnanceService.deleteOrdonnance(o.getId()); loadOrdonnances(); });
+            actions.getChildren().addAll(printBtn, deleteBtn);
+        } else {
+            actions.getChildren().add(printBtn);
+        }
+
+        card.getChildren().addAll(bar, body, actions);
+        return card;
     }
 
-    private void editOrdonnance(OrdonnanceArij o) {
-        // Hook to open form window; omitted for brevity.
-    }
-
-    private void printOrdonnance(OrdonnanceArij o) {
-        List<LigneOrdonnanceArij> lignes = ligneRepo.findByOrdonnanceId(o.getId());
-        String path = System.getProperty("user.home") + "/ordonnance-" + o.getId() + ".pdf";
-        PdfExporterArij.exportOrdonnance(o, lignes, path);
+    private VBox emptyState() {
+        VBox box = new VBox(12);
+        box.setAlignment(Pos.CENTER);
+        box.setPadding(new Insets(60));
+        Label icon = new Label("💊");
+        icon.setStyle("-fx-font-size:48px;");
+        Label msg = new Label("Aucune ordonnance trouvée");
+        msg.setStyle("-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:#64748b;");
+        Label sub = new Label("Vos ordonnances apparaîtront ici après vos consultations");
+        sub.setStyle("-fx-font-size:13px;-fx-text-fill:#94a3b8;");
+        box.getChildren().addAll(icon, msg, sub);
+        return box;
     }
 }

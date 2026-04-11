@@ -12,51 +12,80 @@ import java.util.Objects;
 public class MainControllerArij {
     private static final String CURRENT_USER_ROLE = "PATIENT";
 
-    @FXML
-    private StackPane contentArea;
-
-    @FXML
-    private Button bookAppointmentButton;
+    @FXML private StackPane contentArea;
+    @FXML private Button btnConsultations;
+    @FXML private Button btnBook;
+    @FXML private Button btnPrescriptions;
+    @FXML private Button btnInvoices;
+    @FXML private Button btnNotifications;
+    @FXML private Button btnDashboard;
+    @FXML private Button btnChat;
 
     @FXML
     private void initialize() {
-        bookAppointmentButton.setVisible("PATIENT".equalsIgnoreCase(CURRENT_USER_ROLE));
+        if (btnBook != null) {
+            btnBook.setVisible("PATIENT".equalsIgnoreCase(CURRENT_USER_ROLE));
+        }
         showMyConsultations();
+    }
+
+    /** Highlights the active nav button and clears others. */
+    private void setActive(Button active) {
+        Button[] all = {btnConsultations, btnBook, btnPrescriptions,
+                        btnInvoices, btnNotifications, btnDashboard, btnChat};
+        for (Button b : all) {
+            if (b == null) continue;
+            b.getStyleClass().remove("nav-btn-active");
+        }
+        if (active != null) active.getStyleClass().add("nav-btn-active");
     }
 
     @FXML
     private void showMyConsultations() {
+        setActive(btnConsultations);
         loadView("/fxml/consultationonline/ConsultationListArij.fxml");
     }
 
     @FXML
     private void showBookAppointment() {
+        setActive(btnBook);
         loadView("/fxml/consultationonline/ConsultationFormArij.fxml");
     }
 
     @FXML
     private void showPrescriptions() {
-        loadView("/fxml/consultationonline/ConsultationListArij.fxml");
+        setActive(btnPrescriptions);
+        loadView("/fxml/consultationonline/OrdonnanceListArij.fxml");
     }
 
     @FXML
     private void showInvoices() {
-        loadView("/fxml/consultationonline/ConsultationListArij.fxml");
+        setActive(btnInvoices);
+        loadView("/fxml/consultationonline/FactureListArij.fxml");
     }
 
     @FXML
     private void showDashboard() {
-        loadView("/fxml/consultationonline/ConsultationListArij.fxml");
+        setActive(btnDashboard);
+        loadView("/fxml/consultationonline/DashboardArij.fxml");
     }
 
     @FXML
     private void showNotifications() {
-        loadView("/fxml/consultationonline/ConsultationListArij.fxml");
+        setActive(btnNotifications);
+        loadView("/fxml/consultationonline/NotificationListArij.fxml");
     }
 
     @FXML
     private void showChatAi() {
-        loadView("/fxml/consultationonline/ConsultationListArij.fxml");
+        setActive(btnChat);
+        loadView("/fxml/consultationonline/ChatViewArij.fxml");
+    }
+
+    @FXML
+    private void handleLogout() {
+        System.out.println("Logout requested");
+        // TODO: navigate to login screen
     }
 
     private void loadView(String fxmlPath) {

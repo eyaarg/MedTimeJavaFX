@@ -9,23 +9,40 @@
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="tn.esprit.controllers.consultationonline.ConsultationFormControllerArij"
-      spacing="10" stylesheets="@/css/consultationonline/arij-styles.css">
-    <padding>
-        <Insets top="15" right="15" bottom="15" left="15"/>
-    </padding>
+      spacing="0" stylesheets="@/css/consultationonline/arij-styles.css"
+      style="-fx-background-color: #f0f4f8;" prefWidth="480">
 
-    <Label text="Consultation Date"/>
-    <DatePicker fx:id="consultationDatePicker"/>
-    <Label fx:id="dateErrorLabel" text="Date is required and cannot be in the past" textFill="red" visible="false" managed="false"/>
+    <VBox styleClass="modal-header">
+        <padding><Insets top="24" right="28" bottom="20" left="28"/></padding>
+        <Label text="Réserver une Consultation" styleClass="modal-title"/>
+        <Label text="Remplissez les informations pour planifier votre rendez-vous" styleClass="modal-subtitle"/>
+    </VBox>
 
-    <Label text="Doctor"/>
-    <ComboBox fx:id="doctorComboBox" promptText="Select a doctor"/>
-    <Label fx:id="doctorErrorLabel" text="Please select a doctor" textFill="red" visible="false" managed="false"/>
+    <VBox spacing="18" style="-fx-background-color: white;">
+        <padding><Insets top="24" right="28" bottom="28" left="28"/></padding>
 
-    <Label fx:id="errorLabel" text="Form has errors" textFill="red" visible="false" managed="false"/>
+        <VBox spacing="6">
+            <Label text="Date de consultation" styleClass="field-label"/>
+            <DatePicker fx:id="consultationDatePicker" maxWidth="Infinity" styleClass="form-input"/>
+            <Label fx:id="dateErrorLabel" text="La date est requise et ne peut pas être dans le passé"
+                   styleClass="field-error" visible="false" managed="false"/>
+        </VBox>
 
-    <HBox spacing="10">
-        <Button text="Save" onAction="#handleSave"/>
-        <Button text="Cancel" onAction="#handleCancel"/>
-    </HBox>
+        <VBox spacing="6">
+            <Label text="Sélectionner un médecin" styleClass="field-label"/>
+            <ComboBox fx:id="doctorComboBox" promptText="Choisir un médecin…"
+                      maxWidth="Infinity" styleClass="form-input"/>
+            <Label fx:id="doctorErrorLabel" text="Veuillez sélectionner un médecin"
+                   styleClass="field-error" visible="false" managed="false"/>
+        </VBox>
+
+        <Label fx:id="errorLabel" text="Veuillez corriger les erreurs ci-dessus."
+               styleClass="field-error" visible="false" managed="false"/>
+
+        <HBox spacing="12" alignment="CENTER_RIGHT">
+            <padding><Insets top="8"/></padding>
+            <Button text="Annuler" styleClass="btn-secondary" onAction="#handleCancel"/>
+            <Button text="Enregistrer le rendez-vous" styleClass="btn-primary" onAction="#handleSave"/>
+        </HBox>
+    </VBox>
 </VBox>

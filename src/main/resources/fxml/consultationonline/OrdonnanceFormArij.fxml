@@ -9,66 +9,81 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="tn.esprit.controllers.consultationonline.OrdonnanceFormControllerArij"
+<VBox xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.consultationonline.OrdonnanceFormControllerArij"
       spacing="0" stylesheets="@/css/consultationonline/arij-styles.css"
-      style="-fx-background-color: #f0f4f8;" prefWidth="640">
+      style="-fx-background-color:#f0f4f8;" prefWidth="660">
 
+    <!-- En-tête -->
     <VBox styleClass="modal-header">
-        <padding><Insets top="24" right="28" bottom="20" left="28"/></padding>
-        <Label text="Nouvelle Ordonnance" styleClass="modal-title"/>
+        <padding><Insets top="22" right="28" bottom="18" left="28"/></padding>
+        <Label text="💊  Nouvelle Ordonnance" styleClass="modal-title"/>
         <Label text="Complétez tous les champs pour émettre une ordonnance" styleClass="modal-subtitle"/>
     </VBox>
 
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll">
         <content>
-            <VBox spacing="18" style="-fx-background-color: white;">
-                <padding><Insets top="24" right="28" bottom="28" left="28"/></padding>
+            <VBox spacing="16" style="-fx-background-color:white;">
+                <padding><Insets top="22" right="28" bottom="28" left="28"/></padding>
 
-                <VBox spacing="6">
-                    <Label text="Contenu" styleClass="field-label"/>
-                    <TextArea fx:id="contentArea" prefRowCount="4" styleClass="form-input"
-                              promptText="Décrivez le contenu de l'ordonnance…"/>
-                    <Label fx:id="contentError" text="Le contenu doit comporter au moins 10 caractères."
+                <!-- Prix de la consultation -->
+                <VBox spacing="5">
+                    <Label text="💰  Prix de la consultation (TND)" styleClass="field-label"/>
+                    <TextField fx:id="prixConsultationField" styleClass="form-input"
+                               promptText="Ex : 50.00"/>
+                    <Label fx:id="prixError" text="Veuillez saisir un prix valide (> 0)."
                            styleClass="field-error" visible="false" managed="false"/>
                 </VBox>
 
-                <VBox spacing="6">
-                    <Label text="Diagnostic" styleClass="field-label"/>
+                <!-- Diagnostic -->
+                <VBox spacing="5">
+                    <Label text="🩺  Diagnostic" styleClass="field-label"/>
                     <TextField fx:id="diagnosisField" styleClass="form-input"
                                promptText="Saisir le diagnostic…"/>
                     <Label fx:id="diagnosisError" text="Le diagnostic est obligatoire."
                            styleClass="field-error" visible="false" managed="false"/>
                 </VBox>
 
-                <VBox spacing="6">
-                    <Label text="Date de validité" styleClass="field-label"/>
+                <!-- Contenu -->
+                <VBox spacing="5">
+                    <Label text="📋  Contenu de l'ordonnance" styleClass="field-label"/>
+                    <TextArea fx:id="contentArea" prefRowCount="4" styleClass="form-input"
+                              promptText="Décrivez le contenu de l'ordonnance (min. 10 caractères)…"/>
+                    <Label fx:id="contentError" text="Le contenu doit comporter au moins 10 caractères."
+                           styleClass="field-error" visible="false" managed="false"/>
+                </VBox>
+
+                <!-- Date de validité -->
+                <VBox spacing="5">
+                    <Label text="📅  Date de validité" styleClass="field-label"/>
                     <DatePicker fx:id="dateValiditePicker" maxWidth="Infinity" styleClass="form-input"/>
                     <Label fx:id="dateError" text="Veuillez choisir une date de validité."
                            styleClass="field-error" visible="false" managed="false"/>
                 </VBox>
 
-                <VBox spacing="6">
-                    <Label text="Instructions" styleClass="field-label"/>
+                <!-- Instructions -->
+                <VBox spacing="5">
+                    <Label text="📝  Instructions" styleClass="field-label"/>
                     <TextArea fx:id="instructionsArea" prefRowCount="3" styleClass="form-input"
                               promptText="Instructions supplémentaires pour le patient…"/>
                 </VBox>
 
+                <!-- Médicaments -->
                 <VBox spacing="10">
                     <HBox alignment="CENTER_LEFT" spacing="12">
-                        <Label text="Médicaments" styleClass="field-label" HBox.hgrow="ALWAYS"/>
-                        <Button text="+ Ajouter un médicament" styleClass="btn-outline"
-                                onAction="#addMedicationRow"/>
+                        <Label text="💊  Médicaments" styleClass="field-label" HBox.hgrow="ALWAYS"/>
+                        <Button text="＋  Ajouter" styleClass="btn-outline" onAction="#addMedicationRow"/>
                     </HBox>
                     <VBox fx:id="medicationsContainer" spacing="8"/>
                     <Label fx:id="medicationsError" text="Ajoutez au moins un médicament."
                            styleClass="field-error" visible="false" managed="false"/>
                 </VBox>
 
+                <!-- Actions -->
                 <HBox spacing="12" alignment="CENTER_RIGHT">
                     <padding><Insets top="8"/></padding>
                     <Button text="Annuler" styleClass="btn-secondary" onAction="#handleCancel"/>
-                    <Button text="Enregistrer l'ordonnance" styleClass="btn-primary" onAction="#handleSave"/>
+                    <Button text="✔  Enregistrer l'ordonnance" styleClass="btn-primary" onAction="#handleSave"/>
                 </HBox>
             </VBox>
         </content>

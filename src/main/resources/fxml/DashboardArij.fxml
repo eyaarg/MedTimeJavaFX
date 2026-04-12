@@ -10,8 +10,8 @@
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="esprit.fx.controllers.consultationonline.DashboardControllerArij"
-      spacing="0" stylesheets="@/css/consultationonline/arij-styles.css"
+      fx:controller="esprit.fx.controllers.DashboardControllerArij"
+      spacing="0" stylesheets="@/css/arij-styles.css"
       style="-fx-background-color: #f0f4f8;">
 
     <HBox alignment="CENTER_LEFT" styleClass="page-header">

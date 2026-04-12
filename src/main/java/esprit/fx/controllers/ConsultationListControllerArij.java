@@ -1,4 +1,4 @@
-package esprit.fx.controllers.consultationonline;
+package esprit.fx.controllers;
 
 import esprit.fx.entities.ConsultationsArij;
 import esprit.fx.services.ServiceConsultationsArij;
@@ -244,7 +244,7 @@ public class ConsultationListControllerArij {
     private void openForm(ConsultationsArij consultation) {
         try {
             FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(
-                    getClass().getResource("/fxml/consultationonline/ConsultationFormArij.fxml")));
+                    getClass().getResource("/fxml/ConsultationFormArij.fxml")));
             Parent root = loader.load();
             if (consultation != null)
                 ((ConsultationFormControllerArij) loader.getController()).setConsultation(consultation);

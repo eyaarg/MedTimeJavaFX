@@ -1,4 +1,4 @@
-package esprit.fx.controllers.consultationonline;
+package esprit.fx.controllers;
 
 import esprit.fx.entities.NotificationsArij;
 import esprit.fx.services.ServiceNotificationsArij;

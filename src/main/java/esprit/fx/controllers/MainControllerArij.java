@@ -1,4 +1,4 @@
-package esprit.fx.controllers.consultationonline;
+package esprit.fx.controllers;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -34,13 +34,13 @@ public class MainControllerArij {
         if (active != null) active.getStyleClass().add("nav-btn-active");
     }
 
-    @FXML private void showMyConsultations()  { setActive(btnConsultations); loadView("/fxml/consultationonline/ConsultationListArij.fxml"); }
-    @FXML private void showBookAppointment()  { setActive(btnBook);          loadView("/fxml/consultationonline/ConsultationFormArij.fxml"); }
-    @FXML private void showPrescriptions()    { setActive(btnPrescriptions); loadView("/fxml/consultationonline/OrdonnanceListArij.fxml"); }
-    @FXML private void showInvoices()         { setActive(btnInvoices);      loadView("/fxml/consultationonline/FactureListArij.fxml"); }
-    @FXML private void showDashboard()        { setActive(btnDashboard);     loadView("/fxml/consultationonline/DashboardArij.fxml"); }
-    @FXML private void showNotifications()    { setActive(btnNotifications); loadView("/fxml/consultationonline/NotificationListArij.fxml"); }
-    @FXML private void showChatAi()           { setActive(btnChat);          loadView("/fxml/consultationonline/ChatViewArij.fxml"); }
+    @FXML private void showMyConsultations()  { setActive(btnConsultations); loadView("/fxml/ConsultationListArij.fxml"); }
+    @FXML private void showBookAppointment()  { setActive(btnBook);          loadView("/fxml/ConsultationFormArij.fxml"); }
+    @FXML private void showPrescriptions()    { setActive(btnPrescriptions); loadView("/fxml/OrdonnanceListArij.fxml"); }
+    @FXML private void showInvoices()         { setActive(btnInvoices);      loadView("/fxml/FactureListArij.fxml"); }
+    @FXML private void showDashboard()        { setActive(btnDashboard);     loadView("/fxml/DashboardArij.fxml"); }
+    @FXML private void showNotifications()    { setActive(btnNotifications); loadView("/fxml/NotificationListArij.fxml"); }
+    @FXML private void showChatAi()           { setActive(btnChat);          loadView("/fxml/ChatViewArij.fxml"); }
     @FXML private void handleLogout()         { System.out.println("Déconnexion"); }
 
     private void loadView(String fxmlPath) {

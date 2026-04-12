@@ -1,4 +1,4 @@
-package esprit.fx.controllers.consultationonline;
+package esprit.fx.controllers;
 
 import esprit.fx.services.ServiceConsultationsArij;
 import esprit.fx.services.ServiceOrdonnanceArij;

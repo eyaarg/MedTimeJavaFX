@@ -1,4 +1,4 @@
-package esprit.fx.controllers.consultationonline;
+package esprit.fx.controllers;
 
 import esprit.fx.entities.*;
 import esprit.fx.services.*;
@@ -198,7 +198,7 @@ public class OrdonnanceListControllerArij {
     private void openOrdonnanceForm(OrdonnanceArij ordonnance, int consultationId, int patientId) {
         try {
             FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(
-                    getClass().getResource("/fxml/consultationonline/OrdonnanceFormArij.fxml")));
+                    getClass().getResource("/fxml/OrdonnanceFormArij.fxml")));
             Parent root = loader.load();
             OrdonnanceFormControllerArij ctrl = loader.getController();
             ctrl.setContext(consultationId, patientId);

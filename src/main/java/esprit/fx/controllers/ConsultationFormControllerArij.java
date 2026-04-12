@@ -15,14 +15,16 @@ import java.sql.*;
 import java.time.LocalDate;
 
 public class ConsultationFormControllerArij {
-    private static final int CURRENT_USER_ID = 1;
-    private static final String DEFAULT_TYPE = "ONLINE";
 
-    @FXML private DatePicker consultationDatePicker;
+    private static final int    CURRENT_USER_ID = 1;
+    private static final String DEFAULT_TYPE    = "ONLINE";
+
+    @FXML private DatePicker        consultationDatePicker;
     @FXML private ComboBox<Integer> doctorComboBox;
-    @FXML private Label dateErrorLabel;
-    @FXML private Label doctorErrorLabel;
-    @FXML private Label errorLabel;
+    @FXML private Label             dateErrorLabel;
+    @FXML private Label             doctorErrorLabel;
+    @FXML private Label             uniqueErrorLabel;   // ← unicité
+    @FXML private Label             errorLabel;
 
     private final ServiceConsultationsArij service = new ServiceConsultationsArij();
     private ConsultationsArij consultation;
@@ -43,26 +45,41 @@ public class ConsultationFormControllerArij {
     @FXML
     private void handleSave() {
         hideErrors();
-        LocalDate date = consultationDatePicker.getValue();
-        Integer doctorId = doctorComboBox.getValue();
-        boolean valid = true;
+        LocalDate date     = consultationDatePicker.getValue();
+        Integer   doctorId = doctorComboBox.getValue();
+        boolean   valid    = true;
 
-        if (date == null || date.isBefore(LocalDate.now())) {
+        // ── Validation date ──────────────────────────────────────────────
+        if (date == null) {
+            dateErrorLabel.setText("La date de consultation est obligatoire.");
+            dateErrorLabel.setVisible(true); dateErrorLabel.setManaged(true); valid = false;
+        } else if (date.isBefore(LocalDate.now())) {
+            dateErrorLabel.setText("La date ne peut pas être dans le passé.");
             dateErrorLabel.setVisible(true); dateErrorLabel.setManaged(true); valid = false;
         }
+
+        // ── Validation médecin ───────────────────────────────────────────
         if (doctorId == null) {
             doctorErrorLabel.setVisible(true); doctorErrorLabel.setManaged(true); valid = false;
         }
+
         if (!valid) { errorLabel.setVisible(true); errorLabel.setManaged(true); return; }
 
+        // ── Contrôle d'unicité (nouvelle consultation uniquement) ────────
+        boolean isNew = (consultation == null || consultation.getId() == 0);
+        if (isNew && service.existsConsultation(CURRENT_USER_ID, doctorId, date.atStartOfDay())) {
+            uniqueErrorLabel.setVisible(true); uniqueErrorLabel.setManaged(true); return;
+        }
+
+        // ── Sauvegarde ───────────────────────────────────────────────────
         ConsultationsArij c = consultation != null ? consultation : new ConsultationsArij();
         c.setConsultationDate(date.atStartOfDay());
         c.setDoctorId(doctorId);
         c.setPatientId(CURRENT_USER_ID);
         c.setType(DEFAULT_TYPE);
 
-        if (consultation != null && consultation.getId() != 0) service.updateConsultation(c);
-        else service.createConsultation(c);
+        if (!isNew) service.updateConsultation(c);
+        else        service.createConsultation(c);
         closeWindow();
     }
 
@@ -70,7 +87,8 @@ public class ConsultationFormControllerArij {
 
     private void loadDoctors() {
         ObservableList<Integer> doctors = FXCollections.observableArrayList();
-        try (PreparedStatement ps = MyDB.getInstance().getConnection().prepareStatement("SELECT id FROM doctors");
+        try (PreparedStatement ps = MyDB.getInstance().getConnection()
+                .prepareStatement("SELECT id FROM doctors");
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) doctors.add(rs.getInt("id"));
         } catch (SQLException e) { System.err.println("loadDoctors: " + e.getMessage()); }
@@ -79,9 +97,10 @@ public class ConsultationFormControllerArij {
     }
 
     private void hideErrors() {
-        dateErrorLabel.setVisible(false); dateErrorLabel.setManaged(false);
+        dateErrorLabel.setVisible(false);   dateErrorLabel.setManaged(false);
         doctorErrorLabel.setVisible(false); doctorErrorLabel.setManaged(false);
-        errorLabel.setVisible(false); errorLabel.setManaged(false);
+        uniqueErrorLabel.setVisible(false); uniqueErrorLabel.setManaged(false);
+        errorLabel.setVisible(false);       errorLabel.setManaged(false);
     }
 
     private void closeWindow() {

@@ -1,4 +1,4 @@
-package esprit.fx.controllers.consultationonline;
+package esprit.fx.controllers;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;

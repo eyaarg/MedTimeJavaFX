@@ -575,3 +575,12 @@
     -fx-border-radius: 8;
 }
 .btn-icon-danger:hover { -fx-background-color: #ffe4e6; }
+
+/* ═══════════════════════════════════════════════════════════
+   Erreur d'unicité — plus visible
+═══════════════════════════════════════════════════════════ */
+.field-error {
+    -fx-text-fill: #dc2626;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}

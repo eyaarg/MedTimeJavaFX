@@ -32,9 +32,14 @@
             <Label text="Sélectionner un médecin" styleClass="field-label"/>
             <ComboBox fx:id="doctorComboBox" promptText="Choisir un médecin…"
                       maxWidth="Infinity" styleClass="form-input"/>
-            <Label fx:id="doctorErrorLabel" text="Veuillez sélectionner un médecin"
+            <Label fx:id="doctorErrorLabel" text="Veuillez sélectionner un médecin."
                    styleClass="field-error" visible="false" managed="false"/>
         </VBox>
+
+        <!-- Erreur d'unicité -->
+        <Label fx:id="uniqueErrorLabel"
+               text="⚠  Une consultation avec ce médecin existe déjà à cette date."
+               styleClass="field-error" visible="false" managed="false"/>
 
         <Label fx:id="errorLabel" text="Veuillez corriger les erreurs ci-dessus."
                styleClass="field-error" visible="false" managed="false"/>

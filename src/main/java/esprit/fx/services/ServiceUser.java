@@ -1,5 +1,6 @@
 package esprit.fx.services;
 
+import esprit.fx.entities.Role;
 import esprit.fx.entities.User;
 import esprit.fx.utils.MyDB;
 
@@ -49,32 +50,77 @@ public class ServiceUser implements IService<User> {
         preparedStatement.setInt(1, id);
         preparedStatement.executeUpdate();
     }
+    public User login(String email, String password) throws SQLException {
+        String req = "SELECT u.*, r.id as role_id, r.name as role_name " +
+                "FROM `users` u " +
+                "LEFT JOIN `user_roles` ur ON u.id = ur.user_id " +
+                "LEFT JOIN `role` r ON ur.role_id = r.id " +
+                "WHERE u.email=? AND u.password=?";
+        PreparedStatement ps = conn.prepareStatement(req);
+        ps.setString(1, email);
+        ps.setString(2, password);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            User user = new User(
+                    rs.getInt("id"),
+                    rs.getString("email"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    null,
+                    rs.getBoolean("is_active"),
+                    rs.getString("phone_number"),
+                    rs.getBoolean("is_verified"),
+                    null, null, null, null,
+                    rs.getInt("failed_attempts")
+            );
+            // récupérer le rôle
+            List<Role> roles = new ArrayList<>();
+            if (rs.getString("role_name") != null) {
+                roles.add(new Role(rs.getInt("role_id"), rs.getString("role_name")));
+            }
+            user.setRoles(roles);
+            return user; // login réussi
+        }
+        return null; // email ou password incorrect
+    }
 
     @Override
     public List<User> getAll() throws SQLException {
-        String req="SELECT * FROM `users` ";
+        String req = "SELECT u.*, r.id as role_id, r.name as role_name " +
+                "FROM `users` u " +
+                "LEFT JOIN `user_roles` ur ON u.id = ur.user_id " +
+                "LEFT JOIN `role` r ON ur.role_id = r.id";
         Statement statement = conn.createStatement();
-        statement.executeQuery(req);
-        ResultSet resultSet = statement.getResultSet();
-        List<User> users = new ArrayList<User>();
-        while (resultSet.next()) {
-            User user = new User(resultSet.getInt("id"),
-                    resultSet.getString("email"),
-                    resultSet.getString("username"),
-                    resultSet.getString("password"),
-                    resultSet.getTimestamp("created_at").toLocalDateTime(),
-                    resultSet.getBoolean("is_active"),
-                    resultSet.getString("phone_number"),
-                    resultSet.getBoolean("is_verified"),
-                    resultSet.getString("email_verification_token"),
-                    resultSet.getTimestamp("email_verification_token_expires_at") != null ? resultSet.getTimestamp("email_verification_token_expires_at").toLocalDateTime() : null,
-                    resultSet.getString("password_reset_token"),
-                    resultSet.getTimestamp("password_reset_token_expires_at") != null ? resultSet.getTimestamp("password_reset_token_expires_at").toLocalDateTime() : null,
-                    resultSet.getInt("failed_attempts")
+        ResultSet rs = statement.executeQuery(req);
+        List<User> users = new ArrayList<>();
+        while (rs.next()) {
+            User user = new User(
+                    rs.getInt("id"),
+                    rs.getString("email"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    null,
+                    rs.getBoolean("is_active"),
+                    rs.getString("phone_number"),
+                    rs.getBoolean("is_verified"),
+                    rs.getString("email_verification_token"),
+                    rs.getTimestamp("email_verification_token_expires_at") != null ?
+                            rs.getTimestamp("email_verification_token_expires_at").toLocalDateTime() : null,
+                    rs.getString("password_reset_token"),
+                    rs.getTimestamp("password_reset_token_expires_at") != null ?
+                            rs.getTimestamp("password_reset_token_expires_at").toLocalDateTime() : null,
+                    rs.getInt("failed_attempts")
             );
+            // récupérer le rôle du user
+            List<Role> roles = new ArrayList<>();
+            if (rs.getString("role_name") != null) {
+                roles.add(new Role(rs.getInt("role_id"), rs.getString("role_name")));
+            }
+            user.setRoles(roles);
             users.add(user);
         }
         return users;
     }
+
 
 }

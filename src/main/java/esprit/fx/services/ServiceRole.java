@@ -12,7 +12,7 @@ public class ServiceRole implements IService<Role> {
     }
     @Override
     public void ajouter(Role role) throws SQLException {
-        String req = "INSERT INTO `role` (`name`) VALUES (?)";
+        String req = "INSERT INTO `roles` (`name`) VALUES (?)";
         PreparedStatement ps = conn.prepareStatement(req);
         ps.setString(1, role.getName());
         ps.executeUpdate();
@@ -20,7 +20,7 @@ public class ServiceRole implements IService<Role> {
 
     @Override
     public void modifier(Role objet) throws SQLException {
-        String req = "UPDATE `role` SET `name`=? WHERE `id`=?";
+        String req = "UPDATE `roles` SET `name`=? WHERE `id`=?";
         PreparedStatement preparedStatement = conn.prepareStatement(req);
         preparedStatement.setString(1, objet.getName());
         preparedStatement.setInt(2, objet.getId());
@@ -31,7 +31,7 @@ public class ServiceRole implements IService<Role> {
 
     @Override
     public void supprimer(int id) throws SQLException {
-        String req = "DELETE FROM `role` WHERE `id`=?";
+        String req = "DELETE FROM `roles` WHERE `id`=?";
         PreparedStatement preparedStatement = conn.prepareStatement(req);
         preparedStatement.setInt(1, id);
         preparedStatement.executeUpdate();
@@ -40,7 +40,7 @@ public class ServiceRole implements IService<Role> {
 
     @Override
     public java.util.List<Role> getAll() throws SQLException {
-        String req = "SELECT * FROM `role`";
+        String req = "SELECT * FROM `roles`";
         Statement statement = conn.createStatement();
         ResultSet resultSet = statement.executeQuery(req);
         java.util.List<Role> roles = new java.util.ArrayList<Role>();

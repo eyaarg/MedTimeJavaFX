@@ -12,9 +12,10 @@ public class ServiceRole implements IService<Role> {
     }
     @Override
     public void ajouter(Role role) throws SQLException {
-        String req = "INSERT INTO `role` ( `name`) VALUES ( '"+role.getName() + ")";
-        Statement stmt = conn.createStatement();
-        stmt.executeUpdate(req);
+        String req = "INSERT INTO `role` (`name`) VALUES (?)";
+        PreparedStatement ps = conn.prepareStatement(req);
+        ps.setString(1, role.getName());
+        ps.executeUpdate();
     }
 
     @Override

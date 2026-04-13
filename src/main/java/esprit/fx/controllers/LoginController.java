@@ -13,7 +13,7 @@ import javafx.stage.Stage;
 public class LoginController {
 
     @FXML
-    private TextField emailField;
+    private TextField usernameField;  // ✅ correspond au fx:id dans FXML
 
     @FXML
     private PasswordField passwordField;
@@ -23,20 +23,18 @@ public class LoginController {
     @FXML
     private void handleLogin() {
         try {
-            String email = emailField.getText();
+            String username = usernameField.getText();
             String password = passwordField.getText();
 
-            // 🔐 appel du service login
-            User user = serviceUser.login(email, password);
+            User user = serviceUser.login(username, password);
 
             if (user != null) {
-                // ✅ LOGIN OK → aller vers Home
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
-                Stage stage = (Stage) emailField.getScene().getWindow();
+                Stage stage = (Stage) usernameField.getScene().getWindow();
                 stage.setScene(new Scene(loader.load()));
                 stage.setTitle("Home");
             } else {
-                showAlert("Erreur", "Email ou mot de passe incorrect");
+                showAlert("Erreur", "Username ou mot de passe incorrect");
             }
 
         } catch (Exception e) {
@@ -48,7 +46,7 @@ public class LoginController {
     private void goToRegister() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Register.fxml"));
-            Stage stage = (Stage) emailField.getScene().getWindow();
+            Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setScene(new Scene(loader.load()));
         } catch (Exception e) {
             e.printStackTrace();

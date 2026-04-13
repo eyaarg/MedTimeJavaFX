@@ -93,54 +93,37 @@ public class ServiceUser implements IService<User> {
         preparedStatement.setInt(1, id);
         preparedStatement.executeUpdate();
     }
-    public User login(String email, String password) throws SQLException {
-
+    public User login(String username, String password) throws SQLException {
         String req = "SELECT u.*, r.id as role_id, r.name as role_name " +
-                "FROM users u " +
-                "LEFT JOIN user_roles ur ON u.id = ur.user_id " +
-                "LEFT JOIN roles r ON ur.role_id = r.id " +
-                "WHERE u.email=?";
-
+                "FROM `users` u " +
+                "LEFT JOIN `user_roles` ur ON u.id = ur.user_id " +
+                "LEFT JOIN `roles` r ON ur.role_id = r.id " +
+                "WHERE u.username=? AND u.password=?";
         PreparedStatement ps = conn.prepareStatement(req);
-        ps.setString(1, email);
-
+        ps.setString(1, username);
+        ps.setString(2, password);
         ResultSet rs = ps.executeQuery();
-
         if (rs.next()) {
-
-            String hashedPassword = rs.getString("password");
-
-            // 🔐 vérification sécurisée
-            if (BCrypt.checkpw(password, hashedPassword)) {
-
-                User user = new User(
-                        rs.getInt("id"),
-                        rs.getString("email"),
-                        rs.getString("username"),
-                        hashedPassword,
-                        null,
-                        rs.getBoolean("is_active"),
-                        rs.getString("phone_number"),
-                        rs.getBoolean("is_verified"),
-                        null, null, null, null,
-                        rs.getInt("failed_attempts")
-                );
-
-                List<Role> roles = new ArrayList<>();
-                if (rs.getString("role_name") != null) {
-                    roles.add(new Role(
-                            rs.getInt("role_id"),
-                            rs.getString("role_name")
-                    ));
-                }
-
-                user.setRoles(roles);
-
-                return user; // login OK
+            User user = new User(
+                    rs.getInt("id"),
+                    rs.getString("email"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    null,
+                    rs.getBoolean("is_active"),
+                    rs.getString("phone_number"),
+                    rs.getBoolean("is_verified"),
+                    null, null, null, null,
+                    rs.getInt("failed_attempts")
+            );
+            List<Role> roles = new ArrayList<>();
+            if (rs.getString("role_name") != null) {
+                roles.add(new Role(rs.getInt("role_id"), rs.getString("role_name")));
             }
+            user.setRoles(roles);
+            return user;
         }
-
-        return null; // login failed
+        return null;
     }
 
     @Override

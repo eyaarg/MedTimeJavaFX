@@ -40,10 +40,12 @@
                     <Text fill="#777" text="Sign in to your account to continue" />
 
                     <Label alignment="CENTER_LEFT" style="-fx-font-weight: bold; -fx-font-size: 12px;" text="Username" />
-                    <TextField fx:id="usernameField" promptText="Enter username" style="-fx-background-color: #edf2ff; -fx-background-radius: 25; -fx-padding: 8 15;" />
+                    <TextField fx:id="usernameField" promptText="Enter username"
+                               style="-fx-background-color: #edf2ff; -fx-background-radius: 25; -fx-padding: 8 15;" />
 
                     <Label alignment="CENTER_LEFT" style="-fx-font-weight: bold; -fx-font-size: 12px;" text="Password" />
-                    <PasswordField fx:id="passwordField" promptText="Enter password" style="-fx-background-color: #edf2ff; -fx-background-radius: 25; -fx-padding: 8 15;" />
+                    <PasswordField fx:id="passwordField" promptText="Enter password"
+                                   style="-fx-background-color: #edf2ff; -fx-background-radius: 25; -fx-padding: 8 15;" />
 
                     <HBox alignment="CENTER_LEFT" spacing="5">
                         <CheckBox fx:id="rememberMeCheck" text="Remember me" />
@@ -51,11 +53,15 @@
                         <Hyperlink text="Forgot password?" textFill="#1e77ff" />
                     </HBox>
 
-                    <Button fx:id="signInButton" style="-fx-background-color: #197bff; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 25; -fx-padding: 10 60;" text="Sign In" />
+                    <!-- ✅ onAction ajouté -->
+                    <Button fx:id="signInButton" onAction="#handleLogin"
+                            style="-fx-background-color: #197bff; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 25; -fx-padding: 10 60;"
+                            text="Sign In" />
 
                     <HBox alignment="CENTER" spacing="5">
                         <Text text="Don't have an account?" />
-                        <Hyperlink text="Create account" textFill="#197bff" />
+                        <!-- ✅ onAction ajouté -->
+                        <Hyperlink onAction="#goToRegister" text="Create account" textFill="#197bff" />
                     </HBox>
 
                     <Separator style="-fx-padding: 10;" />
@@ -68,6 +74,7 @@
                             <Button style="-fx-background-color: #e9edf8; -fx-background-radius: 8; -fx-text-fill: #333;" text="Admin" />
                         </HBox>
                     </VBox>
+
                 </VBox>
             </VBox>
         </StackPane>

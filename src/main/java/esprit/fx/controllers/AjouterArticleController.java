@@ -1,14 +1,14 @@
-package tn.esprit.controllers.forum;
+package esprit.fx.controllers;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
-import tn.esprit.entities.forum.Article;
-import tn.esprit.entities.forum.Categorie;
-import tn.esprit.services.forum.ArticleService;
-import tn.esprit.services.forum.CategorieService;
+import esprit.fx.entities.Article;
+import esprit.fx.entities.Categorie;
+import esprit.fx.services.ArticleService;
+import esprit.fx.services.CategorieService;
 
 import java.net.URL;
 import java.util.Date;
@@ -53,7 +53,7 @@ public class AjouterArticleController implements Initializable {
         cbStatut.setItems(FXCollections.observableArrayList("publié", "brouillon"));
 
         // Charger les catégories
-        List<Categorie> categories = categorieService.afficherTous();
+        List<Categorie> categories = categorieService.getAll();
         cbCategorie.setItems(FXCollections.observableArrayList(categories));
 
         // Afficher le nom de la catégorie dans le ComboBox

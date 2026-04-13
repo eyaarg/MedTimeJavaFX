@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.controllers.forum.ArticleController">
+    <top>
+        <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <children>
+                <Button fx:id="btnAjouter" mnemonicParsing="false" onAction="#ajouterArticle" text="Ajouter Article" />
+                <Label text="Forum Médical" />
+            </children>
+        </HBox>
+    </top>
+    <center>
+        <TableView fx:id="tableArticles" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <columns>
+                <TableColumn fx:id="colTitre" prefWidth="75.0" text="Titre" />
+                <TableColumn fx:id="colCategorie" prefWidth="75.0" text="Catégorie" />
+                <TableColumn fx:id="colDate" prefWidth="75.0" text="Date" />
+                <TableColumn fx:id="colLikes" prefWidth="75.0" text="Likes" />
+                <TableColumn fx:id="colStatut" prefWidth="75.0" text="Statut" />
+            </columns>
+        </TableView>
+    </center>
+    <bottom>
+        <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <children>
+                <Button fx:id="btnModifier" mnemonicParsing="false" onAction="#modifierArticle" text="Modifier" />
+                <Button fx:id="btnSupprimer" mnemonicParsing="false" text="Supprimer" />
+            </children>
+        </HBox>
+    </bottom>
+</BorderPane>

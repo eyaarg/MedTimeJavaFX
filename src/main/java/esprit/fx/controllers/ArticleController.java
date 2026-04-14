@@ -3,7 +3,10 @@ package esprit.fx.controllers;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import esprit.fx.entities.Article;
 import esprit.fx.services.ArticleService;
@@ -111,14 +114,40 @@ public class ArticleController implements Initializable {
 
     @FXML
     public void ajouterArticle() {
-        // On va connecter cette méthode à la fenêtre AjouterArticle.fxml
-        System.out.println("Ouvrir fenêtre Ajouter Article");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AjouterArticle.fxml"));
+            Parent root = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("Ajouter Article");
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
     public void modifierArticle() {
-        // On va connecter cette méthode à la fenêtre ModifierArticle.fxml
-        System.out.println("Ouvrir fenêtre Modifier Article");
+        Article articleSelectionne = tableArticles.getSelectionModel().getSelectedItem();
+        if (articleSelectionne != null) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ModifierArticle.fxml"));
+                Parent root = loader.load();
+                ModifierArticleController controller = loader.getController();
+                controller.setArticle(articleSelectionne);
+                Stage stage = new Stage();
+                stage.setTitle("Modifier Article");
+                stage.setScene(new Scene(root));
+                stage.show();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Attention");
+            alert.setContentText("Veuillez sélectionner un article !");
+            alert.show();
+        }
     }
 
     @FXML

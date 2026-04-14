@@ -3,10 +3,14 @@ package esprit.fx.controllers;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import esprit.fx.entities.Commentaire;
 import esprit.fx.services.CommentaireService;
+import javafx.stage.Stage;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -96,11 +100,39 @@ public class CommentaireController implements Initializable {
 
     @FXML
     public void ajouterCommentaire() {
-        System.out.println("Ouvrir fenêtre Ajouter Commentaire");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AjouterCommentaire.fxml"));
+            Parent root = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("Ajouter Commentaire");
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
     public void modifierCommentaire() {
-        System.out.println("Ouvrir fenêtre Modifier Commentaire");
+        Commentaire commentaireSelectionne = tableCommentaires.getSelectionModel().getSelectedItem();
+        if (commentaireSelectionne != null) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ModifierCommentaire.fxml"));
+                Parent root = loader.load();
+                ModifierCommentaireController controller = loader.getController();
+                controller.setCommentaire(commentaireSelectionne);
+                Stage stage = new Stage();
+                stage.setTitle("Modifier Commentaire");
+                stage.setScene(new Scene(root));
+                stage.show();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Attention");
+            alert.setContentText("Veuillez sélectionner un commentaire !");
+            alert.show();
+        }
     }
 }

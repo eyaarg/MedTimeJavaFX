@@ -1,22 +1,24 @@
 package esprit.fx.entities;
 
 public class User_roles {
-    private int user_id;
-    private int role_id;
+    private User user;      // l'objet User complet
+    private Role role;      // l'objet Role complet
 
-    public int getUser_id() {
-        return user_id;
+    public User_roles() {}
+
+    public User_roles(User user, Role role) {
+        this.user = user;
+        this.role = role;
     }
 
-    public void setUser_id(int user_id) {
-        this.user_id = user_id;
-    }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 
-    public int getRole_id() {
-        return role_id;
-    }
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
 
-    public void setRole_id(int role_id) {
-        this.role_id = role_id;
+    @Override
+    public String toString() {
+        return "User_roles{user=" + user.getUsername() + ", role=" + role.getName() + '}';
     }
 }

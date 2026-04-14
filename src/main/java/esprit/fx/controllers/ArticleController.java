@@ -7,6 +7,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import esprit.fx.entities.Article;
 import esprit.fx.services.ArticleService;
+import javafx.stage.Stage;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -42,6 +43,9 @@ public class ArticleController implements Initializable {
     @FXML
     private Button btnSupprimer;
 
+    @FXML
+    private Button btnAnnuler;
+
     private ArticleService articleService;
 
     @Override
@@ -70,7 +74,11 @@ public class ArticleController implements Initializable {
                 new javafx.beans.property.SimpleStringProperty(data.getValue().getStatut()));
 
         // Charger les données
-        chargerArticles();
+        try {
+            chargerArticles();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
         // Bouton Supprimer
         btnSupprimer.setOnAction(e -> {
@@ -81,7 +89,11 @@ public class ArticleController implements Initializable {
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 }
-                chargerArticles();
+                try {
+                    chargerArticles();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
             } else {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Attention");
@@ -91,8 +103,8 @@ public class ArticleController implements Initializable {
         });
     }
 
-    private void chargerArticles() {
-        List<Article> articles = articleService.afficherTous();
+    private void chargerArticles() throws SQLException {
+        List<Article> articles = articleService.getAll();
         ObservableList<Article> observableList = FXCollections.observableArrayList(articles);
         tableArticles.setItems(observableList);
     }
@@ -107,5 +119,11 @@ public class ArticleController implements Initializable {
     public void modifierArticle() {
         // On va connecter cette méthode à la fenêtre ModifierArticle.fxml
         System.out.println("Ouvrir fenêtre Modifier Article");
+    }
+
+    @FXML
+    public void annuler() {
+        Stage stage = (Stage) btnAnnuler.getScene().getWindow();
+        stage.close();
     }
 }

@@ -12,18 +12,16 @@ import esprit.fx.services.CategorieService;
 
 import java.net.URL;
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class AjouterArticleController implements Initializable {
+public class ModifierArticleController implements Initializable {
 
     @FXML
     private TextField txtTitre;
 
     @FXML
     private TextArea txtContenu;
-
 
     @FXML
     private ComboBox<Categorie> cbCategorie;
@@ -38,13 +36,14 @@ public class AjouterArticleController implements Initializable {
     private TextField txtImage;
 
     @FXML
-    private Button btnAjouter;
+    private Button btnModifier;
 
     @FXML
     private Button btnAnnuler;
 
     private ArticleService articleService;
     private CategorieService categorieService;
+    private Article articleAModifier;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -63,7 +62,7 @@ public class AjouterArticleController implements Initializable {
         }
         cbCategorie.setItems(FXCollections.observableArrayList(categories));
 
-        // Afficher le nom de la catégorie dans le ComboBox
+        // Afficher le nom dans ComboBox
         cbCategorie.setCellFactory(param -> new ListCell<Categorie>() {
             @Override
             protected void updateItem(Categorie item, boolean empty) {
@@ -80,41 +79,55 @@ public class AjouterArticleController implements Initializable {
         });
     }
 
+    // Méthode appelée depuis ArticleController pour passer l'article sélectionné
+    public void setArticle(Article article) {
+        this.articleAModifier = article;
+
+        // Pré-remplir les champs
+        txtTitre.setText(article.getTitre());
+        txtContenu.setText(article.getContenu());
+        txtTags.setText(article.getTags());
+        txtImage.setText(article.getImage());
+        cbStatut.setValue(article.getStatut());
+
+        // Sélectionner la catégorie
+        if (article.getCategorie() != null) {
+            cbCategorie.getItems().forEach(cat -> {
+                if (cat.getId() == article.getCategorie().getId()) {
+                    cbCategorie.setValue(cat);
+                }
+            });
+        }
+    }
+
     @FXML
-    public void ajouterArticle() throws SQLException {
+    public void modifierArticle() throws SQLException {
         // Validation
         if (txtTitre.getText().isEmpty() || txtContenu.getText().isEmpty()
                 || cbCategorie.getValue() == null || cbStatut.getValue() == null) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Attention");
-            alert.setContentText("Veuillez remplir tous les champs obligatoires !");
+            alert.setContentText("Veuillez remplir tous les champs !");
             alert.show();
             return;
         }
 
-        // Créer l'article
-        Article article = new Article();
-        article.setTitre(txtTitre.getText());
-        article.setContenu(txtContenu.getText());
-        article.setDatePublication(new Date());
-        article.setImage(txtImage.getText());
-        article.setNbLikes(0);
-        article.setNbVues(0);
-        article.setTags(txtTags.getText());
-        article.setStatut(cbStatut.getValue());
-        article.setCategorie(cbCategorie.getValue());
+        // Modifier l'article
+        articleAModifier.setTitre(txtTitre.getText());
+        articleAModifier.setContenu(txtContenu.getText());
+        articleAModifier.setTags(txtTags.getText());
+        articleAModifier.setImage(txtImage.getText());
+        articleAModifier.setStatut(cbStatut.getValue());
+        articleAModifier.setCategorie(cbCategorie.getValue());
 
-        // Ajouter en BD
-        articleService.ajouter(article);
+        articleService.modifier(articleAModifier);
 
-        // Message succès
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Succès");
-        alert.setContentText("Article ajouté avec succès !");
+        alert.setContentText("Article modifié avec succès !");
         alert.show();
 
-        // Fermer la fenêtre
-        Stage stage = (Stage) btnAjouter.getScene().getWindow();
+        Stage stage = (Stage) btnModifier.getScene().getWindow();
         stage.close();
     }
 

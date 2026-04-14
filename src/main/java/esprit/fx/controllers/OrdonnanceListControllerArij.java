@@ -36,10 +36,14 @@ public class OrdonnanceListControllerArij {
 
     @FXML
     private void initialize() {
-        // Seul le médecin peut créer une ordonnance
         newOrdonnanceButton.setVisible("DOCTOR".equalsIgnoreCase(ROLE));
         newOrdonnanceButton.setManaged("DOCTOR".equalsIgnoreCase(ROLE));
-        loadOrdonnances();
+        try {
+            loadOrdonnances();
+        } catch (Exception e) {
+            System.err.println("Erreur initialize OrdonnanceList: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML private void openNewOrdonnance() { openForm(null, 0); }
@@ -198,7 +202,7 @@ public class OrdonnanceListControllerArij {
     private void openOrdonnanceForm(OrdonnanceArij ordonnance, int consultationId, int patientId) {
         try {
             FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(
-                    getClass().getResource("/fxml/OrdonnanceFormArij.fxml")));
+                    OrdonnanceListControllerArij.class.getResource("/fxml/OrdonnanceFormArij.fxml")));
             Parent root = loader.load();
             OrdonnanceFormControllerArij ctrl = loader.getController();
             ctrl.setContext(consultationId, patientId);

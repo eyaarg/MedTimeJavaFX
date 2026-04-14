@@ -1,18 +1,18 @@
 package esprit.fx.services;
 
 import esprit.fx.entities.ConsultationsArij;
-import esprit.fx.entities.NotificationsArij;
 import esprit.fx.utils.MyDB;
 
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 public class ServiceConsultationsArij {
 
-    private static final int CURRENT_USER_ID = 1;
+    private static final int    CURRENT_USER_ID   = 1;
     private static final String CURRENT_USER_ROLE = "PATIENT";
 
     private Connection conn() { return MyDB.getInstance().getConnection(); }
@@ -65,18 +65,12 @@ public class ServiceConsultationsArij {
         } catch (SQLException e) { System.err.println("createConsultation: " + e.getMessage()); }
     }
 
-    /**
-     * Vérifie l'unicité : un patient ne peut pas avoir deux consultations
-     * avec le même médecin le même jour.
-     */
+    /** Unicité : même patient + même médecin + même jour */
     public boolean existsConsultation(int patientId, int doctorId, LocalDateTime date) {
         String sql = "SELECT COUNT(*) FROM consultations " +
-                     "WHERE patient_id=? AND doctor_id=? AND DATE(consultation_date)=DATE(?) " +
-                     "AND is_deleted=0";
+                     "WHERE patient_id=? AND doctor_id=? AND DATE(consultation_date)=DATE(?) AND is_deleted=0";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
-            ps.setInt(1, patientId);
-            ps.setInt(2, doctorId);
-            ps.setTimestamp(3, ts(date));
+            ps.setInt(1, patientId); ps.setInt(2, doctorId); ps.setTimestamp(3, ts(date));
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return rs.getInt(1) > 0;
         } catch (SQLException e) { System.err.println("existsConsultation: " + e.getMessage()); }
@@ -87,16 +81,11 @@ public class ServiceConsultationsArij {
         c.setUpdatedAt(LocalDateTime.now());
         String sql = "UPDATE consultations SET patient_id=?, doctor_id=?, consultation_date=?, type=?, status=?, is_deleted=?, updated_at=?, rejection_reason=?, consultation_fee=? WHERE id=?";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
-            ps.setInt(1, c.getPatientId());
-            ps.setInt(2, c.getDoctorId());
-            ps.setTimestamp(3, ts(c.getConsultationDate()));
-            ps.setString(4, c.getType());
-            ps.setString(5, c.getStatus());
-            ps.setBoolean(6, c.isDeleted());
-            ps.setTimestamp(7, ts(c.getUpdatedAt()));
-            ps.setString(8, c.getRejectionReason());
-            ps.setDouble(9, c.getConsultationFee());
-            ps.setInt(10, c.getId());
+            ps.setInt(1, c.getPatientId()); ps.setInt(2, c.getDoctorId());
+            ps.setTimestamp(3, ts(c.getConsultationDate())); ps.setString(4, c.getType());
+            ps.setString(5, c.getStatus()); ps.setBoolean(6, c.isDeleted());
+            ps.setTimestamp(7, ts(c.getUpdatedAt())); ps.setString(8, c.getRejectionReason());
+            ps.setDouble(9, c.getConsultationFee()); ps.setInt(10, c.getId());
             ps.executeUpdate();
         } catch (SQLException e) { System.err.println("updateConsultation: " + e.getMessage()); }
     }
@@ -104,16 +93,14 @@ public class ServiceConsultationsArij {
     public void deleteConsultation(int id) {
         try (PreparedStatement ps = conn().prepareStatement(
                 "UPDATE consultations SET is_deleted = 1 WHERE id = ?")) {
-            ps.setInt(1, id);
-            ps.executeUpdate();
+            ps.setInt(1, id); ps.executeUpdate();
         } catch (SQLException e) { System.err.println("deleteConsultation: " + e.getMessage()); }
     }
 
     public void acceptConsultation(int id) {
         ConsultationsArij c = findById(id);
         if (c == null) return;
-        c.setStatus("CONFIRMEE");
-        c.setUpdatedAt(LocalDateTime.now());
+        c.setStatus("CONFIRMEE"); c.setUpdatedAt(LocalDateTime.now());
         updateConsultation(c);
         notifyPatient(c.getPatientId(), "CONFIRMATION", id);
     }
@@ -121,22 +108,20 @@ public class ServiceConsultationsArij {
     public void rejectConsultation(int id, String reason) {
         ConsultationsArij c = findById(id);
         if (c == null) return;
-        c.setStatus("REFUSEE");
-        c.setRejectionReason(reason);
-        c.setUpdatedAt(LocalDateTime.now());
+        c.setStatus("REFUSEE"); c.setRejectionReason(reason); c.setUpdatedAt(LocalDateTime.now());
         updateConsultation(c);
         notifyPatient(c.getPatientId(), "REFUS", id);
     }
 
     public List<ConsultationsArij> filterConsultations(String status, String type) {
         if (status != null && !status.isEmpty()) return filterByStatus(status);
-        if (type != null && !type.isEmpty()) return filterByType(type);
+        if (type   != null && !type.isEmpty())   return filterByType(type);
         return getMyConsultations();
     }
 
     private List<ConsultationsArij> filterByStatus(String status) {
         List<ConsultationsArij> list = new ArrayList<>();
-        String sql = "SELECT * FROM consultations WHERE status = ? AND (patient_id = ? OR doctor_id = ?) AND is_deleted = 0";
+        String sql = "SELECT * FROM consultations WHERE status=? AND (patient_id=? OR doctor_id=?) AND is_deleted=0";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setString(1, status); ps.setInt(2, CURRENT_USER_ID); ps.setInt(3, CURRENT_USER_ID);
             ResultSet rs = ps.executeQuery();
@@ -147,13 +132,60 @@ public class ServiceConsultationsArij {
 
     private List<ConsultationsArij> filterByType(String type) {
         List<ConsultationsArij> list = new ArrayList<>();
-        String sql = "SELECT * FROM consultations WHERE type = ? AND (patient_id = ? OR doctor_id = ?) AND is_deleted = 0";
+        String sql = "SELECT * FROM consultations WHERE type=? AND (patient_id=? OR doctor_id=?) AND is_deleted=0";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setString(1, type); ps.setInt(2, CURRENT_USER_ID); ps.setInt(3, CURRENT_USER_ID);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) list.add(mapRow(rs));
         } catch (SQLException e) { System.err.println("filterByType: " + e.getMessage()); }
         return list;
+    }
+
+    // ── Dashboard stats ───────────────────────────────────────────────────
+
+    public int countByStatus(String status, int userId) {
+        try (PreparedStatement ps = conn().prepareStatement(
+                "SELECT COUNT(*) FROM consultations WHERE status=? AND is_deleted=0 AND (patient_id=? OR doctor_id=?)")) {
+            ps.setString(1, status); ps.setInt(2, userId); ps.setInt(3, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (SQLException e) { System.err.println("countByStatus: " + e.getMessage()); }
+        return 0;
+    }
+
+    public int countCancelled(int userId) {
+        return countByStatus("REFUSEE", userId);
+    }
+
+    public double getConfirmationRate(int userId) {
+        int total = countByStatus("EN_ATTENTE", userId) + countByStatus("CONFIRMEE", userId)
+                  + countByStatus("REFUSEE",    userId) + countByStatus("TERMINEE",  userId);
+        if (total == 0) return 0;
+        return (countByStatus("CONFIRMEE", userId) * 100.0) / total;
+    }
+
+    public Map<String, Integer> countByWeek(int userId) {
+        Map<String, Integer> map = new LinkedHashMap<>();
+        String sql = "SELECT DATE_FORMAT(consultation_date,'%Y-S%u') AS wk, COUNT(*) " +
+                     "FROM consultations WHERE (patient_id=? OR doctor_id=?) " +
+                     "AND consultation_date >= DATE_SUB(CURDATE(), INTERVAL 28 DAY) " +
+                     "AND is_deleted=0 GROUP BY wk ORDER BY wk";
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
+            ps.setInt(1, userId); ps.setInt(2, userId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) map.put(rs.getString(1), rs.getInt(2));
+        } catch (SQLException e) { System.err.println("countByWeek: " + e.getMessage()); }
+        return map;
+    }
+
+    public LocalDateTime findNextConsultation(int userId) {
+        try (PreparedStatement ps = conn().prepareStatement(
+                "SELECT MIN(consultation_date) FROM consultations WHERE consultation_date >= NOW() AND is_deleted=0 AND patient_id=?")) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) { Timestamp t = rs.getTimestamp(1); if (t != null) return t.toLocalDateTime(); }
+        } catch (SQLException e) { System.err.println("findNextConsultation: " + e.getMessage()); }
+        return null;
     }
 
     // ── Notifications ─────────────────────────────────────────────────────
@@ -175,28 +207,6 @@ public class ServiceConsultationsArij {
             ps.setString(4, type); ps.setTimestamp(5, ts(LocalDateTime.now()));
             ps.executeUpdate();
         } catch (SQLException e) { System.err.println("saveNotification: " + e.getMessage()); }
-    }
-
-    // ── Dashboard ─────────────────────────────────────────────────────────
-
-    public int countByStatus(String status, int userId) {
-        try (PreparedStatement ps = conn().prepareStatement(
-                "SELECT COUNT(*) FROM consultations WHERE status = ? AND is_deleted = 0 AND (patient_id = ? OR doctor_id = ?)")) {
-            ps.setString(1, status); ps.setInt(2, userId); ps.setInt(3, userId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getInt(1);
-        } catch (SQLException e) { System.err.println("countByStatus: " + e.getMessage()); }
-        return 0;
-    }
-
-    public LocalDateTime findNextConsultation(int userId) {
-        try (PreparedStatement ps = conn().prepareStatement(
-                "SELECT MIN(consultation_date) FROM consultations WHERE consultation_date >= NOW() AND is_deleted = 0 AND patient_id = ?")) {
-            ps.setInt(1, userId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) { Timestamp t = rs.getTimestamp(1); if (t != null) return t.toLocalDateTime(); }
-        } catch (SQLException e) { System.err.println("findNextConsultation: " + e.getMessage()); }
-        return null;
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────
@@ -222,33 +232,3 @@ public class ServiceConsultationsArij {
 
     private Timestamp ts(LocalDateTime dt) { return dt == null ? null : Timestamp.valueOf(dt); }
 }
-
-    /** Nombre de consultations annulées (REFUSEE) par le patient */
-    public int countCancelled(int userId) {
-        return countByStatus("REFUSEE", userId);
-    }
-
-    /** Taux de consultations confirmées sur le total */
-    public double getConfirmationRate(int userId) {
-        int total = countByStatus("EN_ATTENTE", userId)
-                  + countByStatus("CONFIRMEE",  userId)
-                  + countByStatus("REFUSEE",    userId)
-                  + countByStatus("TERMINEE",   userId);
-        if (total == 0) return 0;
-        return (countByStatus("CONFIRMEE", userId) * 100.0) / total;
-    }
-
-    /** Consultations par semaine (4 dernières semaines) */
-    public java.util.Map<String, Integer> countByWeek(int userId) {
-        java.util.Map<String, Integer> map = new java.util.LinkedHashMap<>();
-        String sql = "SELECT DATE_FORMAT(consultation_date,'%Y-S%u') AS wk, COUNT(*) " +
-                     "FROM consultations WHERE (patient_id=? OR doctor_id=?) " +
-                     "AND consultation_date >= DATE_SUB(CURDATE(), INTERVAL 28 DAY) " +
-                     "AND is_deleted=0 GROUP BY wk ORDER BY wk";
-        try (PreparedStatement ps = conn().prepareStatement(sql)) {
-            ps.setInt(1, userId); ps.setInt(2, userId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) map.put(rs.getString(1), rs.getInt(2));
-        } catch (SQLException e) { System.err.println("countByWeek: " + e.getMessage()); }
-        return map;
-    }

@@ -33,7 +33,7 @@
             <VBox spacing="4">
                 <padding><Insets left="12" right="12"/></padding>
                 <Button fx:id="btnConsultations" text="  Mes Consultations"
-                        styleClass="nav-btn,nav-btn-active"
+                        styleClass="nav-btn"
                         onAction="#showMyConsultations" maxWidth="Infinity"/>
                 <Button fx:id="btnBook" text="  Prendre Rendez-vous"
                         styleClass="nav-btn"
@@ -60,7 +60,7 @@
             <VBox spacing="4">
                 <padding><Insets left="12" right="12"/></padding>
                 <Button fx:id="btnDashboard" text="  Tableau de bord"
-                        styleClass="nav-btn"
+                        styleClass="nav-btn,nav-btn-active"
                         onAction="#showDashboard" maxWidth="Infinity"/>
                 <Button fx:id="btnChat" text="  Chat &amp; IA"
                         styleClass="nav-btn"

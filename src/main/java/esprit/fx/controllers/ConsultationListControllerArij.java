@@ -39,10 +39,17 @@ public class ConsultationListControllerArij {
     private void initialize() {
         filterStatusCombo.setItems(FXCollections.observableArrayList("EN_ATTENTE","CONFIRMEE","REFUSEE","TERMINEE"));
         filterTypeCombo.setItems(FXCollections.observableArrayList("ONLINE","IN_PERSON"));
-        // Seul le patient peut créer
         newConsultationButton.setVisible("PATIENT".equalsIgnoreCase(ROLE));
         newConsultationButton.setManaged("PATIENT".equalsIgnoreCase(ROLE));
-        loadConsultations(service.getMyConsultations());
+        try {
+            List<ConsultationsArij> list = service.getMyConsultations();
+            System.out.println("Consultations chargées: " + list.size());
+            loadConsultations(list);
+        } catch (Exception e) {
+            System.err.println("Erreur initialize ConsultationList: " + e.getMessage());
+            e.printStackTrace();
+            cardsContainer.getChildren().add(emptyState());
+        }
     }
 
     @FXML private void onStatusFilterChange() { filterConsultations(); }
@@ -244,7 +251,7 @@ public class ConsultationListControllerArij {
     private void openForm(ConsultationsArij consultation) {
         try {
             FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(
-                    getClass().getResource("/fxml/ConsultationFormArij.fxml")));
+                    ConsultationListControllerArij.class.getResource("/fxml/ConsultationFormArij.fxml")));
             Parent root = loader.load();
             if (consultation != null)
                 ((ConsultationFormControllerArij) loader.getController()).setConsultation(consultation);

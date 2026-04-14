@@ -19,7 +19,14 @@ public class FactureListControllerArij {
     @FXML private FlowPane cardsContainer;
     private final ServiceFactureArij service = new ServiceFactureArij();
 
-    @FXML private void initialize() { loadFactures(); }
+    @FXML private void initialize() {
+        try {
+            loadFactures();
+        } catch (Exception e) {
+            System.err.println("Erreur initialize FactureList: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
     private void loadFactures() {
         cardsContainer.getChildren().clear();

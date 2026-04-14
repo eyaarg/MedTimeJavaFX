@@ -24,7 +24,7 @@ public class MainControllerArij {
     @FXML
     private void initialize() {
         if (btnBook != null) btnBook.setVisible("PATIENT".equalsIgnoreCase(CURRENT_USER_ROLE));
-        showMyConsultations();
+        showDashboard();
     }
 
     private void setActive(Button active) {
@@ -45,10 +45,13 @@ public class MainControllerArij {
 
     private void loadView(String fxmlPath) {
         try {
-            Node view = FXMLLoader.load(Objects.requireNonNull(getClass().getResource(fxmlPath)));
+            Node view = FXMLLoader.load(Objects.requireNonNull(
+                    MainControllerArij.class.getResource(fxmlPath),
+                    "FXML not found: " + fxmlPath));
             contentArea.getChildren().setAll(view);
         } catch (IOException | NullPointerException e) {
             System.err.println("Erreur chargement vue " + fxmlPath + ": " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

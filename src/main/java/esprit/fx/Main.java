@@ -13,12 +13,13 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        // Démarre sur la page de login
         Parent root = FXMLLoader.load(Objects.requireNonNull(
-                Main.class.getResource("/fxml/MainViewArij.fxml")));
+                Main.class.getResource("/Login.fxml")));
         Scene scene = new Scene(root);
-        stage.setTitle("MedTimeFX");
+        stage.setTitle("MedTimeFX — Connexion");
         stage.setScene(scene);
-        stage.setMaximized(true);
+        stage.setResizable(true);
         stage.show();
     }
 

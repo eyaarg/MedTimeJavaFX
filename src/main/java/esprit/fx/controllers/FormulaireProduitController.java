@@ -1,6 +1,8 @@
 package esprit.fx.controllers;
 
+import esprit.fx.controllers.ListeProduitController;
 import esprit.fx.entities.Produit;
+import esprit.fx.entities.CategorieEnum;
 import esprit.fx.services.ServiceProduit;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -14,59 +16,56 @@ import java.util.ResourceBundle;
 
 public class FormulaireProduitController implements Initializable {
 
-    // Tous les composants FXML
+    @FXML private TextField txtNom;
+    @FXML private TextArea txtDescription;
+    @FXML private ComboBox<CategorieEnum> cmbCategorie;  // ← Type Enum
+    @FXML private TextField txtPrix;
+    @FXML private TextField txtStock;
+    @FXML private TextField txtImage;
+    @FXML private CheckBox chkDisponible;
+    @FXML private CheckBox chkPrescription;
+    @FXML private TextField txtMarque;
+    @FXML private DatePicker dpDateExpiration;
     @FXML private Label lblTitre;
-    @FXML private TextField txtNom;           // nom
-    @FXML private TextArea txtDescription;    // description
-    @FXML private ComboBox<String> cmbCategorie; // categorie
-    @FXML private TextField txtPrix;          // prix
-    @FXML private TextField txtStock;         // stock
-    @FXML private TextField txtImage;         // image
-    @FXML private CheckBox chkDisponible;     // disponible
-    @FXML private CheckBox chkPrescription;   // prescription_requise
-    @FXML private TextField txtMarque;        // marque
-    @FXML private DatePicker dpDateExpiration; // date_expiration
     @FXML private Button btnValider;
 
-    // Variables
     private ServiceProduit serviceProduit;
     private ListeProduitController listeController;
-    private String mode; // "ajouter" ou "modifier"
+    private String mode;
     private Produit produitModification;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        setupComboBox();
-        setupDatePicker();
-        setDefaultValues();
-    }
+        // Charger les catégories Enum dans le ComboBox
+        cmbCategorie.getItems().setAll(CategorieEnum.values());
+        chkDisponible.setSelected(true);
 
-    private void setupComboBox() {
-        cmbCategorie.getItems().addAll(
-                "MEDICAMENT",
-                "MATERIEL_MEDICAL",
-                "PARAPHARMACIE",
-                "HYGIENE",
-                "COMPLEMENT_ALIMENTAIRE"
-        );
-    }
-
-    private void setupDatePicker() {
-        dpDateExpiration.setDayCellFactory(picker -> new DateCell() {
+        // Personnaliser l'affichage du ComboBox
+        cmbCategorie.setCellFactory(param -> new ListCell<CategorieEnum>() {
             @Override
-            public void updateItem(LocalDate date, boolean empty) {
-                super.updateItem(date, empty);
-                setDisable(empty || date.isBefore(LocalDate.now()));
+            protected void updateItem(CategorieEnum item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getNom());
+                }
+            }
+        });
+
+        cmbCategorie.setButtonCell(new ListCell<CategorieEnum>() {
+            @Override
+            protected void updateItem(CategorieEnum item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("Sélectionner une catégorie");
+                } else {
+                    setText(item.getNom());
+                }
             }
         });
     }
 
-    private void setDefaultValues() {
-        chkDisponible.setSelected(true);  // Par défaut, produit disponible
-        chkPrescription.setSelected(false); // Par défaut, pas de prescription
-    }
-
-    // Setters pour passer les données
     public void setServiceProduit(ServiceProduit serviceProduit) {
         this.serviceProduit = serviceProduit;
     }
@@ -78,23 +77,23 @@ public class FormulaireProduitController implements Initializable {
     public void setMode(String mode) {
         this.mode = mode;
         if (mode.equals("ajouter")) {
-            lblTitre.setText("Ajouter un produit");
+            lblTitre.setText(" Ajouter un produit");
             btnValider.setText("Ajouter");
         } else {
-            lblTitre.setText("Modifier un produit");
-            btnValider.setText(" Modifier");
+            lblTitre.setText("✏ Modifier un produit");
+            btnValider.setText("Modifier");
         }
     }
 
     public void setProduit(Produit produit) {
         this.produitModification = produit;
-        fillFormWithProduit(produit);
+        remplirFormulaire(produit);
     }
 
-    private void fillFormWithProduit(Produit p) {
+    private void remplirFormulaire(Produit p) {
         txtNom.setText(p.getNom());
         txtDescription.setText(p.getDescription());
-        cmbCategorie.setValue(p.getCategorie());
+        cmbCategorie.setValue(p.getCategorie());  // ← L'Enum s'affiche bien
         txtPrix.setText(String.valueOf(p.getPrix()));
         txtStock.setText(String.valueOf(p.getStock()));
         txtImage.setText(p.getImage());
@@ -109,64 +108,43 @@ public class FormulaireProduitController implements Initializable {
             showAlert("Le nom est obligatoire !");
             return false;
         }
-
         if (cmbCategorie.getValue() == null) {
             showAlert("La catégorie est obligatoire !");
             return false;
         }
-
         try {
-            double prix = Double.parseDouble(txtPrix.getText());
-            if (prix <= 0) {
-                showAlert("Le prix doit être positif !");
-                return false;
-            }
+            Double.parseDouble(txtPrix.getText());
         } catch (NumberFormatException e) {
             showAlert("Prix invalide !");
             return false;
         }
-
-        try {
-            if (!txtStock.getText().isEmpty()) {
-                int stock = Integer.parseInt(txtStock.getText());
-                if (stock < 0) {
-                    showAlert("Le stock ne peut pas être négatif !");
-                    return false;
-                }
-            }
-        } catch (NumberFormatException e) {
-            showAlert("Stock invalide !");
-            return false;
-        }
-
         return true;
-    }
-
-    private Produit createProduitFromForm() {
-        Produit p = new Produit();
-        p.setNom(txtNom.getText());                          // nom
-        p.setDescription(txtDescription.getText());          // description
-        p.setCategorie(cmbCategorie.getValue());             // categorie
-        p.setPrix(Double.parseDouble(txtPrix.getText()));    // prix
-        p.setStock(txtStock.getText().isEmpty() ? 0 : Integer.parseInt(txtStock.getText())); // stock
-        p.setImage(txtImage.getText());                      // image
-        p.setDisponible(chkDisponible.isSelected());         // disponible
-        p.setPrescriptionRequise(chkPrescription.isSelected()); // prescription_requise
-        p.setMarque(txtMarque.getText());                    // marque
-        p.setDateExpiration(dpDateExpiration.getValue());    // date_expiration
-        return p;
     }
 
     @FXML
     private void handleValider() throws SQLException {
         if (!validateInputs()) return;
 
+        Produit produit = new Produit();
+        produit.setNom(txtNom.getText());
+        produit.setDescription(txtDescription.getText());
+        produit.setCategorie(cmbCategorie.getValue());  // ← L'Enum
+        produit.setPrix(Double.parseDouble(txtPrix.getText()));
+        produit.setStock(Integer.parseInt(txtStock.getText()));
+        produit.setImage(txtImage.getText());
+        produit.setDisponible(chkDisponible.isSelected());
+        produit.setPrescriptionRequise(chkPrescription.isSelected());
+        produit.setMarque(txtMarque.getText());
+        produit.setDateExpiration(dpDateExpiration.getValue());
+
         if (mode.equals("ajouter")) {
-            Produit produit = createProduitFromForm();
-            serviceProduit.ajouter(produit);
+            try {
+                serviceProduit.ajouter(produit);
+            } catch (SQLException e) {
+                    throw new RuntimeException(e);
+            }
             showAlert("Produit ajouté avec succès !");
         } else {
-            Produit produit = createProduitFromForm();
             produit.setId(produitModification.getId());
             serviceProduit.modifier(produit);
             showAlert("Produit modifié avec succès !");
@@ -191,8 +169,6 @@ public class FormulaireProduitController implements Initializable {
 
     private void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Information");
-        alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
     }

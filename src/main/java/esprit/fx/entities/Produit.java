@@ -12,7 +12,7 @@ public class Produit {
     private Long id;
     private String nom;
     private String description;
-    private String categorie;
+    private CategorieEnum categorie;
     private Double prix;
     private Integer stock;
     private String image;
@@ -28,7 +28,7 @@ public class Produit {
     }
 
     // 2. Constructeur paramétré complet (avec id)
-    public Produit(Long id, String nom, String description, String categorie,
+    public Produit(Long id, String nom, String description, CategorieEnum categorie,
                    Double prix, Integer stock, String image, Boolean prescriptionRequise,
                    Boolean disponible, String marque, LocalDate dateExpiration) {
         this.id = id;
@@ -45,7 +45,7 @@ public class Produit {
     }
 
     // 3. Constructeur paramétré sans l'id (pour la création en base)
-    public Produit(String nom, String description, String categorie,
+    public Produit(String nom, String description, CategorieEnum categorie,
                    Double prix, Integer stock, String image, Boolean prescriptionRequise,
                    Boolean disponible, String marque, LocalDate dateExpiration) {
         this.nom = nom;
@@ -85,11 +85,11 @@ public class Produit {
         this.description = description;
     }
 
-    public String getCategorie() {
+    public CategorieEnum getCategorie() {
         return categorie;
     }
 
-    public void setCategorie(String categorie) {
+    public void setCategorie(CategorieEnum categorie) {
         this.categorie = categorie;
     }
 

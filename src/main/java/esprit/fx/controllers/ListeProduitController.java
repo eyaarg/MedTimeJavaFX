@@ -1,7 +1,9 @@
 package esprit.fx.controllers;
 
+import esprit.fx.entities.CategorieEnum;
 import esprit.fx.entities.Produit;
 import esprit.fx.services.ServiceProduit;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -79,7 +81,9 @@ public class ListeProduitController implements Initializable {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
         colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
-        colCategorie.setCellValueFactory(new PropertyValueFactory<>("categorie"));
+        colCategorie.setCellValueFactory(cellData -> {
+            CategorieEnum cat = cellData.getValue().getCategorie();
+            return new SimpleStringProperty(cat != null ? cat.name() : "");});
         colPrix.setCellValueFactory(new PropertyValueFactory<>("prix"));
         colStock.setCellValueFactory(new PropertyValueFactory<>("stock"));
         colMarque.setCellValueFactory(new PropertyValueFactory<>("marque"));

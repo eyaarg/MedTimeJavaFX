@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.ConsultationFormControllerArij"
+      spacing="0" stylesheets="@/css/arij-styles.css"
+      style="-fx-background-color: #f0f4f8;" prefWidth="480">
+
+    <VBox styleClass="modal-header">
+        <padding><Insets top="24" right="28" bottom="20" left="28"/></padding>
+        <Label text="Réserver une Consultation" styleClass="modal-title"/>
+        <Label text="Remplissez les informations pour planifier votre rendez-vous" styleClass="modal-subtitle"/>
+    </VBox>
+
+    <VBox spacing="18" style="-fx-background-color: white;">
+        <padding><Insets top="24" right="28" bottom="28" left="28"/></padding>
+
+        <VBox spacing="6">
+            <Label text="Date de consultation" styleClass="field-label"/>
+            <DatePicker fx:id="consultationDatePicker" maxWidth="Infinity" styleClass="form-input"/>
+            <Label fx:id="dateErrorLabel" text="La date est requise et ne peut pas être dans le passé"
+                   styleClass="field-error" visible="false" managed="false"/>
+        </VBox>
+
+        <VBox spacing="6">
+            <Label text="Sélectionner un médecin" styleClass="field-label"/>
+            <ComboBox fx:id="doctorComboBox" promptText="Choisir un médecin…"
+                      maxWidth="Infinity" styleClass="form-input"/>
+            <Label fx:id="doctorErrorLabel" text="Veuillez sélectionner un médecin."
+                   styleClass="field-error" visible="false" managed="false"/>
+        </VBox>
+
+        <!-- Erreur d'unicité -->
+        <Label fx:id="uniqueErrorLabel"
+               text="⚠  Une consultation avec ce médecin existe déjà à cette date."
+               styleClass="field-error" visible="false" managed="false"/>
+
+        <Label fx:id="errorLabel" text="Veuillez corriger les erreurs ci-dessus."
+               styleClass="field-error" visible="false" managed="false"/>
+
+        <HBox spacing="12" alignment="CENTER_RIGHT">
+            <padding><Insets top="8"/></padding>
+            <Button text="Annuler" styleClass="btn-secondary" onAction="#handleCancel"/>
+            <Button text="Enregistrer le rendez-vous" styleClass="btn-primary" onAction="#handleSave"/>
+        </HBox>
+    </VBox>
+</VBox>

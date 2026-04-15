@@ -4,59 +4,93 @@ import esprit.fx.entities.User;
 import esprit.fx.services.ServiceUser;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+import java.util.Objects;
+
 public class LoginController {
 
     @FXML
-    private TextField usernameField;  // ✅ correspond au fx:id dans FXML
+    private TextField usernameField;
 
     @FXML
     private PasswordField passwordField;
 
-    private ServiceUser serviceUser = new ServiceUser();
+    @FXML
+    private Button signInButton;
+
+    private final ServiceUser serviceUser = new ServiceUser();
+
+    @FXML
+    private void initialize() {
+        signInButton.setOnAction(e -> handleLogin());
+    }
 
     @FXML
     private void handleLogin() {
-        try {
-            String username = usernameField.getText();
-            String password = passwordField.getText();
+        String username = usernameField.getText().trim();
+        String password = passwordField.getText().trim();
 
+        if (username.isEmpty() || password.isEmpty()) {
+            showAlert("Champs requis", "Veuillez saisir votre email et mot de passe.");
+            return;
+        }
+
+        try {
             User user = serviceUser.login(username, password);
 
             if (user != null) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
-                Stage stage = (Stage) usernameField.getScene().getWindow();
-                stage.setScene(new Scene(loader.load()));
-                stage.setTitle("Home");
+                openMainView();
             } else {
-                showAlert("Erreur", "Username ou mot de passe incorrect");
+                showAlert("Connexion échouée", "Identifiant ou mot de passe incorrect.");
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Login error: " + e.getMessage());
+            showAlert("Erreur", "Erreur de connexion : " + e.getMessage());
         }
     }
 
     @FXML
-    private void goToRegister() {
+    private void loginAsPatient() {
+        openMainView();
+    }
+
+    @FXML
+    private void loginAsDoctor() {
+        openMainView();
+    }
+
+    @FXML
+    private void loginAsAdmin() {
+        openMainView();
+    }
+
+    private void openMainView() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Register.fxml"));
-            Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(new Scene(loader.load()));
-        } catch (Exception e) {
+            Parent root = FXMLLoader.load(Objects.requireNonNull(
+                    LoginController.class.getResource("/fxml/MainViewArij.fxml")));
+            Stage stage = (Stage) signInButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("MedTimeFX");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            System.err.println("Erreur ouverture MainView: " + e.getMessage());
             e.printStackTrace();
         }
-
     }
 
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
+        alert.setHeaderText(null);
         alert.setContentText(message);
         alert.show();
     }

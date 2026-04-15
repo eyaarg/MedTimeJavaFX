@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.OrdonnanceListControllerArij"
+      spacing="0" stylesheets="@/css/arij-styles.css"
+      style="-fx-background-color: #f0f4f8;">
+
+    <HBox alignment="CENTER_LEFT" styleClass="page-header">
+        <padding><Insets top="28" right="32" bottom="20" left="32"/></padding>
+        <VBox spacing="3" HBox.hgrow="ALWAYS">
+            <Label text="Mes Ordonnances" styleClass="page-title"/>
+            <Label text="Consultez et gérez vos prescriptions médicales" styleClass="page-subtitle"/>
+        </VBox>
+        <Button fx:id="newOrdonnanceButton" text="+ Nouvelle Ordonnance"
+                styleClass="btn-primary" onAction="#openNewOrdonnance"/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll">
+        <padding><Insets top="24" right="32" bottom="24" left="32"/></padding>
+        <content>
+            <FlowPane fx:id="cardsContainer" hgap="16" vgap="16" prefWrapLength="900"/>
+        </content>
+    </ScrollPane>
+</VBox>

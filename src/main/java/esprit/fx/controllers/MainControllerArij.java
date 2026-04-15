@@ -24,6 +24,7 @@ public class MainControllerArij {
     @FXML private Button btnSideDashboard;
     @FXML private Button btnModuleConsultation;
     @FXML private Button btnModuleMarket;
+    @FXML private Button btnModuleForum;
     @FXML private Button btnNotifications;
 
     // Footer
@@ -97,6 +98,14 @@ public class MainControllerArij {
     }
 
     @FXML
+    private void showForumHubs() {
+        setModuleActive(btnModuleForum);
+        showHubsView("📰  Forum Médical",
+                "Sélectionnez une fonctionnalité",
+                buildForumHubs());
+    }
+
+    @FXML
     private void showNotifications() {
         setModuleActive(btnModuleConsultation);
         loadView("/fxml/NotificationListArij.fxml");
@@ -141,6 +150,27 @@ public class MainControllerArij {
                     "Enregistrer un nouveau produit",
                     () -> loadView("/fxml/AjoutProd.fxml"))
         );
+    }
+
+    private List<HubCard> buildForumHubs() {
+        if (isDoctor()) {
+            // Médecin : articles + gestion commentaires
+            return Arrays.asList(
+                new HubCard("📰", "Articles médicaux",
+                        "Consultez et gérez les articles",
+                        () -> loadView("/fxml/ListerArticles.fxml")),
+                new HubCard("💬", "Commentaires",
+                        "Gérez tous les commentaires",
+                        () -> loadView("/fxml/ListerCommentaires.fxml"))
+            );
+        } else {
+            // Patient : articles uniquement (peut commenter depuis la card)
+            return Arrays.asList(
+                new HubCard("📰", "Articles médicaux",
+                        "Lisez et commentez les articles",
+                        () -> loadView("/fxml/ListerArticles.fxml"))
+            );
+        }
     }
 
     // ─── Hub view builder ─────────────────────────────────────────────────────
@@ -263,7 +293,7 @@ public class MainControllerArij {
     // ─── Sidebar active state ─────────────────────────────────────────────────
 
     private void setModuleActive(Button active) {
-        for (Button b : Arrays.asList(btnSideDashboard, btnModuleConsultation, btnModuleMarket)) {
+        for (Button b : Arrays.asList(btnSideDashboard, btnModuleConsultation, btnModuleMarket, btnModuleForum)) {
             if (b != null) b.getStyleClass().remove("nav-btn-active");
         }
         if (active != null && !active.getStyleClass().contains("nav-btn-active"))
@@ -311,6 +341,8 @@ public class MainControllerArij {
                 c.setPatientId(patientId);
             } else if (ctrl instanceof NotificationListControllerArij c) {
                 c.setUserId(userId);
+            } else if (ctrl instanceof ArticleController c) {
+                c.setRole(isDoctor());
             }
 
             contentArea.getChildren().setAll(view);

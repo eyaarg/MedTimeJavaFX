@@ -63,6 +63,13 @@
                         onAction="#showMarketHubs"
                         maxWidth="Infinity"/>
 
+                <!-- Forum Médical -->
+                <Button fx:id="btnModuleForum"
+                        text="  📰  Forum Médical"
+                        styleClass="nav-btn"
+                        onAction="#showForumHubs"
+                        maxWidth="Infinity"/>
+
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>

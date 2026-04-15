@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="15" xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.ListeProduitController"
+      style="-fx-background-color: #f5f5f5;">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Titre -->
+    <Label text="📦 Gestion des Produits" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+    <!-- Barre de recherche et bouton ajouter -->
+    <HBox spacing="10">
+        <TextField fx:id="txtSearch" promptText="🔍 Rechercher un produit..." HBox.hgrow="ALWAYS"
+                   style="-fx-padding: 10; -fx-background-radius: 20; -fx-border-radius: 20;"/>
+        <Button text="➕" onAction="#handleAjouter"
+                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 8 20;"/>
+    </HBox>
+
+    <!-- ScrollPane pour les cartes -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent;">
+        <FlowPane fx:id="cardsContainer" hgap="15" vgap="15" alignment="TOP_LEFT"
+                  style="-fx-background-color: transparent;"/>
+    </ScrollPane>
+
+    <!-- Status bar -->
+    <Label fx:id="lblStatus" style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
+
+</VBox>

@@ -7,21 +7,21 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class ServiceFactureArij {
-
-    private static final int CURRENT_USER_ID = 1;
     private Connection conn() { return MyDB.getInstance().getConnection(); }
 
-    public List<FactureArij> getMyFactures() {
+    public List<FactureArij> getFacturesByPatient(int patientId) {
+        if (patientId <= 0) {
+            return new ArrayList<>();
+        }
         List<FactureArij> list = new ArrayList<>();
         String sql = "SELECT f.* FROM facture f JOIN paiement p ON f.paiement_id = p.id WHERE p.patient_id = ?";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
-            ps.setInt(1, CURRENT_USER_ID);
+            ps.setInt(1, patientId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) list.add(mapRow(rs));
-        } catch (SQLException e) { System.err.println("getMyFactures: " + e.getMessage()); }
+        } catch (SQLException e) { System.err.println("getFacturesByPatient: " + e.getMessage()); }
         return list;
     }
 
@@ -69,7 +69,11 @@ public class ServiceFactureArij {
         // 3. Notifier le patient
         String sqlNotif = "INSERT INTO notifications (user_id, title, message, type, is_read, created_at) VALUES (?,?,?,?,0,?)";
         try (PreparedStatement ps = conn().prepareStatement(sqlNotif)) {
-            ps.setInt(1, patientId);
+            int patientUserId = findPatientUserId(patientId);
+            if (patientUserId <= 0) {
+                return;
+            }
+            ps.setInt(1, patientUserId);
             ps.setString(2, "Nouvelle facture");
             ps.setString(3, "Une facture de " + montant + " TND a été générée pour votre consultation #" + consultationId);
             ps.setString(4, "FACTURE");
@@ -85,6 +89,19 @@ public class ServiceFactureArij {
             if (rs.next()) return mapRow(rs);
         } catch (SQLException e) { System.err.println("findById: " + e.getMessage()); }
         return null;
+    }
+
+    private int findPatientUserId(int patientId) {
+        try (PreparedStatement ps = conn().prepareStatement("SELECT user_id FROM patients WHERE id = ?")) {
+            ps.setInt(1, patientId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("findPatientUserId: " + e.getMessage());
+        }
+        return 0;
     }
 
     private FactureArij mapRow(ResultSet rs) throws SQLException {

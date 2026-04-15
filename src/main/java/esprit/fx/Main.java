@@ -20,6 +20,10 @@ public class Main extends Application {
         stage.setTitle("MedTimeFX — Connexion");
         stage.setScene(scene);
         stage.setResizable(true);
+        stage.setWidth(600);
+        stage.setHeight(420);
+        stage.setResizable(false);
+        stage.centerOnScreen();
         stage.show();
     }
 

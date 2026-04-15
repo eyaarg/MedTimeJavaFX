@@ -14,9 +14,6 @@ import java.util.Map;
 
 public class DashboardControllerArij {
 
-    private static final int    CURRENT_USER_ID   = 1;
-    private static final String CURRENT_USER_ROLE = "PATIENT"; // "PATIENT" ou "DOCTOR"
-
     // ── FXML bindings ─────────────────────────────────────────────────────
 
     @FXML private VBox  patientSection;
@@ -45,20 +42,40 @@ public class DashboardControllerArij {
     private final ServiceConsultationsArij consultationService = new ServiceConsultationsArij();
     private final ServiceOrdonnanceArij    ordonnanceService   = new ServiceOrdonnanceArij();
 
+    private boolean isPatient = true;
+    private int patientId = 0;
+    private int doctorId = 0;
+
     // ── Init ──────────────────────────────────────────────────────────────
 
     @FXML
     private void initialize() {
-        boolean isPatient = "PATIENT".equalsIgnoreCase(CURRENT_USER_ROLE);
+        // Context (role/ids) is injected by MainControllerArij after login.
+        patientSection.setVisible(false);  patientSection.setManaged(false);
+        doctorSection.setVisible(false);  doctorSection.setManaged(false);
+    }
+
+    public void setContext(boolean isPatient, int patientId, int doctorId) {
+        this.isPatient = isPatient;
+        this.patientId = patientId;
+        this.doctorId = doctorId;
+        refresh();
+    }
+
+    private void refresh() {
         patientSection.setVisible(isPatient);  patientSection.setManaged(isPatient);
         doctorSection.setVisible(!isPatient);  doctorSection.setManaged(!isPatient);
-        if (isPatient) loadPatientData(); else loadDoctorData();
+        if (isPatient) {
+            loadPatientData(patientId);
+        } else {
+            loadDoctorData(doctorId);
+        }
     }
 
     // ── Patient dashboard ─────────────────────────────────────────────────
 
-    private void loadPatientData() {
-        int uid = CURRENT_USER_ID;
+    private void loadPatientData(int patientId) {
+        int uid = patientId;
 
         int total     = sumStatuses(uid);
         int confirmed = consultationService.countByStatus("CONFIRMEE", uid);
@@ -90,8 +107,8 @@ public class DashboardControllerArij {
 
     // ── Doctor dashboard ──────────────────────────────────────────────────
 
-    private void loadDoctorData() {
-        int uid = CURRENT_USER_ID;
+    private void loadDoctorData(int doctorId) {
+        int uid = doctorId;
 
         int total     = sumStatuses(uid);
         int confirmed = consultationService.countByStatus("CONFIRMEE",  uid);

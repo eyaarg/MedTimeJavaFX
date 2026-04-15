@@ -5,18 +5,23 @@ import esprit.fx.entities.OrdonnanceArij;
 import esprit.fx.services.ServiceFactureArij;
 import esprit.fx.services.ServiceOrdonnanceArij;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class OrdonnanceFormControllerArij {
-
-    private static final int CURRENT_DOCTOR_ID = 1; // à remplacer par session
 
     @FXML private TextArea contentArea;
     @FXML private TextField diagnosisField;
@@ -36,13 +41,15 @@ public class OrdonnanceFormControllerArij {
     private OrdonnanceArij ordonnance;
     private int consultationId;
     private int patientId;
+    private int doctorId;
 
     @FXML private void initialize() { addMedicationRow(); }
 
-    /** Appelé par OrdonnanceListController avant d'afficher le formulaire */
-    public void setContext(int consultationId, int patientId) {
+    /** Appelé par les vues docteur avant d'afficher le formulaire */
+    public void setContext(int consultationId, int patientId, int doctorId) {
         this.consultationId = consultationId;
         this.patientId = patientId;
+        this.doctorId = doctorId;
     }
 
     public void setOrdonnance(OrdonnanceArij ordonnance) {
@@ -76,6 +83,11 @@ public class OrdonnanceFormControllerArij {
     @FXML
     private void handleSave() {
         hideErrors();
+
+        if (doctorId <= 0) {
+            new Alert(Alert.AlertType.ERROR, "Accès réservé au médecin.").showAndWait();
+            return;
+        }
         boolean valid = true;
 
         if (contentArea.getText() == null || contentArea.getText().trim().length() < 10) {
@@ -111,7 +123,7 @@ public class OrdonnanceFormControllerArij {
         ordonnance.setDiagnosis(diagnosisField.getText().trim());
         ordonnance.setDateValidite(validite.atStartOfDay());
         ordonnance.setInstructions(instructionsArea.getText());
-        ordonnance.setDoctorId(CURRENT_DOCTOR_ID);
+        ordonnance.setDoctorId(doctorId);
         ordonnance.setConsultationId(consultationId);
 
         if (isNew) {
@@ -126,10 +138,10 @@ public class OrdonnanceFormControllerArij {
         } else {
             ordonnanceService.updateOrdonnance(ordonnance, lignes);
         }
-        close();
+        goBackToListOrClose();
     }
 
-    @FXML private void handleCancel() { close(); }
+    @FXML private void handleCancel() { goBackToListOrClose(); }
 
     private List<LigneOrdonnanceArij> collectMedications() {
         List<LigneOrdonnanceArij> list = new ArrayList<>();
@@ -158,5 +170,44 @@ public class OrdonnanceFormControllerArij {
         prixError.setVisible(false);       prixError.setManaged(false);
     }
 
-    private void close() { ((Stage) contentArea.getScene().getWindow()).close(); }
+    private void goBackToListOrClose() {
+        if (tryNavigateMainContent("/fxml/OrdonnanceListArij.fxml")) {
+            return;
+        }
+        closeWindow();
+    }
+
+    private boolean tryNavigateMainContent(String fxmlPath) {
+        try {
+            Parent sceneRoot = contentArea.getScene() != null ? contentArea.getScene().getRoot() : null;
+            if (!(sceneRoot instanceof BorderPane bp)) {
+                return false;
+            }
+            Node center = bp.getCenter();
+            if (!(center instanceof StackPane contentAreaStack)) {
+                return false;
+            }
+
+            FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(getClass().getResource(fxmlPath)));
+            Node view = loader.load();
+            Object ctrl = loader.getController();
+            if (ctrl instanceof OrdonnanceListControllerArij c) {
+                c.setContext(true, 0, doctorId);
+            }
+
+            contentAreaStack.getChildren().setAll(view);
+            return true;
+        } catch (IOException | NullPointerException e) {
+            return false;
+        }
+    }
+
+    private void closeWindow() {
+        Stage stage = contentArea != null && contentArea.getScene() != null
+                ? (Stage) contentArea.getScene().getWindow()
+                : null;
+        if (stage != null) {
+            stage.close();
+        }
+    }
 }

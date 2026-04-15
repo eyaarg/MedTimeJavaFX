@@ -47,6 +47,9 @@
                 <Button fx:id="btnNotifications" text="  Notifications"
                         styleClass="nav-btn"
                         onAction="#showNotifications" maxWidth="Infinity"/>
+                <Button fx:id="btnUsers" text="  Users"
+                        styleClass="nav-btn"
+                        onAction="#showUsers" maxWidth="Infinity"/>
             </VBox>
 
             <Separator styleClass="sidebar-sep">

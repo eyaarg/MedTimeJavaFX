@@ -42,6 +42,8 @@
 
                     <Button fx:id="signInButton" maxWidth="Infinity" onAction="#handleLogin" style="-fx-background-color: #197bff; -fx-text-fill: white;                                    -fx-font-weight: bold; -fx-background-radius: 25;                                    -fx-padding: 10 60; -fx-cursor: hand;" text="Sign In" />
 
+                    <Button maxWidth="Infinity" onAction="#openRegisterPage" style="-fx-background-color: transparent; -fx-text-fill: #197bff;                                    -fx-font-weight: bold; -fx-border-color: #197bff;                                    -fx-border-radius: 25; -fx-background-radius: 25;                                    -fx-padding: 10 60; -fx-cursor: hand;" text="Create Account" />
+
                     <Separator style="-fx-padding: 10;" />
 
                     <VBox alignment="CENTER" spacing="8">

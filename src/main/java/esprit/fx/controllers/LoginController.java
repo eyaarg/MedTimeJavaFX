@@ -1,7 +1,9 @@
 package esprit.fx.controllers;
 
+import esprit.fx.entities.Role;
 import esprit.fx.entities.User;
 import esprit.fx.services.ServiceUser;
+import esprit.fx.utils.UserSession;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -13,6 +15,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
 public class LoginController {
@@ -47,6 +50,8 @@ public class LoginController {
             User user = serviceUser.login(username, password);
 
             if (user != null) {
+                UserSession.setCurrentUser(user);
+                UserSession.setCurrentRole(extractPrimaryRole(user));
                 openMainView();
             } else {
                 showAlert("Connexion échouée", "Identifiant ou mot de passe incorrect.");
@@ -60,16 +65,22 @@ public class LoginController {
 
     @FXML
     private void loginAsPatient() {
+        UserSession.setCurrentUser(null);
+        UserSession.setCurrentRole("PATIENT");
         openMainView();
     }
 
     @FXML
     private void loginAsDoctor() {
+        UserSession.setCurrentUser(null);
+        UserSession.setCurrentRole("DOCTOR");
         openMainView();
     }
 
     @FXML
     private void loginAsAdmin() {
+        UserSession.setCurrentUser(null);
+        UserSession.setCurrentRole("ADMIN");
         openMainView();
     }
 
@@ -85,6 +96,33 @@ public class LoginController {
             System.err.println("Erreur ouverture MainView: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    private void openRegisterPage() {
+        try {
+            Parent root = FXMLLoader.load(Objects.requireNonNull(
+                    LoginController.class.getResource("/Register.fxml")));
+            Stage stage = (Stage) signInButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("MedTimeFX — Register");
+            stage.setMaximized(false);
+            stage.centerOnScreen();
+        } catch (IOException e) {
+            System.err.println("Erreur ouverture Register: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private String extractPrimaryRole(User user) {
+        if (user == null) {
+            return "PATIENT";
+        }
+        List<Role> roles = user.getRoles();
+        if (roles == null || roles.isEmpty() || roles.get(0) == null || roles.get(0).getName() == null) {
+            return "PATIENT";
+        }
+        return roles.get(0).getName().toUpperCase();
     }
 
     private void showAlert(String title, String message) {

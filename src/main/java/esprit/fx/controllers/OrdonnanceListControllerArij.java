@@ -258,7 +258,7 @@ public class OrdonnanceListControllerArij {
                 List<LigneOrdonnanceArij> lignes = ordonnanceService.getLignesByOrdonnanceId(o.getId());
                 PdfExporterArij.exportOrdonnance(o, lignes,
                         System.getProperty("user.home") + "/ordonnance-" + o.getId() + ".pdf");
-                showFeedback("✅ Ordonnance exportée dans votre dossier.");
+                showInfoModal("✅ Ordonnance exportée dans votre dossier.");
             });
             Button btnPdfFac = iconBtn("🧾", "#f0fdf4", "#166534", "#bbf7d0", "Télécharger facture PDF");
             btnPdfFac.setOnAction(e -> {
@@ -266,9 +266,9 @@ public class OrdonnanceListControllerArij {
                 if (facture != null) {
                     PdfExporterArij.exportFacture(facture,
                             System.getProperty("user.home") + "/facture-" + facture.getId() + ".pdf");
-                    showFeedback("✅ Facture exportée dans votre dossier.");
+                    showInfoModal("✅ Facture exportée dans votre dossier.");
                 } else {
-                    showFeedback("⚠ Aucune facture associée.");
+                    showInfoModal("⚠ Aucune facture associée.");
                 }
             });
             box.getChildren().addAll(btnPdfOrd, btnPdfFac);

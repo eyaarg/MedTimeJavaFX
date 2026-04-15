@@ -11,7 +11,7 @@ public class LauncherForum extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/fxml/ListeArticles.fxml"));
+                getClass().getResource("/fxml/ListerArticles.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);
         stage.setTitle("Forum Médical");

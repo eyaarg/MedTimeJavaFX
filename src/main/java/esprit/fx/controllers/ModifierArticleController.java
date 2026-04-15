@@ -6,13 +6,16 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import esprit.fx.entities.Article;
-import esprit.fx.entities.Categorie;
 import esprit.fx.services.ArticleService;
-import esprit.fx.services.CategorieService;
+import esprit.fx.utils.MyDB;
 
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class ModifierArticleController implements Initializable {
@@ -24,7 +27,7 @@ public class ModifierArticleController implements Initializable {
     private TextArea txtContenu;
 
     @FXML
-    private ComboBox<Categorie> cbCategorie;
+    private ComboBox<String> cbCategorie;
 
     @FXML
     private TextField txtTags;
@@ -42,67 +45,57 @@ public class ModifierArticleController implements Initializable {
     private Button btnAnnuler;
 
     private ArticleService articleService;
-    private CategorieService categorieService;
     private Article articleAModifier;
+    private Map<String, Integer> specialiteMap;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         articleService = new ArticleService();
-        categorieService = new CategorieService();
+        specialiteMap = new HashMap<>();
 
-        // Charger les statuts
         cbStatut.setItems(FXCollections.observableArrayList("publié", "brouillon"));
 
-        // Charger les catégories
-        List<Categorie> categories = null;
-        try {
-            categories = categorieService.getAll();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        cbCategorie.setItems(FXCollections.observableArrayList(categories));
-
-        // Afficher le nom dans ComboBox
-        cbCategorie.setCellFactory(param -> new ListCell<Categorie>() {
-            @Override
-            protected void updateItem(Categorie item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty || item == null ? null : item.getNom());
-            }
-        });
-        cbCategorie.setButtonCell(new ListCell<Categorie>() {
-            @Override
-            protected void updateItem(Categorie item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty || item == null ? null : item.getNom());
-            }
-        });
+        loadSpecialites();
     }
 
-    // Méthode appelée depuis ArticleController pour passer l'article sélectionné
+    private void loadSpecialites() {
+        try {
+            Connection con = MyDB.getInstance().getConnection();
+            String sql = "SELECT id, nom FROM specialite";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String nom = rs.getString("nom");
+                specialiteMap.put(nom, id);
+            }
+
+            cbCategorie.setItems(FXCollections.observableArrayList(specialiteMap.keySet()));
+        } catch (SQLException e) {
+            System.err.println("Erreur chargement spécialités: " + e.getMessage());
+        }
+    }
+
     public void setArticle(Article article) {
         this.articleAModifier = article;
 
-        // Pré-remplir les champs
         txtTitre.setText(article.getTitre());
         txtContenu.setText(article.getContenu());
         txtTags.setText(article.getTags());
         txtImage.setText(article.getImage());
         cbStatut.setValue(article.getStatut());
 
-        // Sélectionner la catégorie
-        if (article.getCategorie() != null) {
-            cbCategorie.getItems().forEach(cat -> {
-                if (cat.getId() == article.getCategorie().getId()) {
-                    cbCategorie.setValue(cat);
-                }
-            });
+        for (String nom : specialiteMap.keySet()) {
+            if (specialiteMap.get(nom) == article.getSpecialiteId()) {
+                cbCategorie.setValue(nom);
+                break;
+            }
         }
     }
 
     @FXML
     public void modifierArticle() throws SQLException {
-        // Validation
         if (txtTitre.getText().isEmpty() || txtContenu.getText().isEmpty()
                 || cbCategorie.getValue() == null || cbStatut.getValue() == null) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -112,13 +105,12 @@ public class ModifierArticleController implements Initializable {
             return;
         }
 
-        // Modifier l'article
         articleAModifier.setTitre(txtTitre.getText());
         articleAModifier.setContenu(txtContenu.getText());
         articleAModifier.setTags(txtTags.getText());
         articleAModifier.setImage(txtImage.getText());
         articleAModifier.setStatut(cbStatut.getValue());
-        articleAModifier.setCategorie(cbCategorie.getValue());
+        articleAModifier.setSpecialiteId(specialiteMap.get(cbCategorie.getValue()));
 
         articleService.modifier(articleAModifier);
 

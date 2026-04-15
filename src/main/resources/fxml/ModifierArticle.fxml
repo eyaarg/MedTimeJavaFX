@@ -6,7 +6,7 @@
 <AnchorPane prefHeight="520.0" prefWidth="700.0"
             xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="esprit.fx.controllers.ArticleController"
+            fx:controller="esprit.fx.controllers.ModifierArticleController"
             style="-fx-background-color: #f5f5f5;">
 
     <children>

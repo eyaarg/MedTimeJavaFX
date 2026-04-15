@@ -13,15 +13,16 @@ public class Article {
     private int nbVues;
     private String tags;
     private String statut;
+    private int specialiteId;
 
-    private Categorie categorie;
     private List<Commentaire> commentaires;
 
-    public Article() {}
+    public Article() {
+    }
 
     public Article(String titre, String contenu, Date datePublication,
                    String image, int nbLikes, int nbVues, String tags,
-                   String statut, Categorie categorie) {
+                   String statut, int specialiteId) {
         this.titre = titre;
         this.contenu = contenu;
         this.datePublication = datePublication;
@@ -30,12 +31,12 @@ public class Article {
         this.nbVues = nbVues;
         this.tags = tags;
         this.statut = statut;
-        this.categorie = categorie;
+        this.specialiteId = specialiteId;
     }
 
     public Article(int id, String titre, String contenu, Date datePublication,
                    String image, int nbLikes, int nbVues, String tags,
-                   String statut, Categorie categorie) {
+                   String statut, int specialiteId) {
         this.id = id;
         this.titre = titre;
         this.contenu = contenu;
@@ -45,7 +46,7 @@ public class Article {
         this.nbVues = nbVues;
         this.tags = tags;
         this.statut = statut;
-        this.categorie = categorie;
+        this.specialiteId = specialiteId;
     }
 
     public int getId() { return id; }
@@ -75,20 +76,14 @@ public class Article {
     public String getStatut() { return statut; }
     public void setStatut(String statut) { this.statut = statut; }
 
-    public Categorie getCategorie() { return categorie; }
-    public void setCategorie(Categorie categorie) { this.categorie = categorie; }
+    public int getSpecialiteId() { return specialiteId; }
+    public void setSpecialiteId(int specialiteId) { this.specialiteId = specialiteId; }
 
     public List<Commentaire> getCommentaires() { return commentaires; }
     public void setCommentaires(List<Commentaire> commentaires) { this.commentaires = commentaires; }
 
     @Override
     public String toString() {
-        return "Article{" +
-                "id=" + id +
-                ", titre='" + titre + '\'' +
-                ", statut='" + statut + '\'' +
-                ", datePublication=" + datePublication +
-                ", tags='" + tags + '\'' +
-                '}';
+        return titre;
     }
 }

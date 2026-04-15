@@ -32,42 +32,56 @@ public class AjouterCommentaireController implements Initializable {
 
     private CommentaireService commentaireService;
     private ArticleService articleService;
+    private Article articleSelectionne;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         commentaireService = new CommentaireService();
         articleService = new ArticleService();
 
-        // Charger les articles dans le ComboBox
-        List<Article> articles = null;
+        loadArticles();
+    }
+
+    private void loadArticles() {
         try {
-            articles = articleService.getAll();
+            List<Article> articles = articleService.getAll();
+            cbArticle.setItems(FXCollections.observableArrayList(articles));
+
+            cbArticle.setCellFactory(param -> new ListCell<Article>() {
+                @Override
+                protected void updateItem(Article item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty || item == null ? null : item.getTitre());
+                }
+            });
+            cbArticle.setButtonCell(new ListCell<Article>() {
+                @Override
+                protected void updateItem(Article item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty || item == null ? null : item.getTitre());
+                }
+            });
+
+            if (articleSelectionne != null) {
+                cbArticle.setValue(articleSelectionne);
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        cbArticle.setItems(FXCollections.observableArrayList(articles));
+    }
 
-        // Afficher le titre de l'article dans le ComboBox
-        cbArticle.setCellFactory(param -> new ListCell<Article>() {
-            @Override
-            protected void updateItem(Article item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty || item == null ? null : item.getTitre());
-            }
-        });
-        cbArticle.setButtonCell(new ListCell<Article>() {
-            @Override
-            protected void updateItem(Article item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty || item == null ? null : item.getTitre());
-            }
-        });
+    public void setArticle(Article article) {
+        this.articleSelectionne = article;
+        if (cbArticle != null) {
+            cbArticle.setValue(article);
+        }
     }
 
     @FXML
     public void ajouterCommentaire() throws SQLException {
-        // Validation
-        if (txtContenu.getText().isEmpty() || cbArticle.getValue() == null) {
+        Article selectedArticle = cbArticle.getValue();
+        
+        if (txtContenu.getText().isEmpty() || selectedArticle == null) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Attention");
             alert.setContentText("Veuillez remplir tous les champs !");
@@ -75,23 +89,19 @@ public class AjouterCommentaireController implements Initializable {
             return;
         }
 
-        // Créer le commentaire
         Commentaire commentaire = new Commentaire();
         commentaire.setContenu(txtContenu.getText());
         commentaire.setDateCommentaire(new Date());
         commentaire.setNbLikes(0);
-        commentaire.setArticle(cbArticle.getValue());
+        commentaire.setArticle(selectedArticle);
 
-        // Ajouter en BD
         commentaireService.ajouter(commentaire);
 
-        // Message succès
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Succès");
         alert.setContentText("Commentaire ajouté avec succès !");
         alert.show();
 
-        // Fermer la fenêtre
         Stage stage = (Stage) btnAjouter.getScene().getWindow();
         stage.close();
     }

@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<AnchorPane prefHeight="500.0" prefWidth="700.0"
+<AnchorPane prefHeight="600.0" prefWidth="800.0"
             xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="esprit.fx.controllers.ArticleController"
@@ -12,58 +12,32 @@
 
     <children>
 
-        <!-- Carte principale -->
-        <Pane layoutX="30" layoutY="30" prefWidth="640" prefHeight="440"
-              style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2),10,0,0,2);">
-
+        <!-- Header -->
+        <Pane layoutX="30" layoutY="20" prefWidth="740" prefHeight="60"
+              style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2),5,0,0,2);">
             <children>
-
-                <!-- Header -->
                 <Label text="Forum Médical"
-                       layoutX="20" layoutY="15"
+                       layoutX="20" layoutY="18"
                        style="-fx-font-size: 20px; -fx-font-weight: bold;" />
 
                 <Button fx:id="btnAjouter"
                         text="+ Ajouter"
-                        layoutX="500" layoutY="12"
+                        layoutX="620" layoutY="15"
                         prefWidth="100"
                         onAction="#ajouterArticle"
                         style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 5;" />
-
-                <Separator layoutX="20" layoutY="45" prefWidth="600"/>
-
-                <!-- Table -->
-                <TableView fx:id="tableArticles"
-                           layoutX="20" layoutY="60"
-                           prefWidth="600" prefHeight="280">
-
-                    <columns>
-                        <TableColumn fx:id="colTitre" text="Titre" prefWidth="150"/>
-                        <TableColumn fx:id="colCategorie" text="Catégorie" prefWidth="120"/>
-                        <TableColumn fx:id="colDate" text="Date" prefWidth="120"/>
-                        <TableColumn fx:id="colLikes" text="Likes" prefWidth="80"/>
-                        <TableColumn fx:id="colStatut" text="Statut" prefWidth="120"/>
-                    </columns>
-
-                </TableView>
-
-                <!-- Boutons bas -->
-                <Button fx:id="btnModifier"
-                        text="Modifier"
-                        layoutX="350" layoutY="360"
-                        prefWidth="100"
-                        onAction="#modifierArticle"
-                        style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 5;" />
-
-                <Button fx:id="btnSupprimer"
-                        text="Supprimer"
-                        layoutX="470" layoutY="360"
-                        prefWidth="120"
-                        onAction="#supprimerArticle"
-                        style="-fx-background-color: #f44336; -fx-text-fill: white; -fx-background-radius: 5;" />
-
             </children>
         </Pane>
+
+        <!-- ScrollPane avec FlowPane pour les cartes -->
+        <ScrollPane layoutX="30" layoutY="100" prefWidth="740" prefHeight="450"
+                    style="-fx-background: transparent;">
+            <FlowPane fx:id="flowArticles" hgap="20" vgap="20" prefWrapLength="720">
+                <padding>
+                    <Insets top="10" left="10" bottom="10" right="10"/>
+                </padding>
+            </FlowPane>
+        </ScrollPane>
 
     </children>
 </AnchorPane>

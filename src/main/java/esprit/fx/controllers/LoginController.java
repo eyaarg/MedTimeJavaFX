@@ -2,6 +2,7 @@ package esprit.fx.controllers;
 
 import esprit.fx.entities.User;
 import esprit.fx.services.ServiceUser;
+import esprit.fx.utils.Session;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -26,11 +27,10 @@ public class LoginController {
             String email = emailField.getText();
             String password = passwordField.getText();
 
-            // 🔐 appel du service login
             User user = serviceUser.login(email, password);
 
             if (user != null) {
-                // ✅ LOGIN OK → aller vers Home
+                Session.setCurrentUser(user);
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
                 Stage stage = (Stage) emailField.getScene().getWindow();
                 stage.setScene(new Scene(loader.load()));

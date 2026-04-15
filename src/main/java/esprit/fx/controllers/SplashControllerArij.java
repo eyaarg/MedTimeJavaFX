@@ -16,6 +16,7 @@ import java.util.Objects;
 
 public class SplashControllerArij {
 
+    @FXML private javafx.scene.layout.StackPane rootPane;
     @FXML private VBox      splashRoot;
     @FXML private ProgressBar progressBar;
     @FXML private Label     countdownLabel;
@@ -57,7 +58,7 @@ public class SplashControllerArij {
         FadeTransition fadeOut = new FadeTransition(Duration.millis(600), splashRoot);
         fadeOut.setFromValue(1);
         fadeOut.setToValue(0);
-        fadeOut.setOnFinished(e -> openLogin());
+        fadeOut.setOnFinished(e -> javafx.application.Platform.runLater(this::openLogin));
 
         // ── Séquence complète ─────────────────────────────────────────────
         SequentialTransition sequence = new SequentialTransition(
@@ -72,7 +73,7 @@ public class SplashControllerArij {
         try {
             Parent root = FXMLLoader.load(
                     Objects.requireNonNull(getClass().getResource("/Login.fxml")));
-            Stage stage = (Stage) splashRoot.getScene().getWindow();
+            Stage stage = (Stage) rootPane.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("MedTime – Login");
             stage.setWidth(950);

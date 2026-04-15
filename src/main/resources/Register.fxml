@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.collections.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox alignment="TOP_CENTER" prefHeight="700.0" prefWidth="500.0" spacing="5.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="esprit.fx.controllers.RegisterController">
+
+    <padding>
+        <Insets bottom="40.0" left="40.0" right="40.0" top="30.0" />
+    </padding>
+
+    <!-- Logo + Navigation -->
+    <VBox spacing="20.0" VBox.vgrow="NEVER">
+        <Text fill="#2c3e50" text="MedTime">
+            <font>
+                <Font name="System Bold" size="24.0" />
+            </font>
+        </Text>
+
+        <HBox spacing="20.0" />
+    </VBox>
+
+    <!-- Formulaire -->
+    <VBox alignment="CENTER" spacing="15.0" VBox.vgrow="ALWAYS">
+        <padding>
+            <Insets top="20.0" />
+        </padding>
+
+        <Text fill="#2c3e50" text="Create Account" textAlignment="CENTER">
+            <font>
+                <Font name="System Bold" size="26.0" />
+            </font>
+        </Text>
+
+        <Text fill="#7f8c8d" text="Join MedTime for better healthcare management" textAlignment="CENTER">
+            <font>
+                <Font size="13.0" />
+            </font>
+        </Text>
+
+
+        <!-- Username -->
+        <Text fill="#333333" style="-fx-font-weight: bold;" text="Username" />
+        <TextField fx:id="usernameField" prefHeight="38.0" promptText="Username" style="-fx-background-color: #edf2ff;" />
+
+        <!-- Email -->
+        <Text fill="#333333" style="-fx-font-weight: bold;" text="Email" />
+        <TextField fx:id="emailAddressField" prefHeight="38.0" promptText="Email address" style="-fx-background-color: #edf2ff;" />
+
+        <!-- Phone -->
+        <Text fill="#333333" style="-fx-font-weight: bold;" text="Phone" />
+        <TextField fx:id="phoneField" prefHeight="38.0" promptText="e.g.+21612345678" style="-fx-background-color: #edf2ff;" />
+
+
+        <!-- Password -->
+        <Text fill="#333333" style="-fx-font-weight: bold;" text="Password" />
+        <PasswordField fx:id="passwordField" prefHeight="38.0" prefWidth="420.0" promptText="Password" style="-fx-background-color: #edf2ff;" />
+
+        <!-- Iam a... -->
+        <Text fill="#333333" style="-fx-font-weight: bold;" text="Iam a..." />
+        <ComboBox fx:id="roleComboBox" prefHeight="38.0" promptText="Patient">
+            <items>
+                <FXCollections fx:factory="observableArrayList">
+                    <String fx:value="Patient" />
+                    <String fx:value="Doctor" />
+                </FXCollections>
+            </items>
+        </ComboBox>
+
+        <!-- Region -->
+        <Text fill="#333333" style="-fx-font-weight: bold;" text="Region" />
+        <ComboBox fx:id="regionComboBox" prefHeight="38.0" promptText="Select a region">
+            <items>
+                <FXCollections fx:factory="observableArrayList">
+                    <String fx:value="Tunis" />
+                    <String fx:value="Ariana" />
+                    <String fx:value="Sousse" />
+                    <String fx:value="Sfax" />
+                    <String fx:value="Nabeul" />
+                </FXCollections>
+            </items>
+        </ComboBox>
+
+        <!-- Terms -->
+        <HBox alignment="CENTER" spacing="5.0">
+            <CheckBox fx:id="termsCheckBox" />
+            <Text text="agree to the" />
+            <Text fill="#3498db" text="Terms and Conditions" underline="true" />
+        </HBox>
+
+        <!-- Bouton Create Account -->
+        <Button fx:id="createAccountBtn" maxWidth="400.0" onAction="#handleCreateAccount" prefHeight="42.0" style="-fx-background-color: #197bff; -fx-background-radius: 5;" text="Create Account" textFill="white">
+            <font>
+                <Font name="System Bold" size="13.0" />
+            </font>
+        </Button>
+
+        <!-- Lien Sign In -->
+        <HBox alignment="CENTER" spacing="5.0">
+            <Text fill="#555555" text="Already have an account?" />
+            <Text fx:id="signInLink" fill="#3498db" onMouseClicked="#handleSignIn" text="Sign In" underline="true" />
+        </HBox>
+    </VBox>
+</VBox>

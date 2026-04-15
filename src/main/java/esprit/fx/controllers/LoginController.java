@@ -1,14 +1,22 @@
 package esprit.fx.controllers;
 
+import esprit.fx.entities.Role;
 import esprit.fx.entities.User;
 import esprit.fx.services.ServiceUser;
+import esprit.fx.utils.UserSession;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
 
 public class LoginController {
 
@@ -18,122 +26,109 @@ public class LoginController {
     @FXML
     private PasswordField passwordField;
 
-    private ServiceUser serviceUser = new ServiceUser();
+    @FXML
+    private Button signInButton;
+
+    private final ServiceUser serviceUser = new ServiceUser();
+
+    @FXML
+    private void initialize() {
+        signInButton.setOnAction(e -> handleLogin());
+    }
 
     @FXML
     private void handleLogin() {
-        try {
-            String email    = usernameField.getText().trim();
-            String password = passwordField.getText();
+        String username = usernameField.getText().trim();
+        String password = passwordField.getText().trim();
 
-            User user = serviceUser.login(email, password);
+        if (username.isEmpty() || password.isEmpty()) {
+            showAlert("Champs requis", "Veuillez saisir votre email et mot de passe.");
+            return;
+        }
+
+        try {
+            User user = serviceUser.login(username, password);
 
             if (user != null) {
-                // Résoudre le rôle
-                String role = "PATIENT";
-                if (user.getRoles() != null && !user.getRoles().isEmpty()) {
-                    role = user.getRoles().get(0).getName().toUpperCase();
-                }
-
-                // Résoudre patientId / doctorId
-                int patientId = 0;
-                int doctorId  = 0;
-                java.sql.Connection conn = esprit.fx.utils.MyDB.getInstance().getConnection();
-
-                if (role.contains("DOCTOR")) {
-                    java.sql.PreparedStatement ps = conn.prepareStatement(
-                            "SELECT id FROM doctors WHERE user_id = ?");
-                    ps.setInt(1, user.getId());
-                    java.sql.ResultSet rs = ps.executeQuery();
-                    if (rs.next()) doctorId = rs.getInt("id");
-                    role = "DOCTOR";
-                } else {
-                    java.sql.PreparedStatement ps = conn.prepareStatement(
-                            "SELECT id FROM patients WHERE user_id = ?");
-                    ps.setInt(1, user.getId());
-                    java.sql.ResultSet rs = ps.executeQuery();
-                    if (rs.next()) patientId = rs.getInt("id");
-                    role = "PATIENT";
-                }
-
-                // Charger MainViewArij
-                FXMLLoader loader = new FXMLLoader(
-                        getClass().getResource("/fxml/MainViewArij.fxml"));
-                Stage stage = (Stage) usernameField.getScene().getWindow();
-                stage.setScene(new Scene(loader.load()));
-                stage.setTitle("MedTime");
-                stage.setMaximized(true);
-
-                // Passer le contexte
-                MainControllerArij mainCtrl = loader.getController();
-                mainCtrl.setUserContext(user.getId(), patientId, doctorId, role);
-
+                UserSession.setCurrentUser(user);
+                UserSession.setCurrentRole(extractPrimaryRole(user));
+                openMainView();
             } else {
-                showAlert("Erreur", "Email ou mot de passe incorrect");
+                showAlert("Connexion échouée", "Identifiant ou mot de passe incorrect.");
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("Erreur", e.getMessage());
+            System.err.println("Login error: " + e.getMessage());
+            showAlert("Erreur", "Erreur de connexion : " + e.getMessage());
         }
     }
 
     @FXML
-    private void goToRegister() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Register.fxml"));
-            Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(new Scene(loader.load()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private void loginAsPatient() {
+        UserSession.setCurrentUser(null);
+        UserSession.setCurrentRole("PATIENT");
+        openMainView();
     }
 
     @FXML
-    private void devLoginPatient() { devLogin("PATIENT"); }
+    private void loginAsDoctor() {
+        UserSession.setCurrentUser(null);
+        UserSession.setCurrentRole("DOCTOR");
+        openMainView();
+    }
 
     @FXML
-    private void devLoginDoctor() { devLogin("DOCTOR"); }
+    private void loginAsAdmin() {
+        UserSession.setCurrentUser(null);
+        UserSession.setCurrentRole("ADMIN");
+        openMainView();
+    }
 
-    @FXML
-    private void devLoginAdmin() { devLogin("ADMIN"); }
-
-    private void devLogin(String role) {
+    private void openMainView() {
         try {
-            java.sql.Connection conn = esprit.fx.utils.MyDB.getInstance().getConnection();
-            int userId = 0, patientId = 0, doctorId = 0;
-
-            if ("DOCTOR".equals(role)) {
-                java.sql.PreparedStatement ps = conn.prepareStatement(
-                        "SELECT d.id as doctor_id, d.user_id FROM doctors d LIMIT 1");
-                java.sql.ResultSet rs = ps.executeQuery();
-                if (rs.next()) { doctorId = rs.getInt("doctor_id"); userId = rs.getInt("user_id"); }
-            } else if ("PATIENT".equals(role)) {
-                java.sql.PreparedStatement ps = conn.prepareStatement(
-                        "SELECT p.id as patient_id, p.user_id FROM patients p LIMIT 1");
-                java.sql.ResultSet rs = ps.executeQuery();
-                if (rs.next()) { patientId = rs.getInt("patient_id"); userId = rs.getInt("user_id"); }
-            }
-
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/fxml/MainViewArij.fxml"));
-            Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(new Scene(loader.load()));
-            stage.setTitle("MedTime");
+            Parent root = FXMLLoader.load(Objects.requireNonNull(
+                    LoginController.class.getResource("/fxml/MainViewArij.fxml")));
+            Stage stage = (Stage) signInButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("MedTimeFX");
             stage.setMaximized(true);
-
-            MainControllerArij mainCtrl = loader.getController();
-            mainCtrl.setUserContext(userId, patientId, doctorId, role);
-
-        } catch (Exception e) {
+        } catch (IOException e) {
+            System.err.println("Erreur ouverture MainView: " + e.getMessage());
             e.printStackTrace();
-            showAlert("Erreur dev", e.getMessage());
         }
+    }
+
+    @FXML
+    private void openRegisterPage() {
+        try {
+            Parent root = FXMLLoader.load(Objects.requireNonNull(
+                    LoginController.class.getResource("/Register.fxml")));
+            Stage stage = (Stage) signInButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("MedTimeFX — Register");
+            stage.setMaximized(false);
+            stage.centerOnScreen();
+        } catch (IOException e) {
+            System.err.println("Erreur ouverture Register: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private String extractPrimaryRole(User user) {
+        if (user == null) {
+            return "PATIENT";
+        }
+        List<Role> roles = user.getRoles();
+        if (roles == null || roles.isEmpty() || roles.get(0) == null || roles.get(0).getName() == null) {
+            return "PATIENT";
+        }
+        return roles.get(0).getName().toUpperCase();
     }
 
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
+        alert.setHeaderText(null);
         alert.setContentText(message);
         alert.show();
     }

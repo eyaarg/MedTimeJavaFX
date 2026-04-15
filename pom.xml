@@ -11,8 +11,10 @@
 
     <properties>
         <maven.compiler.release>23</maven.compiler.release>
+        <maven.compiler.source>23</maven.compiler.source>
+        <maven.compiler.target>23</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <javafx.version>21.0.2</javafx.version>
+        <javafx.version>23.0.1</javafx.version>
     </properties>
 
     <dependencies>
@@ -40,24 +42,30 @@
             <artifactId>pdfbox</artifactId>
             <version>2.0.30</version>
         </dependency>
-
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.1</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
 
     <build>
         <plugins>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
                     <release>23</release>
+                    <source>23</source>
+                    <target>23</target>
                 </configuration>
             </plugin>
 

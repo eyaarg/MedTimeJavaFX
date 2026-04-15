@@ -1,53 +1,143 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="esprit.fx.controllers.ConsultationFormControllerArij"
       spacing="0" stylesheets="@/css/arij-styles.css"
-      style="-fx-background-color: #f0f4f8;" prefWidth="480">
+      style="-fx-background-color:#f0f4f8;">
 
-    <VBox styleClass="modal-header">
-        <padding><Insets top="24" right="28" bottom="20" left="28"/></padding>
-        <Label text="Réserver une Consultation" styleClass="modal-title"/>
-        <Label text="Remplissez les informations pour planifier votre rendez-vous" styleClass="modal-subtitle"/>
-    </VBox>
-
-    <VBox spacing="18" style="-fx-background-color: white;">
-        <padding><Insets top="24" right="28" bottom="28" left="28"/></padding>
-
-        <VBox spacing="6">
-            <Label text="Date de consultation" styleClass="field-label"/>
-            <DatePicker fx:id="consultationDatePicker" maxWidth="Infinity" styleClass="form-input"/>
-            <Label fx:id="dateErrorLabel" text="La date est requise et ne peut pas être dans le passé"
-                   styleClass="field-error" visible="false" managed="false"/>
-        </VBox>
-
-        <VBox spacing="6">
-            <Label text="Sélectionner un médecin" styleClass="field-label"/>
-            <ComboBox fx:id="doctorComboBox" promptText="Choisir un médecin…"
-                      maxWidth="Infinity" styleClass="form-input"/>
-            <Label fx:id="doctorErrorLabel" text="Veuillez sélectionner un médecin."
-                   styleClass="field-error" visible="false" managed="false"/>
-        </VBox>
-
-        <!-- Erreur d'unicité -->
-        <Label fx:id="uniqueErrorLabel"
-               text="⚠  Une consultation avec ce médecin existe déjà à cette date."
-               styleClass="field-error" visible="false" managed="false"/>
-
-        <Label fx:id="errorLabel" text="Veuillez corriger les erreurs ci-dessus."
-               styleClass="field-error" visible="false" managed="false"/>
-
-        <HBox spacing="12" alignment="CENTER_RIGHT">
-            <padding><Insets top="8"/></padding>
-            <Button text="Annuler" styleClass="btn-secondary" onAction="#handleCancel"/>
-            <Button text="Enregistrer le rendez-vous" styleClass="btn-primary" onAction="#handleSave"/>
+    <!-- Hero header (screenshot-like) -->
+    <VBox styleClass="hero-header">
+        <padding><Insets top="26" right="32" bottom="22" left="32"/></padding>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="+" styleClass="hero-icon"/>
+            <Label text="Create New Consultation" styleClass="hero-title"/>
         </HBox>
+        <Label text="Use AI scheduling assistance to find the best available slot." styleClass="hero-subtitle"/>
     </VBox>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll">
+        <content>
+            <VBox spacing="18">
+                <padding><Insets top="22" right="32" bottom="28" left="32"/></padding>
+
+                <HBox spacing="18">
+                    <!-- Left: form card -->
+                    <VBox spacing="16" styleClass="card-static" HBox.hgrow="ALWAYS">
+                        <GridPane hgap="18" vgap="12">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+                            </columnConstraints>
+
+                            <VBox spacing="6" GridPane.rowIndex="0" GridPane.columnIndex="0">
+                                <Label text="Doctor" styleClass="field-label"/>
+                                <ComboBox fx:id="doctorComboBox" promptText="Select doctor"
+                                          maxWidth="Infinity" styleClass="form-input"/>
+                                <Label fx:id="doctorErrorLabel" text="Please select a doctor."
+                                       styleClass="field-error" visible="false" managed="false"/>
+                            </VBox>
+
+                            <VBox spacing="6" GridPane.rowIndex="0" GridPane.columnIndex="1">
+                                <Label text="Consultation Type" styleClass="field-label"/>
+                                <ComboBox fx:id="typeComboBox" maxWidth="Infinity" styleClass="form-input" disable="true"/>
+                            </VBox>
+
+                            <VBox spacing="6" GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.columnSpan="2">
+                                <Label text="Date and Time" styleClass="field-label"/>
+                                <HBox spacing="10" alignment="CENTER_LEFT">
+                                    <DatePicker fx:id="consultationDatePicker" styleClass="form-input" HBox.hgrow="ALWAYS"/>
+                                    <ComboBox fx:id="timeComboBox" promptText="HH:mm" prefWidth="110" styleClass="form-input"/>
+                                    <Button fx:id="checkButton" text="🔍  Check" styleClass="btn-outline" onAction="#handleCheckAvailability"/>
+                                </HBox>
+                                <Label fx:id="dateErrorLabel" text="Please select a valid date/time."
+                                       styleClass="field-error" visible="false" managed="false"/>
+                                <Label fx:id="uniqueErrorLabel"
+                                       text="⚠ This doctor is not available at this time (already booked)."
+                                       styleClass="field-error" visible="false" managed="false"/>
+                                <Label fx:id="availabilityLabel" text=""
+                                       styleClass="page-subtitle" visible="false" managed="false"/>
+                            </VBox>
+                        </GridPane>
+
+                        <Separator/>
+
+                        <!-- Attachments (optional) -->
+                        <VBox spacing="12">
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <Label text="📎" style="-fx-font-size: 18px;"/>
+                                <Label text="Attachments" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                            </HBox>
+
+                            <VBox spacing="6">
+                                <Label text="Document Category" styleClass="field-label"/>
+                                <ComboBox fx:id="categoryComboBox" promptText="Select category"
+                                          maxWidth="Infinity" styleClass="form-input"/>
+                            </VBox>
+
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <Button fx:id="chooseFilesButton" text="Select files" styleClass="btn-secondary"
+                                        onAction="#handleChooseFiles"/>
+                                <Label fx:id="selectedFilesLabel" text="No file chosen" styleClass="page-subtitle"/>
+                            </HBox>
+                            <Label text="Allowed: PDF, JPG, PNG, DOC, DOCX (Max 10MB per file)" styleClass="page-subtitle"/>
+                        </VBox>
+                    </VBox>
+
+                    <!-- Right: assistant card -->
+                    <VBox spacing="14" prefWidth="360" styleClass="assistant-card">
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Label text="🧠" style="-fx-font-size: 18px;"/>
+                            <Label text="AI Scheduling Assistant" styleClass="assistant-title"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label text="SMART" styleClass="assistant-badge"/>
+                        </HBox>
+
+                        <VBox spacing="6">
+                            <Label text="Duration (minutes)" styleClass="field-label"/>
+                            <ComboBox fx:id="durationComboBox" styleClass="form-input" maxWidth="Infinity"/>
+                        </VBox>
+
+                        <VBox spacing="6">
+                            <Label text="Reason (AI context)" styleClass="field-label"/>
+                            <TextField fx:id="reasonField" promptText="e.g. headache, follow-up"
+                                       maxWidth="Infinity" styleClass="form-input"/>
+                        </VBox>
+
+                        <CheckBox fx:id="urgentCheckBox" text="Urgent priority suggestions"/>
+
+                        <Button fx:id="suggestSlotsButton" text="✨  Suggest Best Slots"
+                                styleClass="btn-secondary" onAction="#handleSuggestSlots" maxWidth="Infinity"/>
+
+                        <VBox spacing="10" styleClass="assistant-empty">
+                            <Label text="Select doctor and date to run availability checks." styleClass="page-subtitle" wrapText="true"/>
+                            <Label fx:id="suggestionsLabel" text="No suggestions yet." styleClass="page-subtitle" wrapText="true"/>
+                        </VBox>
+                    </VBox>
+                </HBox>
+
+                <Label fx:id="errorLabel" text="Please fix the errors above."
+                       styleClass="field-error" visible="false" managed="false"/>
+
+                <HBox spacing="12" alignment="CENTER">
+                    <Button text="Create Consultation" styleClass="btn-primary" onAction="#handleSave"/>
+                    <Button text="Back to list" styleClass="btn-secondary" onAction="#handleCancel"/>
+                </HBox>
+            </VBox>
+        </content>
+    </ScrollPane>
 </VBox>
+

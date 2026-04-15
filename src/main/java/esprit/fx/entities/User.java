@@ -31,10 +31,7 @@ public class User {
         this.email = email;
         this.username = username;
         this.password = password;
-        this.plainPassword = plainPassword;
-        this.requestedRole = requestedRole;
         this.profilePhotoFile = profilePhotoFile;
-        this.createdAt = createdAt;
         this.isActive = isActive;
         this.phoneNumber = phoneNumber;
         this.isVerified = isVerified;
@@ -43,7 +40,6 @@ public class User {
         this.passwordResetToken = passwordResetToken;
         this.passwordResetTokenExpiresAt = passwordResetTokenExpiresAt;
         this.failedAttempts = failedAttempts;
-        this.roles = roles;
     }
 
     public int getId() {

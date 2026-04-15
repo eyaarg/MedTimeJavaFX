@@ -3,11 +3,11 @@ package esprit.fx.controllers;
 import esprit.fx.entities.Produit;
 import esprit.fx.entities.CategorieEnum;
 import esprit.fx.services.ServiceProduit;
+import esprit.fx.utils.MyDB;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -17,7 +17,6 @@ import javafx.stage.Stage;
 
 import java.net.URL;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -46,13 +45,9 @@ public class ListeProduitController implements Initializable {
 
     private void connectToDatabase() {
         try {
-            connection = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/mediplatform",
-                    "root",
-                    ""
-            );
+            connection = MyDB.getInstance().getConnection();
             serviceProduit = new ServiceProduit(connection);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             showAlert("Erreur de connexion: " + e.getMessage());
         }
     }
@@ -108,12 +103,19 @@ public class ListeProduitController implements Initializable {
         HBox buttonsBox = new HBox(10);
         buttonsBox.setAlignment(javafx.geometry.Pos.CENTER);
 
-        Button modifierBtn = new Button("Modifier");
-        modifierBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-size: 11px; -fx-background-radius: 15; -fx-padding: 5 12;");
+        Button detailsBtn = new Button("👁");
+        detailsBtn.setTooltip(new Tooltip("Afficher"));
+        detailsBtn.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 16; -fx-padding: 5 10;");
+        detailsBtn.setOnAction(e -> handleAfficher(p));
+
+        Button modifierBtn = new Button("✏");
+        modifierBtn.setTooltip(new Tooltip("Modifier"));
+        modifierBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 16; -fx-padding: 5 10;");
         modifierBtn.setOnAction(e -> handleModifier(p));
 
-        Button supprimerBtn = new Button("Supprimer");
-        supprimerBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 11px; -fx-background-radius: 15; -fx-padding: 5 12;");
+        Button supprimerBtn = new Button("🗑");
+        supprimerBtn.setTooltip(new Tooltip("Supprimer"));
+        supprimerBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 16; -fx-padding: 5 10;");
         supprimerBtn.setOnAction(e -> {
             try {
                 handleSupprimer(p);
@@ -122,7 +124,7 @@ public class ListeProduitController implements Initializable {
             }
         });
 
-        buttonsBox.getChildren().addAll(modifierBtn, supprimerBtn);
+        buttonsBox.getChildren().addAll(detailsBtn, modifierBtn, supprimerBtn);
 
         // Ajouter tous les éléments à la carte
         card.getChildren().addAll(iconLabel, nomLabel, prixLabel, stockLabel, dispoLabel, buttonsBox);
@@ -171,7 +173,7 @@ public class ListeProduitController implements Initializable {
     @FXML
     private void handleAjouter() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/AjoutProd.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AjoutProd.fxml"));
             Parent root = loader.load();
 
             FormulaireProduitController controller = loader.getController();
@@ -193,7 +195,7 @@ public class ListeProduitController implements Initializable {
 
     private void handleModifier(Produit produit) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/AjoutProd.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AjoutProd.fxml"));
             Parent root = loader.load();
 
             FormulaireProduitController controller = loader.getController();
@@ -212,6 +214,19 @@ public class ListeProduitController implements Initializable {
             e.printStackTrace();
             showAlert("Erreur: " + e.getMessage());
         }
+    }
+
+    private void handleAfficher(Produit produit) {
+        Alert info = new Alert(Alert.AlertType.INFORMATION);
+        info.setTitle("Détails produit");
+        info.setHeaderText(produit.getNom());
+        info.setContentText(
+                "Catégorie: " + (produit.getCategorie() != null ? produit.getCategorie().name() : "N/A") + "\n" +
+                "Prix: " + produit.getPrix() + "\n" +
+                "Stock: " + produit.getStock() + "\n" +
+                "Marque: " + (produit.getMarque() != null ? produit.getMarque() : "-") + "\n" +
+                "Disponible: " + (produit.getDisponible() ? "Oui" : "Non"));
+        info.showAndWait();
     }
 
     private void handleSupprimer(Produit produit) throws SQLException {

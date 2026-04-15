@@ -1,17 +1,17 @@
 package esprit.fx.controllers;
 
-import esprit.fx.controllers.ListeProduitController;
 import esprit.fx.entities.Produit;
 import esprit.fx.entities.CategorieEnum;
 import esprit.fx.services.ServiceProduit;
+import esprit.fx.utils.MyDB;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 import java.net.URL;
+import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.ResourceBundle;
 
 public class FormulaireProduitController implements Initializable {
@@ -76,12 +76,12 @@ public class FormulaireProduitController implements Initializable {
 
     public void setMode(String mode) {
         this.mode = mode;
-        if (mode.equals("ajouter")) {
+        if ("ajouter".equalsIgnoreCase(mode)) {
             lblTitre.setText(" Ajouter un produit");
-            btnValider.setText("Ajouter");
+            btnValider.setText("➕");
         } else {
             lblTitre.setText("✏ Modifier un produit");
-            btnValider.setText("Modifier");
+            btnValider.setText("✏");
         }
     }
 
@@ -123,6 +123,7 @@ public class FormulaireProduitController implements Initializable {
 
     @FXML
     private void handleValider() throws SQLException {
+        ensureServiceProduit();
         if (!validateInputs()) return;
 
         Produit produit = new Produit();
@@ -137,7 +138,7 @@ public class FormulaireProduitController implements Initializable {
         produit.setMarque(txtMarque.getText());
         produit.setDateExpiration(dpDateExpiration.getValue());
 
-        if (mode.equals("ajouter")) {
+        if (!"modifier".equalsIgnoreCase(mode)) {
             try {
                 serviceProduit.ajouter(produit);
             } catch (SQLException e) {
@@ -165,6 +166,16 @@ public class FormulaireProduitController implements Initializable {
     private void closeWindow() {
         Stage stage = (Stage) txtNom.getScene().getWindow();
         stage.close();
+    }
+
+    private void ensureServiceProduit() {
+        if (mode == null || mode.isBlank()) {
+            setMode("ajouter");
+        }
+        if (serviceProduit == null) {
+            Connection conn = MyDB.getInstance().getConnection();
+            serviceProduit = new ServiceProduit(conn);
+        }
     }
 
     private void showAlert(String message) {

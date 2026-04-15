@@ -18,12 +18,13 @@ public class FactureListControllerArij {
 
     @FXML private FlowPane cardsContainer;
     private final ServiceFactureArij service = new ServiceFactureArij();
+    private int patientId = 0; // patients.id (provided by MainControllerArij)
 
-    @FXML private void initialize() { loadFactures(); }
+    @FXML private void initialize() { /* context is set after load */ }
 
     private void loadFactures() {
         cardsContainer.getChildren().clear();
-        List<FactureArij> factures = service.getMyFactures();
+        List<FactureArij> factures = service.getFacturesByPatient(patientId);
         if (factures.isEmpty()) { cardsContainer.getChildren().add(emptyState()); return; }
         for (FactureArij f : factures) cardsContainer.getChildren().add(buildCard(f));
     }
@@ -73,5 +74,10 @@ public class FactureListControllerArij {
         Label msg = new Label("Aucune facture disponible"); msg.setStyle("-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:#64748b;");
         box.getChildren().addAll(icon, msg);
         return box;
+    }
+
+    public void setPatientId(int patientId) {
+        this.patientId = patientId;
+        loadFactures();
     }
 }

@@ -21,7 +21,7 @@
     <HBox spacing="10">
         <TextField fx:id="txtSearch" promptText="🔍 Rechercher un produit..." HBox.hgrow="ALWAYS"
                    style="-fx-padding: 10; -fx-background-radius: 20; -fx-border-radius: 20;"/>
-        <Button text="+ Ajouter" onAction="#handleAjouter"
+        <Button text="➕" onAction="#handleAjouter"
                 style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 8 20;"/>
     </HBox>
 

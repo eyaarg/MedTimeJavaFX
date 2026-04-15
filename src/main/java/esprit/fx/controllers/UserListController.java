@@ -20,10 +20,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class UserListController {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^\\d{8}$");
+    private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).+$");
 
     @FXML private TextField searchField;
     @FXML private Label resultCountLabel;
@@ -219,16 +223,41 @@ public class UserListController {
 
         Node saveButton = dialog.getDialogPane().lookupButton(saveType);
         saveButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
-            if (usernameField.getText().trim().isEmpty() || emailField.getText().trim().isEmpty()) {
-                showError("Validation", "Username et email sont obligatoires.");
+            String username = usernameField.getText().trim();
+            String email = emailField.getText().trim();
+            String phone = phoneField.getText().trim();
+            String password = passwordField.getText().trim();
+
+            if (username.length() < 3) {
+                showError("Validation", "Le username doit contenir au moins 3 caracteres.");
                 event.consume();
                 return;
             }
-            if (existing == null && passwordField.getText().trim().isEmpty()) {
+
+            if (!EMAIL_PATTERN.matcher(email).matches()) {
+                showError("Validation", "Email invalide (format attendu: exemple@domaine.com).");
+                event.consume();
+                return;
+            }
+
+            if (!PHONE_PATTERN.matcher(phone).matches()) {
+                showError("Validation", "Le numero de telephone doit contenir exactement 8 chiffres.");
+                event.consume();
+                return;
+            }
+
+            if (existing == null && password.isEmpty()) {
                 showError("Validation", "Le mot de passe est obligatoire a la creation.");
                 event.consume();
                 return;
             }
+
+            if (!password.isEmpty() && !PASSWORD_PATTERN.matcher(password).matches()) {
+                showError("Validation", "Le mot de passe doit contenir des lettres et des chiffres.");
+                event.consume();
+                return;
+            }
+
             if (roleComboBox.getValue() == null || roleComboBox.getValue().isBlank()) {
                 showError("Validation", "Veuillez selectionner un role.");
                 event.consume();

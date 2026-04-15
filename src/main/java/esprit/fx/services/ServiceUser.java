@@ -7,14 +7,20 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class ServiceUser implements IService<User> {
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^\\d{8}$");
+    private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).+$");
+
     private Connection conn;
     public ServiceUser() {
         conn = MyDB.getInstance().getConnection();
     }
     @Override
     public void ajouter(User user) throws SQLException {
+        validateUserForCreate(user);
 
         String req = "INSERT INTO users (email, username, password, created_at, is_active, phone_number, is_verified, email_verification_token, email_verification_token_expires_at, password_reset_token, password_reset_token_expires_at, failed_attempts) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -43,6 +49,7 @@ public class ServiceUser implements IService<User> {
 
     @Override
     public void modifier(User user) throws SQLException {
+        validateUserForUpdate(user);
 
         boolean updatePassword = (user.getPassword() != null && !user.getPassword().isEmpty());
 
@@ -93,6 +100,8 @@ public class ServiceUser implements IService<User> {
     }
 
     public User registerUser(User user, String roleName) throws SQLException {
+        validateUserForCreate(user);
+
         String req = "INSERT INTO users (email, username, password, created_at, is_active, phone_number, is_verified, email_verification_token, email_verification_token_expires_at, password_reset_token, password_reset_token_expires_at, failed_attempts) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -259,6 +268,50 @@ public class ServiceUser implements IService<User> {
             // Fallback for existing rows still containing plain-text passwords.
             return rawPassword.equals(storedPassword);
         }
+    }
+
+    private void validateUserForCreate(User user) throws SQLException {
+        validateCommonFields(user);
+        if (!hasText(user.getPassword())) {
+            throw new SQLException("Le mot de passe est obligatoire.");
+        }
+        if (!PASSWORD_PATTERN.matcher(user.getPassword().trim()).matches()) {
+            throw new SQLException("Le mot de passe doit contenir des lettres et des chiffres.");
+        }
+    }
+
+    private void validateUserForUpdate(User user) throws SQLException {
+        validateCommonFields(user);
+        if (user.getId() <= 0) {
+            throw new SQLException("Identifiant utilisateur invalide.");
+        }
+        if (hasText(user.getPassword()) && !PASSWORD_PATTERN.matcher(user.getPassword().trim()).matches()) {
+            throw new SQLException("Le mot de passe doit contenir des lettres et des chiffres.");
+        }
+    }
+
+    private void validateCommonFields(User user) throws SQLException {
+        if (user == null) {
+            throw new SQLException("Utilisateur invalide.");
+        }
+
+        String username = user.getUsername() == null ? "" : user.getUsername().trim();
+        String email = user.getEmail() == null ? "" : user.getEmail().trim();
+        String phone = user.getPhoneNumber() == null ? "" : user.getPhoneNumber().trim();
+
+        if (username.length() < 3) {
+            throw new SQLException("Le username doit contenir au moins 3 caracteres.");
+        }
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            throw new SQLException("Email invalide (format attendu: exemple@domaine.com).");
+        }
+        if (!PHONE_PATTERN.matcher(phone).matches()) {
+            throw new SQLException("Le numero de telephone doit contenir exactement 8 chiffres.");
+        }
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 
     private int resolveRoleId(String roleName) throws SQLException {

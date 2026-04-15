@@ -101,4 +101,40 @@ public class ServiceDoctor implements IService<Doctor>{
 
 
 
+
+
+    @Override
+    public Doctor afficherParId(int id) throws SQLException {
+        Doctor doctor = null;
+        String sql = "SELECT u.*, d.id as doctor_id, d.license_code, d.is_certified, d.updated_at " +
+                "FROM users u JOIN doctors d ON u.id = d.user_id WHERE u.id=?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setInt(1, id);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            doctor = new Doctor(
+                    rs.getInt("id"),
+                    rs.getString("email"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    null,
+                    rs.getBoolean("is_active"),
+                    rs.getString("phone_number"),
+                    rs.getBoolean("is_verified"),
+                    null, null, null, null,
+                    rs.getInt("failed_attempts"),
+                    rs.getInt("doctor_id"),
+                    rs.getInt("id"),
+                    rs.getString("license_code"),
+                    rs.getBoolean("is_certified"),
+                    rs.getTimestamp("created_at").toLocalDateTime(),
+                    rs.getTimestamp("updated_at") != null ?
+                            rs.getTimestamp("updated_at").toLocalDateTime() : null
+            );
+        }
+        return doctor;
+    }
+
+
+
 }

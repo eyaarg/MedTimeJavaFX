@@ -113,4 +113,44 @@ public class ServiceProduit implements IService<Produit>{
         }
         return listproduits;
     }
+
+    @Override
+    public Produit afficherParId(int id) throws SQLException {
+        String requete = "SELECT * FROM product WHERE id=?";
+        PreparedStatement pstmt = conn.prepareStatement(requete);
+        pstmt.setInt(1, id);
+        ResultSet rs = pstmt.executeQuery();
+
+        if (rs.next()) {
+            java.sql.Date expireDate = rs.getDate("expire_at");
+            java.time.LocalDate dateExpiration = expireDate != null ? expireDate.toLocalDate() : null;
+
+            String categorieStr = rs.getString("categorie");
+            CategorieEnum categorie = null;
+            if (categorieStr != null) {
+                try {
+                    categorie = CategorieEnum.valueOf(categorieStr);
+                } catch (IllegalArgumentException e) {
+                    System.err.println("Catégorie inconnue: " + categorieStr);
+                }
+            }
+
+            Produit p = new Produit(
+                    rs.getString("name"),
+                    rs.getString("description"),
+                    categorie,
+                    rs.getDouble("price"),
+                    rs.getInt("stock"),
+                    rs.getString("image"),
+                    rs.getBoolean("is_prescription_required"),
+                    rs.getBoolean("is_available"),
+                    rs.getString("brand"),
+                    dateExpiration
+            );
+            p.setId(rs.getLong("id"));
+            return p;
+        }
+
+        return null;
+    }
 }

@@ -1,5 +1,6 @@
 package esprit.fx.controllers;
 
+import esprit.fx.entities.User;
 import esprit.fx.utils.UserSession;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -7,6 +8,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
@@ -24,9 +26,14 @@ public class MainControllerArij {
     @FXML private Button btnUsers;
     @FXML private Button btnDashboard;
     @FXML private Button btnChat;
+    @FXML private Label footerNameLabel;
+    @FXML private Label footerRoleLabel;
+    @FXML private Label avatarLabel;
 
     @FXML
     private void initialize() {
+        applySessionIdentity();
+
         String currentRole = UserSession.getCurrentRole();
         boolean isPatient = "PATIENT".equalsIgnoreCase(currentRole);
         boolean isAdmin = UserSession.isAdmin();
@@ -41,6 +48,52 @@ public class MainControllerArij {
         }
 
         showDashboard();
+    }
+
+    private void applySessionIdentity() {
+        User currentUser = UserSession.getCurrentUser();
+        String rawRole = UserSession.getCurrentRole();
+        String displayRole = formatRole(rawRole);
+
+        String displayName;
+        if (currentUser != null && currentUser.getUsername() != null && !currentUser.getUsername().isBlank()) {
+            displayName = currentUser.getUsername().trim();
+        } else if (currentUser != null && currentUser.getEmail() != null && !currentUser.getEmail().isBlank()) {
+            displayName = currentUser.getEmail().trim();
+        } else {
+            displayName = displayRole;
+        }
+
+        if (footerNameLabel != null) {
+            footerNameLabel.setText(displayName);
+        }
+        if (footerRoleLabel != null) {
+            footerRoleLabel.setText(displayRole);
+        }
+        if (avatarLabel != null) {
+            avatarLabel.setText(initialOf(displayName));
+        }
+    }
+
+    private String formatRole(String role) {
+        if (role == null || role.isBlank()) {
+            return "Patient";
+        }
+        String normalized = role.trim().toUpperCase();
+        if ("ROLE_ADMIN".equals(normalized) || "ADMIN".equals(normalized)) {
+            return "Admin";
+        }
+        if ("ROLE_DOCTOR".equals(normalized) || "DOCTOR".equals(normalized) || "MEDECIN".equals(normalized)) {
+            return "Medecin";
+        }
+        return "Patient";
+    }
+
+    private String initialOf(String text) {
+        if (text == null || text.isBlank()) {
+            return "U";
+        }
+        return text.substring(0, 1).toUpperCase();
     }
 
     private void setActive(Button active) {

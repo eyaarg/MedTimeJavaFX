@@ -28,8 +28,8 @@
                     <Text style="-fx-font-size: 26px; -fx-font-weight: bold;" text="Welcome Back" />
                     <Text fill="#777" text="Connectez-vous à votre compte pour continuer" />
 
-                    <Label style="-fx-font-weight: bold; -fx-font-size: 12px;" text="Email" />
-                    <TextField fx:id="usernameField" maxWidth="Infinity" promptText="Write your email" style="-fx-background-color: #edf2ff; -fx-background-radius: 25; -fx-padding: 8 15;" />
+                    <Label style="-fx-font-weight: bold; -fx-font-size: 12px;" text="Username" />
+                    <TextField fx:id="usernameField" maxWidth="Infinity" promptText="Write your username" style="-fx-background-color: #edf2ff; -fx-background-radius: 25; -fx-padding: 8 15;" />
 
                     <Label style="-fx-font-weight: bold; -fx-font-size: 12px;" text="Mot de passe" />
                     <PasswordField fx:id="passwordField" maxWidth="Infinity" promptText="Write your password" style="-fx-background-color: #edf2ff; -fx-background-radius: 25; -fx-padding: 8 15;" />

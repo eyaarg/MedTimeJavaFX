@@ -77,11 +77,11 @@
             <HBox styleClass="sidebar-footer" alignment="CENTER_LEFT" spacing="12">
                 <padding><Insets top="16" bottom="20" left="16" right="16"/></padding>
                 <StackPane styleClass="avatar-wrap">
-                    <Label text="A" styleClass="avatar-label"/>
+                    <Label fx:id="avatarLabel" text="A" styleClass="avatar-label"/>
                 </StackPane>
                 <VBox spacing="2">
-                    <Label text="Arij Ben Ali" styleClass="footer-name"/>
-                    <Label text="Patient" styleClass="footer-role"/>                </VBox>
+                    <Label fx:id="footerNameLabel" text="Utilisateur" styleClass="footer-name"/>
+                    <Label fx:id="footerRoleLabel" text="Patient" styleClass="footer-role"/>                </VBox>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Button text="⏻" styleClass="logout-btn" onAction="#handleLogout"/>
             </HBox>

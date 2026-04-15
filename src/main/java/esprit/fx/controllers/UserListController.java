@@ -3,7 +3,6 @@ package esprit.fx.controllers;
 import esprit.fx.entities.Role;
 import esprit.fx.entities.User;
 import esprit.fx.services.ServiceUser;
-import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -17,6 +16,7 @@ import javafx.scene.layout.HBox;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -28,7 +28,6 @@ public class UserListController {
     @FXML private TextField searchField;
     @FXML private Label resultCountLabel;
     @FXML private TableView<User> usersTable;
-    @FXML private TableColumn<User, Integer> idColumn;
     @FXML private TableColumn<User, String> usernameColumn;
     @FXML private TableColumn<User, String> emailColumn;
     @FXML private TableColumn<User, String> phoneColumn;
@@ -63,7 +62,6 @@ public class UserListController {
     }
 
     private void setupColumns() {
-        idColumn.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().getId()));
         usernameColumn.setCellValueFactory(data -> new ReadOnlyStringWrapper(safe(data.getValue().getUsername())));
         emailColumn.setCellValueFactory(data -> new ReadOnlyStringWrapper(safe(data.getValue().getEmail())));
         phoneColumn.setCellValueFactory(data -> new ReadOnlyStringWrapper(safe(data.getValue().getPhoneNumber())));
@@ -119,7 +117,7 @@ public class UserListController {
             user.setActive(input.get().active);
             user.setVerified(input.get().verified);
             user.setFailedAttempts(0);
-            serviceUser.ajouter(user);
+            serviceUser.registerUser(user, input.get().roleName);
             refreshUsers();
         } catch (SQLException e) {
             showError("Ajout impossible", e.getMessage());
@@ -150,6 +148,7 @@ public class UserListController {
             updated.setFailedAttempts(original.getFailedAttempts());
 
             serviceUser.modifier(updated);
+            serviceUser.updateUserRole(updated.getId(), input.get().roleName);
             refreshUsers();
         } catch (SQLException e) {
             showError("Modification impossible", e.getMessage());
@@ -186,6 +185,15 @@ public class UserListController {
         TextField phoneField = new TextField(existing != null ? safeValue(existing.getPhoneNumber()) : "");
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText(existing == null ? "Mot de passe" : "Laisser vide pour ne pas changer");
+        ComboBox<String> roleComboBox = new ComboBox<>();
+        roleComboBox.setMaxWidth(Double.MAX_VALUE);
+        roleComboBox.getItems().setAll(loadRoleOptions());
+        String defaultRole = extractPrimaryRoleName(existing);
+        if (defaultRole != null && roleComboBox.getItems().contains(defaultRole)) {
+            roleComboBox.setValue(defaultRole);
+        } else if (!roleComboBox.getItems().isEmpty()) {
+            roleComboBox.setValue(roleComboBox.getItems().get(0));
+        }
         CheckBox activeBox = new CheckBox("Actif");
         activeBox.setSelected(existing == null || existing.isActive());
         CheckBox verifiedBox = new CheckBox("Verifie");
@@ -201,10 +209,12 @@ public class UserListController {
         grid.add(emailField, 1, 1);
         grid.add(new Label("Telephone"), 0, 2);
         grid.add(phoneField, 1, 2);
-        grid.add(new Label("Password"), 0, 3);
-        grid.add(passwordField, 1, 3);
-        grid.add(activeBox, 1, 4);
-        grid.add(verifiedBox, 1, 5);
+        grid.add(new Label("Role"), 0, 3);
+        grid.add(roleComboBox, 1, 3);
+        grid.add(new Label("Password"), 0, 4);
+        grid.add(passwordField, 1, 4);
+        grid.add(activeBox, 1, 5);
+        grid.add(verifiedBox, 1, 6);
         dialog.getDialogPane().setContent(grid);
 
         Node saveButton = dialog.getDialogPane().lookupButton(saveType);
@@ -216,6 +226,11 @@ public class UserListController {
             }
             if (existing == null && passwordField.getText().trim().isEmpty()) {
                 showError("Validation", "Le mot de passe est obligatoire a la creation.");
+                event.consume();
+                return;
+            }
+            if (roleComboBox.getValue() == null || roleComboBox.getValue().isBlank()) {
+                showError("Validation", "Veuillez selectionner un role.");
                 event.consume();
             }
         });
@@ -229,6 +244,7 @@ public class UserListController {
                     emailField.getText().trim(),
                     phoneField.getText().trim(),
                     passwordField.getText().trim(),
+                    roleComboBox.getValue(),
                     activeBox.isSelected(),
                     verifiedBox.isSelected()
             );
@@ -285,19 +301,43 @@ public class UserListController {
         return value == null ? "" : value;
     }
 
+    private List<String> loadRoleOptions() {
+        try {
+            List<String> roles = serviceUser.getAvailableRoleNames();
+            if (roles == null || roles.isEmpty()) {
+                return List.of("PATIENT");
+            }
+            return roles;
+        } catch (SQLException e) {
+            List<String> fallback = new ArrayList<>();
+            fallback.add("PATIENT");
+            return fallback;
+        }
+    }
+
+    private String extractPrimaryRoleName(User user) {
+        if (user == null || user.getRoles() == null || user.getRoles().isEmpty()) {
+            return null;
+        }
+        Role role = user.getRoles().get(0);
+        return role == null ? null : role.getName();
+    }
+
     private static class UserFormData {
         private final String username;
         private final String email;
         private final String phone;
         private final String password;
+        private final String roleName;
         private final boolean active;
         private final boolean verified;
 
-        private UserFormData(String username, String email, String phone, String password, boolean active, boolean verified) {
+        private UserFormData(String username, String email, String phone, String password, String roleName, boolean active, boolean verified) {
             this.username = username;
             this.email = email;
             this.phone = phone;
             this.password = password;
+            this.roleName = roleName;
             this.active = active;
             this.verified = verified;
         }

@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="esprit.fx.controllers.UserListController"
       spacing="0" stylesheets="@/css/arij-styles.css"
       style="-fx-background-color: #f0f4f8;">
@@ -21,6 +21,7 @@
             <Label text="Users" styleClass="page-title"/>
             <Label text="Liste des utilisateurs de la plateforme" styleClass="page-subtitle"/>
         </VBox>
+        <Button text="Ajouter" styleClass="btn-primary" onAction="#openAddUserDialog"/>
         <Button text="Actualiser" styleClass="btn-secondary" onAction="#refreshUsers"/>
     </HBox>
 
@@ -37,7 +38,6 @@
 
                 <TableView fx:id="usersTable" prefHeight="520">
                     <columns>
-                        <TableColumn fx:id="idColumn" text="ID" prefWidth="70"/>
                         <TableColumn fx:id="usernameColumn" text="Username" prefWidth="170"/>
                         <TableColumn fx:id="emailColumn" text="Email" prefWidth="230"/>
                         <TableColumn fx:id="phoneColumn" text="Telephone" prefWidth="130"/>
@@ -45,9 +45,10 @@
                         <TableColumn fx:id="activeColumn" text="Actif" prefWidth="90"/>
                         <TableColumn fx:id="verifiedColumn" text="Verifie" prefWidth="90"/>
                         <TableColumn fx:id="createdAtColumn" text="Cree le" prefWidth="160"/>
+                        <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="120"/>
                     </columns>
                     <columnResizePolicy>
-                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN"/>
+                        <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY"/>
                     </columnResizePolicy>
                 </TableView>
             </VBox>

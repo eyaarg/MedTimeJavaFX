@@ -1,5 +1,9 @@
 package esprit.fx.controllers;
 
+import esprit.fx.entities.Role;
+import esprit.fx.entities.User;
+import esprit.fx.services.ServiceUser;
+import esprit.fx.utils.UserSession;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -8,6 +12,12 @@ import javafx.scene.control.*;
 import javafx.scene.text.Text;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 
 public class RegisterController {
 
@@ -38,42 +48,36 @@ public class RegisterController {
     @FXML
     private Text signInLink;
 
+    private final ServiceUser serviceUser = new ServiceUser();
+
     // Initialisation (optionnel, car les items sont déjà dans le FXML)
     @FXML
     public void initialize() {
-        System.out.println("Controller initialisé");
-        System.out.println("Rôles disponibles: " + roleComboBox.getItems().size());
-        System.out.println("Régions disponibles: " + regionComboBox.getItems().size());
-
-        // Vous pouvez ajouter des valeurs par défaut si vous voulez
-        // roleComboBox.setValue("Patient");
-        // regionComboBox.setValue("Tunis");
+        roleComboBox.setValue("Patient");
+        regionComboBox.setValue("Tunis");
     }
 
     // Action du bouton Create Account
     @FXML
     private void handleCreateAccount() {
-        // Récupérer les valeurs
         String username = usernameField.getText();
         String email = emailAddressField.getText();
         String phone = phoneField.getText();
         String password = passwordField.getText();
         String role = roleComboBox.getValue();
-        String region = regionComboBox.getValue();
         boolean termsAccepted = termsCheckBox.isSelected();
 
-        // Validation
-        if (username.isEmpty()) {
+        if (username == null || username.isBlank()) {
             showAlert("Erreur", "Veuillez entrer votre nom d'utilisateur");
             return;
         }
 
-        if (email.isEmpty()) {
+        if (email == null || email.isBlank()) {
             showAlert("Erreur", "Veuillez entrer votre email");
             return;
         }
 
-        if (password.isEmpty()) {
+        if (password == null || password.isBlank()) {
             showAlert("Erreur", "Veuillez entrer votre mot de passe");
             return;
         }
@@ -83,48 +87,89 @@ public class RegisterController {
             return;
         }
 
-        if (region == null) {
-            showAlert("Erreur", "Veuillez sélectionner une région");
-            return;
-        }
-
         if (!termsAccepted) {
             showAlert("Erreur", "Veuillez accepter les conditions d'utilisation");
             return;
         }
 
-        // Tout est OK - Afficher les informations
-        String message = "Compte créé avec succès !\n\n"
-                + "Nom: " + username + "\n"
-                + "Email: " + email + "\n"
-                + "Téléphone: " + phone + "\n"
-                + "Rôle: " + role + "\n"
-                + "Région: " + region;
+        try {
+            User userToCreate = new User();
+            userToCreate.setUsername(username.trim());
+            userToCreate.setEmail(email.trim());
+            userToCreate.setPhoneNumber(phone == null ? null : phone.trim());
+            userToCreate.setPassword(password);
+            userToCreate.setRequestedRole(role);
+            userToCreate.setCreatedAt(LocalDateTime.now());
+            userToCreate.setActive(true);
+            userToCreate.setVerified(true);
+            userToCreate.setFailedAttempts(0);
 
-        showAlert("Succès", message);
+            User createdUser = serviceUser.registerUser(userToCreate, role);
 
-        // Ici vous pouvez ajouter votre logique pour sauvegarder dans la base de données
-        // saveUserToDatabase(username, email, phone, password, role, region);
+            UserSession.setCurrentUser(createdUser);
+            UserSession.setCurrentRole(extractPrimaryRole(createdUser));
+
+            showInfo("Succès", "Compte créé avec succès. Bienvenue " + createdUser.getUsername() + " !");
+            openMainView();
+        } catch (SQLException e) {
+            showAlert("Erreur", "Impossible de créer le compte : " + e.getMessage());
+        } catch (Exception e) {
+            showAlert("Erreur", "Une erreur inattendue est survenue : " + e.getMessage());
+        }
     }
 
-    // Action du lien Sign In
     @FXML
     private void handleSignIn(MouseEvent event) {
-        System.out.println("Redirection vers la page de connexion");
-        // Ici vous chargez votre fichier login.fxml
-        // try {
-        //     Parent root = FXMLLoader.load(getClass().getResource("login.fxml"));
-        //     Scene scene = new Scene(root);
-        //     Stage stage = (Stage) signInLink.getScene().getWindow();
-        //     stage.setScene(scene);
-        // } catch (Exception e) {
-        //     e.printStackTrace();
-        // }
+        openLoginPage();
     }
 
+    private String extractPrimaryRole(User user) {
+        if (user == null) {
+            return "PATIENT";
+        }
+        List<Role> roles = user.getRoles();
+        if (roles == null || roles.isEmpty() || roles.get(0) == null || roles.get(0).getName() == null) {
+            return "PATIENT";
+        }
+        return roles.get(0).getName().toUpperCase();
+    }
 
-    // Méthode utilitaire pour afficher des alertes
+    private void openLoginPage() {
+        try {
+            Parent root = FXMLLoader.load(Objects.requireNonNull(
+                    RegisterController.class.getResource("/Login.fxml")));
+            Stage stage = (Stage) signInLink.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("MedTimeFX — Login");
+            stage.setMaximized(false);
+            stage.centerOnScreen();
+        } catch (IOException e) {
+            showAlert("Erreur", "Impossible d'ouvrir la page Login : " + e.getMessage());
+        }
+    }
+
+    private void openMainView() {
+        try {
+            Parent root = FXMLLoader.load(Objects.requireNonNull(
+                    RegisterController.class.getResource("/fxml/MainViewArij.fxml")));
+            Stage stage = (Stage) createAccountBtn.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("MedTimeFX");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert("Erreur", "Impossible d'ouvrir la page principale : " + e.getMessage());
+        }
+    }
+
     private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showInfo(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);

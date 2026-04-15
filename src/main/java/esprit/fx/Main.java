@@ -9,7 +9,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.Objects;
 
-public class LauncherArij extends Application {
+public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {

@@ -30,8 +30,8 @@ public class OrdonnanceListControllerArij {
     @FXML private FlowPane cardsContainer;
     @FXML private Button   newOrdonnanceButton;
 
-    private final ServiceConsultationsArij consultationService = new ServiceConsultationsArij();
-    private final ServiceOrdonnanceArij    ordonnanceService   = new ServiceOrdonnanceArij();
+    private  ServiceConsultationsArij consultationService = new ServiceConsultationsArij();
+    private  ServiceOrdonnanceArij    ordonnanceService   = new ServiceOrdonnanceArij();
     private final ServiceFactureArij       factureService      = new ServiceFactureArij();
 
     @FXML

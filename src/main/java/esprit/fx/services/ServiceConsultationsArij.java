@@ -1,10 +1,9 @@
-package esprit.fx.services;
-
 import esprit.fx.entities.ConsultationsArij;
 import esprit.fx.entities.NotificationsArij;
 import esprit.fx.utils.MyDB;
 
 import java.sql.*;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -252,3 +251,6 @@ public class ServiceConsultationsArij {
         } catch (SQLException e) { System.err.println("countByWeek: " + e.getMessage()); }
         return map;
     }
+
+void main() {
+}

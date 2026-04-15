@@ -1,5 +1,3 @@
-package esprit.fx.services;
-
 import esprit.fx.entities.LigneOrdonnanceArij;
 import esprit.fx.entities.OrdonnanceArij;
 import esprit.fx.utils.MyDB;
@@ -180,3 +178,9 @@ public class ServiceOrdonnanceArij {
             ps.setDouble(1, fee); ps.setInt(2, consultationId); ps.executeUpdate();
         } catch (SQLException e) { System.err.println("updateConsultationFee: " + e.getMessage()); }
     }
+
+void main() {
+}
+
+void main() {
+}

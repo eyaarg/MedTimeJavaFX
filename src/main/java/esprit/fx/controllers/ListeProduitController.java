@@ -1,18 +1,17 @@
 package esprit.fx.controllers;
 
-import esprit.fx.entities.CategorieEnum;
 import esprit.fx.entities.Produit;
+import esprit.fx.entities.CategorieEnum;
 import esprit.fx.services.ServiceProduit;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -26,47 +25,16 @@ import java.util.ResourceBundle;
 
 public class ListeProduitController implements Initializable {
 
-    // Composants FXML
-    @FXML private TableView<Produit> tableViewProduits;
-    @FXML private TableColumn<Produit, Long> colId;
-    @FXML private TableColumn<Produit, String> colNom;
-    @FXML private TableColumn<Produit, String> colDescription;
-    @FXML private TableColumn<Produit, String> colCategorie;
-    @FXML private TableColumn<Produit, Double> colPrix;
-    @FXML private TableColumn<Produit, Integer> colStock;
-    @FXML private TableColumn<Produit, String> colMarque;
-    @FXML private TableColumn<Produit, Boolean> colDisponible;
+    @FXML private FlowPane cardsContainer;
     @FXML private TextField txtSearch;
     @FXML private Label lblStatus;
 
-    // Variables
     private ServiceProduit serviceProduit;
     private Connection connection;
-    private ObservableList<Produit> produitsList = FXCollections.observableArrayList();
-    @FXML
-    private Label lblCategorie;
-    @FXML
-    private Label lblDisponible;
-    @FXML
-    private Label lblPrescription;
-    @FXML
-    private Label lblDescription;
-    @FXML
-    private Label lblDateExpiration;
-    @FXML
-    private Label lblNom;
-    @FXML
-    private Label lblPrix;
-    @FXML
-    private Label lblStock;
-    @FXML
-    private Label lblImagePreview;
-    @FXML
-    private Label lblMarque;
+    private List<Produit> produitsList;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        setupTableColumns();
         connectToDatabase();
         try {
             loadProduits();
@@ -74,26 +42,12 @@ public class ListeProduitController implements Initializable {
             throw new RuntimeException(e);
         }
         setupSearchListener();
-        updateStatus();
-    }
-
-    private void setupTableColumns() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
-        colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
-        colCategorie.setCellValueFactory(cellData -> {
-            CategorieEnum cat = cellData.getValue().getCategorie();
-            return new SimpleStringProperty(cat != null ? cat.name() : "");});
-        colPrix.setCellValueFactory(new PropertyValueFactory<>("prix"));
-        colStock.setCellValueFactory(new PropertyValueFactory<>("stock"));
-        colMarque.setCellValueFactory(new PropertyValueFactory<>("marque"));
-        colDisponible.setCellValueFactory(new PropertyValueFactory<>("disponible"));
     }
 
     private void connectToDatabase() {
         try {
             connection = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/mediplatform_test_test",
+                    "jdbc:mysql://localhost:3306/mediplatform",
                     "root",
                     ""
             );
@@ -104,144 +58,180 @@ public class ListeProduitController implements Initializable {
     }
 
     private void loadProduits() throws SQLException {
-        List<Produit> produits = serviceProduit.getAll();
-        produitsList.setAll(produits);
-        tableViewProduits.setItems(produitsList);
-        updateStatus();
+        produitsList = serviceProduit.getAll();
+        displayCards(produitsList);
+        updateStatus(produitsList.size());
+    }
+
+    private void displayCards(List<Produit> produits) {
+        cardsContainer.getChildren().clear();
+
+        for (Produit p : produits) {
+            VBox card = createCard(p);
+            cardsContainer.getChildren().add(card);
+        }
+    }
+
+    private VBox createCard(Produit p) {
+        // Conteneur principal de la carte
+        VBox card = new VBox(8);
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);");
+        card.setPrefWidth(220);
+        card.setPrefHeight(280);
+        card.setPadding(new Insets(12));
+
+        // Icône selon catégorie
+        Label iconLabel = new Label(getIconForCategorie(p.getCategorie()));
+        iconLabel.setStyle("-fx-font-size: 40px;");
+        iconLabel.setMaxWidth(Double.MAX_VALUE);
+        iconLabel.setAlignment(javafx.geometry.Pos.CENTER);
+
+        // Nom du produit
+        Label nomLabel = new Label(p.getNom());
+        nomLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        nomLabel.setWrapText(true);
+        nomLabel.setMaxWidth(200);
+
+        // Prix
+        Label prixLabel = new Label(String.format("%.2f €", p.getPrix()));
+        prixLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #27ae60;");
+
+        // Stock
+        Label stockLabel = new Label("📦 Stock: " + p.getStock());
+        stockLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #7f8c8d;");
+
+        // Disponibilité
+        Label dispoLabel = new Label(p.getDisponible() ? "✅ Disponible" : "❌ Indisponible");
+        dispoLabel.setStyle(p.getDisponible() ? "-fx-text-fill: #27ae60; -fx-font-size: 11px;" : "-fx-text-fill: #e74c3c; -fx-font-size: 11px;");
+
+        // Boutons
+        HBox buttonsBox = new HBox(10);
+        buttonsBox.setAlignment(javafx.geometry.Pos.CENTER);
+
+        Button modifierBtn = new Button("Modifier");
+        modifierBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-size: 11px; -fx-background-radius: 15; -fx-padding: 5 12;");
+        modifierBtn.setOnAction(e -> handleModifier(p));
+
+        Button supprimerBtn = new Button("Supprimer");
+        supprimerBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 11px; -fx-background-radius: 15; -fx-padding: 5 12;");
+        supprimerBtn.setOnAction(e -> {
+            try {
+                handleSupprimer(p);
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        buttonsBox.getChildren().addAll(modifierBtn, supprimerBtn);
+
+        // Ajouter tous les éléments à la carte
+        card.getChildren().addAll(iconLabel, nomLabel, prixLabel, stockLabel, dispoLabel, buttonsBox);
+
+        return card;
+    }
+
+    private String getIconForCategorie(CategorieEnum categorie) {
+        if (categorie == null) return "📦";
+        switch (categorie) {
+            case MEDICAMENT: return "💊";
+            case MATERIEL_MEDICAL: return "🩺";
+            case PARAPHARMACIE: return "🧴";
+            case HYGIENE: return "🧼";
+            case COMPLEMENT_ALIMENTAIRE: return "🥗";
+            default: return "📦";
+        }
     }
 
     private void setupSearchListener() {
         txtSearch.textProperty().addListener((observable, oldValue, newValue) -> {
-            filterProduits(newValue);
+            filterCards(newValue);
         });
     }
 
-    private void filterProduits(String keyword) {
+    private void filterCards(String keyword) {
         if (keyword == null || keyword.isEmpty()) {
-            tableViewProduits.setItems(produitsList);
+            displayCards(produitsList);
+            updateStatus(produitsList.size());
             return;
         }
 
-        ObservableList<Produit> filtered = FXCollections.observableArrayList();
-        for (Produit p : produitsList) {
-            if (p.getNom().toLowerCase().contains(keyword.toLowerCase()) ||
-                    p.getMarque().toLowerCase().contains(keyword.toLowerCase()) ||
-                    (p.getDescription() != null && p.getDescription().toLowerCase().contains(keyword.toLowerCase()))) {
-                filtered.add(p);
-            }
-        }
-        tableViewProduits.setItems(filtered);
+        List<Produit> filtered = produitsList.stream()
+                .filter(p -> p.getNom().toLowerCase().contains(keyword.toLowerCase()) ||
+                        (p.getMarque() != null && p.getMarque().toLowerCase().contains(keyword.toLowerCase())))
+                .toList();
+
+        displayCards(filtered);
         updateStatus(filtered.size());
     }
 
-    private void updateStatus() {
-        lblStatus.setText("Total: " + produitsList.size() + " produits");
-    }
-
     private void updateStatus(int count) {
-        lblStatus.setText("Affichage: " + count + " / " + produitsList.size() + " produits");
+        lblStatus.setText("📊 " + count + " produit(s)");
     }
-
-    // ==================== ACTIONS ====================
 
     @FXML
     private void handleAjouter() {
         try {
-            // Charger le formulaire d'ajout
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/AjoutProd.fxml"));
             Parent root = loader.load();
 
-            // Récupérer le controller
             FormulaireProduitController controller = loader.getController();
             controller.setServiceProduit(serviceProduit);
             controller.setListeController(this);
             controller.setMode("ajouter");
 
-            // Créer la fenêtre
             Stage stage = new Stage();
             stage.setTitle("Ajouter un produit");
-            stage.setScene(new Scene(root, 600, 550));
+            stage.setScene(new Scene(root, 500, 600));
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
 
         } catch (Exception e) {
+            e.printStackTrace();
             showAlert("Erreur: " + e.getMessage());
         }
     }
 
-    @FXML
-    private void handleModifier() {
-        Produit selected = tableViewProduits.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Veuillez sélectionner un produit à modifier !");
-            return;
-        }
-
+    private void handleModifier(Produit produit) {
         try {
-            // Charger le formulaire de modification
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/AjoutProd.fxml"));
             Parent root = loader.load();
 
-            // Récupérer le controller et passer les données
             FormulaireProduitController controller = loader.getController();
             controller.setServiceProduit(serviceProduit);
             controller.setListeController(this);
             controller.setMode("modifier");
-            controller.setProduit(selected);
+            controller.setProduit(produit);
 
-            // Créer la fenêtre
             Stage stage = new Stage();
             stage.setTitle("Modifier le produit");
-            stage.setScene(new Scene(root, 600, 550));
+            stage.setScene(new Scene(root, 500, 600));
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
 
         } catch (Exception e) {
+            e.printStackTrace();
             showAlert("Erreur: " + e.getMessage());
         }
     }
 
-    @FXML
-    private void handleSupprimer() throws SQLException {
-        Produit selected = tableViewProduits.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Veuillez sélectionner un produit à supprimer !");
-            return;
-        }
-
+    private void handleSupprimer(Produit produit) throws SQLException {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Confirmation");
-        confirm.setHeaderText(null);
-        confirm.setContentText("Voulez-vous vraiment supprimer : " + selected.getNom() + " ?");
+        confirm.setContentText("Supprimer " + produit.getNom() + " ?");
 
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            serviceProduit.supprimer(selected.getId().intValue());
-            showAlert("Produit supprimé avec succès !", Alert.AlertType.INFORMATION);
+            serviceProduit.supprimer(produit.getId().intValue());
             loadProduits();
         }
     }
 
-    @FXML
-    private void handleRefresh() throws SQLException {
-        loadProduits();
-        txtSearch.clear();
-        showAlert("Liste actualisée !", Alert.AlertType.INFORMATION);
-    }
-
-    // Méthode pour rafraîchir la liste après ajout/modification
     public void refreshList() throws SQLException {
         loadProduits();
     }
 
     private void showAlert(String message) {
-        showAlert(message, Alert.AlertType.WARNING);
-    }
-
-    private void showAlert(String message, Alert.AlertType type) {
-        Alert alert = new Alert(type);
-        alert.setTitle(type == Alert.AlertType.ERROR ? "Erreur" : "Information");
-        alert.setHeaderText(null);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setContentText(message);
         alert.showAndWait();
     }

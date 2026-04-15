@@ -1,131 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
 
 <VBox spacing="15" xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="esprit.fx.controllers.ListeProduitController">
+      fx:controller="esprit.fx.controllers.ListeProduitController"
+      style="-fx-background-color: #f5f5f5;">
 
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
 
     <!-- Titre -->
-    <Label text="📦 Gestion des Produits - E-commerce Médical" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+    <Label text="📦 Gestion des Produits" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
 
-    <!-- Barre d'outils -->
-    <ToolBar>
-        <Button text="➕ Nouveau produit" onAction="#handleAjouter" style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold;">
-            <graphic>
-                <Label text="➕" />
-            </graphic>
-        </Button>
-        <Separator orientation="VERTICAL"/>
-        <Button text="✏️ Modifier" onAction="#handleModifier" style="-fx-background-color: #ffc107; -fx-font-weight: bold;">
-            <graphic>
-                <Label text="✏️" />
-            </graphic>
-        </Button>
-        <Button text="🗑️ Supprimer" onAction="#handleSupprimer" style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-weight: bold;">
-            <graphic>
-                <Label text="🗑️" />
-            </graphic>
-        </Button>
-        <Separator orientation="VERTICAL"/>
-        <Button text="🔄 Actualiser" onAction="#handleRefresh" style="-fx-background-color: #17a2b8; -fx-text-fill: white;">
-            <graphic>
-                <Label text="🔄" />
-            </graphic>
-        </Button>
-        <Separator orientation="VERTICAL"/>
-        <Label text="🔍 Rechercher :" />
-        <TextField fx:id="txtSearch" promptText="Nom, marque ou description..." HBox.hgrow="ALWAYS" prefWidth="250"/>
-    </ToolBar>
+    <!-- Barre de recherche et bouton ajouter -->
+    <HBox spacing="10">
+        <TextField fx:id="txtSearch" promptText="🔍 Rechercher un produit..." HBox.hgrow="ALWAYS"
+                   style="-fx-padding: 10; -fx-background-radius: 20; -fx-border-radius: 20;"/>
+        <Button text="+ Ajouter" onAction="#handleAjouter"
+                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 8 20;"/>
+    </HBox>
 
-    <!-- SplitPane: Tableau à gauche + Aperçu à droite -->
-    <SplitPane dividerPositions="0.6" VBox.vgrow="ALWAYS">
+    <!-- ScrollPane pour les cartes -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent;">
+        <FlowPane fx:id="cardsContainer" hgap="15" vgap="15" alignment="TOP_LEFT"
+                  style="-fx-background-color: transparent;"/>
+    </ScrollPane>
 
-        <!-- PARTIE GAUCHE : Tableau des produits -->
-        <VBox spacing="10">
-            <Label text="📋 Liste des produits" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-
-            <TableView fx:id="tableViewProduits" prefHeight="400" VBox.vgrow="ALWAYS">
-                <columns>
-                    <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
-                    <TableColumn fx:id="colNom" text="Nom" prefWidth="180"/>
-                    <TableColumn fx:id="colCategorie" text="Catégorie" prefWidth="120"/>
-                    <TableColumn fx:id="colPrix" text="Prix (€)" prefWidth="80"/>
-                    <TableColumn fx:id="colStock" text="Stock" prefWidth="80"/>
-                    <TableColumn fx:id="colDisponible" text="Dispo" prefWidth="70"/>
-                </columns>
-            </TableView>
-
-            <!-- Status bar -->
-            <Label fx:id="lblStatus" style="-fx-text-fill: #6c757d; -fx-font-size: 12px;"/>
-        </VBox>
-
-        <!-- PARTIE DROITE : Aperçu du produit sélectionné -->
-        <VBox spacing="10" style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6; -fx-border-radius: 5; -fx-padding: 10;">
-
-            <Label text="🔍 Aperçu du produit" style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #2c3e50;"/>
-
-            <Separator/>
-
-            <!-- ScrollPane pour l'aperçu -->
-            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
-                <VBox spacing="15">
-
-                    <!-- Image (si disponible) -->
-                    <VBox alignment="CENTER" style="-fx-padding: 10;">
-                        <Label fx:id="lblImagePreview" text="🖼️ Aucune image" style="-fx-font-size: 48px;"/>
-                    </VBox>
-
-                    <!-- Informations produit -->
-                    <GridPane hgap="15" vgap="12">
-                        <padding>
-                            <Insets left="10" right="10"/>
-                        </padding>
-
-                        <Label text="Nom :" style="-fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                        <Label fx:id="lblNom" text="-" GridPane.rowIndex="0" GridPane.columnIndex="1" wrapText="true"/>
-
-                        <Label text="Description :" style="-fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                        <Label fx:id="lblDescription" text="-" GridPane.rowIndex="1" GridPane.columnIndex="1" wrapText="true"/>
-
-                        <Label text="Catégorie :" style="-fx-font-weight: bold;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                        <Label fx:id="lblCategorie" text="-" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-
-                        <Label text="Prix :" style="-fx-font-weight: bold;" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                        <Label fx:id="lblPrix" text="-" GridPane.rowIndex="3" GridPane.columnIndex="1" style="-fx-text-fill: #28a745; -fx-font-weight: bold;"/>
-
-                        <Label text="Stock :" style="-fx-font-weight: bold;" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-                        <Label fx:id="lblStock" text="-" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-
-                        <Label text="Marque :" style="-fx-font-weight: bold;" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-                        <Label fx:id="lblMarque" text="-" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
-
-                        <Label text="Prescription :" style="-fx-font-weight: bold;" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-                        <Label fx:id="lblPrescription" text="-" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
-
-                        <Label text="Disponibilité :" style="-fx-font-weight: bold;" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
-                        <Label fx:id="lblDisponible" text="-" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
-
-                        <Label text="Date expiration :" style="-fx-font-weight: bold;" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
-                        <Label fx:id="lblDateExpiration" text="-" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
-
-                    </GridPane>
-
-                    <!-- Boutons d'action rapide -->
-                    <HBox spacing="10" alignment="CENTER" style="-fx-padding: 15 0 10 0;">
-                        <Button text="✏️ Modifier" onAction="#handleModifier" style="-fx-background-color: #ffc107; -fx-font-weight: bold;" prefWidth="100"/>
-                        <Button text="🗑️ Supprimer" onAction="#handleSupprimer" style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-weight: bold;" prefWidth="100"/>
-                    </HBox>
-
-                </VBox>
-            </ScrollPane>
-        </VBox>
-
-    </SplitPane>
+    <!-- Status bar -->
+    <Label fx:id="lblStatus" style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
 
 </VBox>

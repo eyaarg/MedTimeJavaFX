@@ -13,7 +13,7 @@
     </padding>
 
     <!-- Titre -->
-    <Label fx:id="lblTitre" text="Ajouter un produit" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #28a745;"/>
+    <Label fx:id="lblTitre" text="Ajouter un produit" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #17a2b8;"/>
 
     <Separator/>
 
@@ -72,7 +72,7 @@
     <!-- Boutons -->
     <HBox spacing="15" alignment="CENTER">
         <Button fx:id="btnValider" text="✅ Valider" onAction="#handleValider"
-                style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;"
+                style="-fx-background-color: #17a2b8; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;"
                 prefWidth="120" prefHeight="35"/>
         <Button text=" Annuler" onAction="#handleAnnuler"
                 style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-size: 14px;"

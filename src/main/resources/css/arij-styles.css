@@ -7,29 +7,61 @@
     -fx-background-color: #f0f4f8;
 }
 
+/* Top navbar */
+.topbar {
+    -fx-background-color: white;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 0 0 1 0;
+}
+.topbar-brand {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0f172a;
+}
+.top-nav-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #334155;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 8 14 8 14;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+}
+.top-nav-btn:hover {
+    -fx-background-color: #e2e8f0;
+}
+.top-nav-btn-active {
+    -fx-background-color: #1d4ed8;
+    -fx-text-fill: white;
+}
+.top-nav-btn-active:hover {
+    -fx-background-color: #2563eb;
+}
+
 /* ═══════════════════════════════════════════════════════════
    Sidebar shell
 ═══════════════════════════════════════════════════════════ */
 .sidebar {
-    -fx-background-color: #0f172a;
+    -fx-background-color: linear-gradient(to bottom, #197bff, #0d5fc4);
     -fx-min-width: 230px;
     -fx-pref-width: 230px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 12, 0, 3, 0);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 12, 0, 3, 0);
 }
 
 /* ═══════════════════════════════════════════════════════════
    Brand block
 ═══════════════════════════════════════════════════════════ */
 .sidebar-brand {
-    -fx-background-color: #0f172a;
+    -fx-background-color: transparent;
 }
 .brand-name {
-    -fx-text-fill: #f8fafc;
+    -fx-text-fill: #ffffff;
     -fx-font-size: 20px;
     -fx-font-weight: bold;
 }
 .brand-sub {
-    -fx-text-fill: #64748b;
+    -fx-text-fill: #bfdbfe;
     -fx-font-size: 11px;
 }
 
@@ -37,7 +69,7 @@
    Separators
 ═══════════════════════════════════════════════════════════ */
 .sidebar-sep .line {
-    -fx-border-color: #1e293b;
+    -fx-border-color: rgba(255,255,255,0.2);
     -fx-border-width: 1px;
 }
 
@@ -45,7 +77,7 @@
    Section labels
 ═══════════════════════════════════════════════════════════ */
 .nav-section-label {
-    -fx-text-fill: #475569;
+    -fx-text-fill: #bfdbfe;
     -fx-font-size: 10px;
     -fx-font-weight: bold;
 }
@@ -55,7 +87,7 @@
 ═══════════════════════════════════════════════════════════ */
 .nav-btn {
     -fx-background-color: transparent;
-    -fx-text-fill: #94a3b8;
+    -fx-text-fill: #dbeafe;
     -fx-font-size: 13px;
     -fx-alignment: CENTER_LEFT;
     -fx-padding: 10 14 10 14;
@@ -64,19 +96,22 @@
     -fx-border-color: transparent;
 }
 .nav-btn:hover {
-    -fx-background-color: #1e293b;
-    -fx-text-fill: #e2e8f0;
+    -fx-background-color: rgba(255,255,255,0.15);
+    -fx-text-fill: white;
 }
 .nav-btn:pressed {
-    -fx-background-color: #334155;
+    -fx-background-color: rgba(255,255,255,0.25);
 }
 .nav-btn-active {
-    -fx-background-color: #1d4ed8;
+    -fx-background-color: rgba(255,255,255,0.22);
     -fx-text-fill: #ffffff;
     -fx-font-weight: bold;
+    -fx-border-color: rgba(255,255,255,0.4);
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
 }
 .nav-btn-active:hover {
-    -fx-background-color: #2563eb;
+    -fx-background-color: rgba(255,255,255,0.28);
     -fx-text-fill: #ffffff;
 }
 
@@ -84,10 +119,10 @@
    Footer / user profile
 ═══════════════════════════════════════════════════════════ */
 .sidebar-footer {
-    -fx-background-color: #0a1120;
+    -fx-background-color: #0d5fc4;
 }
 .avatar-wrap {
-    -fx-background-color: #3b82f6;
+    -fx-background-color: rgba(255,255,255,0.25);
     -fx-background-radius: 50%;
     -fx-min-width: 36px;
     -fx-min-height: 36px;
@@ -100,17 +135,17 @@
     -fx-font-weight: bold;
 }
 .footer-name {
-    -fx-text-fill: #e2e8f0;
+    -fx-text-fill: #ffffff;
     -fx-font-size: 13px;
     -fx-font-weight: bold;
 }
 .footer-role {
-    -fx-text-fill: #64748b;
+    -fx-text-fill: #bfdbfe;
     -fx-font-size: 11px;
 }
 .logout-btn {
     -fx-background-color: transparent;
-    -fx-text-fill: #64748b;
+    -fx-text-fill: #bfdbfe;
     -fx-font-size: 16px;
     -fx-cursor: hand;
     -fx-padding: 4 8 4 8;
@@ -118,8 +153,8 @@
     -fx-border-color: transparent;
 }
 .logout-btn:hover {
-    -fx-background-color: #1e293b;
-    -fx-text-fill: #ef4444;
+    -fx-background-color: rgba(255,255,255,0.15);
+    -fx-text-fill: white;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -583,4 +618,109 @@
     -fx-text-fill: #dc2626;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
+}
+
+/* =====================================================================
+   Static cards (no hover/cursor)
+   ===================================================================== */
+.card-static {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-padding: 18;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 3);
+    -fx-cursor: default;
+}
+.card-static:hover {
+    -fx-border-color: #e2e8f0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 3);
+    -fx-translate-y: 0;
+}
+
+/* =====================================================================
+   Consultation creation (screenshot-like)
+   ===================================================================== */
+.hero-header {
+    -fx-background-color: linear-gradient(to right, #1d4ed8, #0ea5e9);
+}
+.hero-icon {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-background-color: rgba(255,255,255,0.18);
+    -fx-padding: 4 9 4 9;
+    -fx-background-radius: 7;
+}
+.hero-title {
+    -fx-text-fill: white;
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+}
+.hero-subtitle {
+    -fx-text-fill: #dbeafe;
+    -fx-font-size: 13px;
+}
+
+.assistant-card {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-padding: 18;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 3);
+    -fx-cursor: default;
+}
+.assistant-title {
+    -fx-text-fill: #0f172a;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+.assistant-badge {
+    -fx-background-color: #eff6ff;
+    -fx-text-fill: #1d4ed8;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 10 4 10;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: #bfdbfe;
+}
+.assistant-empty {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #cbd5e1;
+    -fx-border-style: dashed;
+    -fx-padding: 14;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Hub buttons (module selectors in sidebar)
+═══════════════════════════════════════════════════════════ */
+.hub-btn {
+    -fx-background-color: #1e293b;
+    -fx-text-fill: #e2e8f0;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 11 14 11 14;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-border-radius: 10;
+}
+.hub-btn:hover {
+    -fx-background-color: #334155;
+    -fx-text-fill: #f1f5f9;
+}
+.hub-btn-active {
+    -fx-background-color: #1d4ed8;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+}
+.hub-btn-active:hover {
+    -fx-background-color: #2563eb;
 }

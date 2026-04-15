@@ -1,66 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.CommentaireController"
+      spacing="0" stylesheets="@/css/arij-styles.css"
+      style="-fx-background-color:#f0f4f8;">
 
-<AnchorPane prefHeight="500.0" prefWidth="700.0"
-            xmlns="http://javafx.com/javafx/21"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="esprit.fx.controllers.CommentaireController"
-            style="-fx-background-color: #f5f5f5;">
+    <!-- Header -->
+    <VBox styleClass="hero-header">
+        <padding><Insets top="22" right="32" bottom="18" left="32"/></padding>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="💬" style="-fx-font-size:16px;"/>
+            <Label text="Gestion des Commentaires" styleClass="hero-title" style="-fx-font-size:18px;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="btnAjouter" text="➕"
+                    style="-fx-background-color:#1d4ed8; -fx-text-fill:white; -fx-font-size:14px;
+                           -fx-background-radius:8; -fx-border-color:transparent;
+                           -fx-padding:6 10; -fx-cursor:hand; -fx-min-width:34px; -fx-min-height:34px;"
+                    onAction="#ajouterCommentaire"/>
+        </HBox>
+        <Label text="Tous les commentaires du forum" styleClass="hero-subtitle"/>
+    </VBox>
 
-    <children>
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll">
+        <content>
+            <VBox spacing="16">
+                <padding><Insets top="24" right="32" bottom="24" left="32"/></padding>
 
-        <!-- Carte principale -->
-        <Pane layoutX="30" layoutY="30" prefWidth="640" prefHeight="440"
-              style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2),10,0,0,2);">
+                <VBox spacing="12" styleClass="card-static">
+                    <HBox alignment="CENTER_LEFT" spacing="12">
+                        <Label text="Commentaires" style="-fx-font-size:14px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="btnModifier" text="✏️"
+                                style="-fx-background-color:#e0f2fe; -fx-text-fill:#0369a1; -fx-font-size:14px;
+                                       -fx-background-radius:8; -fx-border-color:#bae6fd;
+                                       -fx-border-width:1; -fx-padding:6 10; -fx-cursor:hand;
+                                       -fx-min-width:34px; -fx-min-height:34px;"
+                                onAction="#modifierCommentaire"/>
+                        <Button fx:id="btnSupprimer" text="🗑"
+                                style="-fx-background-color:#fff1f2; -fx-text-fill:#be123c; -fx-font-size:14px;
+                                       -fx-background-radius:8; -fx-border-color:#fecdd3;
+                                       -fx-border-width:1; -fx-padding:6 10; -fx-cursor:hand;
+                                       -fx-min-width:34px; -fx-min-height:34px;"/>
+                    </HBox>
+                    <Separator/>
+                    <TableView fx:id="tableCommentaires" prefHeight="420" styleClass="table-view">
+                        <columns>
+                            <TableColumn fx:id="colContenu" text="Contenu" prefWidth="380"/>
+                            <TableColumn fx:id="colDate"    text="Date"    prefWidth="180"/>
+                            <TableColumn fx:id="colLikes"   text="Likes"   prefWidth="100"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </VBox>
+        </content>
+    </ScrollPane>
 
-            <children>
-
-                <!-- Header -->
-                <Label text="Gestion des Commentaires"
-                       layoutX="20" layoutY="15"
-                       style="-fx-font-size: 20px; -fx-font-weight: bold;" />
-
-                <Button fx:id="btnAjouter"
-                        text="+ Ajouter"
-                        layoutX="500" layoutY="12"
-                        prefWidth="100"
-                        onAction="#ajouterCommentaire"
-                        style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 5;" />
-
-                <Separator layoutX="20" layoutY="45" prefWidth="600"/>
-
-                <!-- Table -->
-                <TableView fx:id="tableCommentaires"
-                           layoutX="20" layoutY="60"
-                           prefWidth="600" prefHeight="280">
-
-                    <columns>
-                        <TableColumn fx:id="colContenu" text="Contenu" prefWidth="300"/>
-                        <TableColumn fx:id="colDate" text="Date" prefWidth="150"/>
-                        <TableColumn fx:id="colLikes" text="Likes" prefWidth="100"/>
-                    </columns>
-
-                </TableView>
-
-                <!-- Boutons -->
-                <Button fx:id="btnModifier"
-                        text="Modifier"
-                        layoutX="350" layoutY="360"
-                        prefWidth="100"
-                        onAction="#modifierCommentaire"
-                        style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 5;" />
-
-                <Button fx:id="btnSupprimer"
-                        text="Supprimer"
-                        layoutX="470" layoutY="360"
-                        prefWidth="120"
-                        onAction="#supprimerCommentaire"
-                        style="-fx-background-color: #f44336; -fx-text-fill: white; -fx-background-radius: 5;" />
-
-            </children>
-        </Pane>
-
-    </children>
-</AnchorPane>
+</VBox>

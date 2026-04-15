@@ -74,9 +74,7 @@ public class ArticleService implements IService<Article> {
         }
         return articles;
     }
-
-    @Override
-    public Article afficherParId(int id) throws SQLException {
+        public Article afficherParId(int id) throws SQLException {
         Article article = null;
         String sql = "SELECT id, titre, contenu, image, date_creation, nb_vues, statut, specialite_id FROM article WHERE id=?";
         PreparedStatement ps = con.prepareStatement(sql);

@@ -82,7 +82,7 @@ public class ChatControllerArij {
         if (apiKey == null || apiKey.isEmpty()) return "Clé API non configurée.";
         HttpURLConnection conn = null;
         try {
-            conn = (HttpURLConnection) new URL(apiUrl).openConnection();
+            conn = (HttpURLConnection) URI.create(apiUrl).toURL().openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Authorization", "Bearer " + apiKey);
             conn.setRequestProperty("Content-Type", "application/json");

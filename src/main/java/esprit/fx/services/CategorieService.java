@@ -63,9 +63,7 @@ public class CategorieService implements IService<Categorie> {
         }
         return categories;
     }
-
-    @Override
-    public Categorie afficherParId(int id) throws SQLException {
+        public Categorie afficherParId(int id) throws SQLException {
         Categorie categorie = null;
         String sql = "SELECT * FROM categorie WHERE id=?";
         PreparedStatement ps = con.prepareStatement(sql);

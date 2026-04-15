@@ -4,30 +4,33 @@ import esprit.fx.entities.NotificationsArij;
 import esprit.fx.utils.MyDB;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ServiceNotificationsArij {
-
-    private static final int CURRENT_USER_ID = 1;
     private Connection conn() { return MyDB.getInstance().getConnection(); }
 
-    public List<NotificationsArij> getMyNotifications() {
+    public List<NotificationsArij> getNotificationsByUser(int userId) {
+        if (userId <= 0) {
+            return new ArrayList<>();
+        }
         List<NotificationsArij> list = new ArrayList<>();
         try (PreparedStatement ps = conn().prepareStatement(
                 "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC")) {
-            ps.setInt(1, CURRENT_USER_ID);
+            ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) list.add(mapRow(rs));
-        } catch (SQLException e) { System.err.println("getMyNotifications: " + e.getMessage()); }
+        } catch (SQLException e) { System.err.println("getNotificationsByUser: " + e.getMessage()); }
         return list;
     }
 
-    public int getUnreadCount() {
+    public int getUnreadCount(int userId) {
+        if (userId <= 0) {
+            return 0;
+        }
         try (PreparedStatement ps = conn().prepareStatement(
                 "SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0")) {
-            ps.setInt(1, CURRENT_USER_ID);
+            ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return rs.getInt(1);
         } catch (SQLException e) { System.err.println("getUnreadCount: " + e.getMessage()); }
@@ -41,10 +44,13 @@ public class ServiceNotificationsArij {
         } catch (SQLException e) { System.err.println("markAsRead: " + e.getMessage()); }
     }
 
-    public void markAllAsRead() {
+    public void markAllAsRead(int userId) {
+        if (userId <= 0) {
+            return;
+        }
         try (PreparedStatement ps = conn().prepareStatement(
                 "UPDATE notifications SET is_read = 1 WHERE user_id = ?")) {
-            ps.setInt(1, CURRENT_USER_ID); ps.executeUpdate();
+            ps.setInt(1, userId); ps.executeUpdate();
         } catch (SQLException e) { System.err.println("markAllAsRead: " + e.getMessage()); }
     }
 

@@ -16,13 +16,14 @@ public class NotificationListControllerArij {
 
     @FXML private VBox notificationsContainer;
     private final ServiceNotificationsArij service = new ServiceNotificationsArij();
+    private int userId = 0; // users.id (provided by MainControllerArij)
 
-    @FXML private void initialize()  { loadNotifications(); }
-    @FXML private void markAllRead() { service.markAllAsRead(); loadNotifications(); }
+    @FXML private void initialize()  { /* context is set after load */ }
+    @FXML private void markAllRead() { service.markAllAsRead(userId); loadNotifications(); }
 
     private void loadNotifications() {
         notificationsContainer.getChildren().clear();
-        List<NotificationsArij> list = service.getMyNotifications();
+        List<NotificationsArij> list = service.getNotificationsByUser(userId);
         if (list.isEmpty()) { notificationsContainer.getChildren().add(emptyState()); return; }
         for (NotificationsArij n : list) notificationsContainer.getChildren().add(buildRow(n));
     }
@@ -61,5 +62,10 @@ public class NotificationListControllerArij {
         Label sub = new Label("Aucune nouvelle notification"); sub.setStyle("-fx-font-size:13px;-fx-text-fill:#94a3b8;");
         box.getChildren().addAll(icon, msg, sub);
         return box;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+        loadNotifications();
     }
 }

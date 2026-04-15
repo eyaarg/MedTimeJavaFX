@@ -84,9 +84,7 @@ public class CommentaireService implements IService<Commentaire> {
         }
         return commentaires;
     }
-
-    @Override
-    public Commentaire afficherParId(int id) throws SQLException {
+        public Commentaire afficherParId(int id) throws SQLException {
         Commentaire commentaire = null;
         String sql = "SELECT * FROM comment WHERE id=?";
         PreparedStatement ps = con.prepareStatement(sql);

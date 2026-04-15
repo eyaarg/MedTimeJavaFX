@@ -1,55 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.ModifierCommentaireController"
+      spacing="0" stylesheets="@/css/arij-styles.css"
+      style="-fx-background-color:#f0f4f8;">
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0"
-            xmlns="http://javafx.com/javafx/21"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="esprit.fx.controllers.ModifierCommentaireController"
-            style="-fx-background-color: #f5f5f5;">
+    <!-- Header -->
+    <VBox styleClass="hero-header">
+        <padding><Insets top="22" right="32" bottom="18" left="32"/></padding>
+        <Label text="✏️  Modifier le commentaire" styleClass="hero-title" style="-fx-font-size:18px;"/>
+        <Label text="Modifiez votre commentaire" styleClass="hero-subtitle"/>
+    </VBox>
 
-    <children>
+    <VBox spacing="16" style="-fx-padding:28 32;">
+        <VBox spacing="14" styleClass="card-static">
 
-        <!-- Carte -->
-        <Pane layoutX="40" layoutY="40" prefWidth="520" prefHeight="300"
-              style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2),10,0,0,2);">
+            <VBox spacing="6">
+                <Label text="Contenu" styleClass="field-label"/>
+                <TextArea fx:id="txtContenu" wrapText="true" prefRowCount="6"
+                          promptText="Modifier votre commentaire..."
+                          maxWidth="Infinity" styleClass="form-input"/>
+            </VBox>
 
-            <children>
+            <Separator/>
 
-                <!-- Titre -->
-                <Label text="Modifier Commentaire"
-                       layoutX="20" layoutY="15"
-                       style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+            <HBox alignment="CENTER_RIGHT" spacing="12">
+                <Button fx:id="btnAnnuler" text="Annuler" styleClass="btn-secondary" onAction="#annuler"/>
+                <Button fx:id="btnModifier" text="💾 Enregistrer" styleClass="btn-primary" onAction="#modifierCommentaire"/>
+            </HBox>
 
-                <Separator layoutX="20" layoutY="45" prefWidth="480"/>
+        </VBox>
+    </VBox>
 
-                <!-- Contenu -->
-                <Label text="Contenu"
-                       layoutX="20" layoutY="70"/>
-
-                <TextArea fx:id="txtContenu"
-                          layoutX="20" layoutY="90"
-                          prefWidth="480" prefHeight="100"
-                          promptText="Modifier le commentaire..." />
-
-                <!-- Boutons -->
-                <Button fx:id="btnModifier"
-                        text="Enregistrer"
-                        layoutX="260" layoutY="210"
-                        prefWidth="100"
-                        onAction="#modifierCommentaire"
-                        style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 5;" />
-
-                <Button fx:id="btnAnnuler"
-                        text="Annuler"
-                        layoutX="380" layoutY="210"
-                        prefWidth="100"
-                        onAction="#annuler"
-                        style="-fx-background-color: transparent; -fx-border-color: #999; -fx-border-radius: 5;" />
-
-            </children>
-        </Pane>
-
-    </children>
-</AnchorPane>
+</VBox>

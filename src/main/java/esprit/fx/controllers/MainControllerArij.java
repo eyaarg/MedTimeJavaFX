@@ -119,6 +119,10 @@ public class MainControllerArij {
             stage.setScene(new Scene(loginRoot));
             stage.setTitle("MedTimeFX - Connexion");
             stage.setMaximized(false);
+            stage.setMinWidth(900);
+            stage.setMinHeight(680);
+            stage.setWidth(980);
+            stage.setHeight(720);
             stage.centerOnScreen();
         } catch (IOException | NullPointerException e) {
             System.err.println("Erreur lors de la deconnexion: " + e.getMessage());

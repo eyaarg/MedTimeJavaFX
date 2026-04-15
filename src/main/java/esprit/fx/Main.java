@@ -13,16 +13,17 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        // Démarre sur la page de login
+        // Démarre sur la page de login avec une taille lisible.
         Parent root = FXMLLoader.load(Objects.requireNonNull(
                 Main.class.getResource("/Login.fxml")));
         Scene scene = new Scene(root);
         stage.setTitle("MedTimeFX — Connexion");
         stage.setScene(scene);
+        stage.setMinWidth(900);
+        stage.setMinHeight(680);
+        stage.setWidth(980);
+        stage.setHeight(720);
         stage.setResizable(true);
-        stage.setWidth(600);
-        stage.setHeight(420);
-        stage.setResizable(false);
         stage.centerOnScreen();
         stage.show();
     }

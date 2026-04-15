@@ -107,6 +107,10 @@ public class LoginController {
             stage.setScene(new Scene(root));
             stage.setTitle("MedTimeFX — Register");
             stage.setMaximized(false);
+            stage.setMinWidth(560);
+            stage.setMinHeight(760);
+            stage.setWidth(600);
+            stage.setHeight(800);
             stage.centerOnScreen();
         } catch (IOException e) {
             System.err.println("Erreur ouverture Register: " + e.getMessage());

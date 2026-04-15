@@ -24,12 +24,12 @@
             <artifactId>javafx-controls</artifactId>
             <version>${javafx.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
             <version>${javafx.version}</version>
         </dependency>
+
 
         <dependency>
             <groupId>com.mysql</groupId>
@@ -75,8 +75,13 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>esprit.fx.Main</mainClass>
+                    <options>
+                        <option>--add-modules</option>
+                        <option>javafx.controls,javafx.fxml</option>
+                    </options>
                 </configuration>
             </plugin>
+
 
         </plugins>
     </build>

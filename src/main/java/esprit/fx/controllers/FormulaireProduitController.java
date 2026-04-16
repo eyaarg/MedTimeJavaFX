@@ -1,24 +1,39 @@
 package esprit.fx.controllers;
 
-import esprit.fx.entities.Produit;
 import esprit.fx.entities.CategorieEnum;
+import esprit.fx.entities.Produit;
 import esprit.fx.services.ServiceProduit;
 import esprit.fx.utils.MyDB;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ResourceBundle;
 
 public class FormulaireProduitController implements Initializable {
 
     @FXML private TextField txtNom;
     @FXML private TextArea txtDescription;
-    @FXML private ComboBox<CategorieEnum> cmbCategorie;  // ← Type Enum
+    @FXML private ComboBox<CategorieEnum> cmbCategorie;
     @FXML private TextField txtPrix;
     @FXML private TextField txtStock;
     @FXML private TextField txtImage;
@@ -36,32 +51,22 @@ public class FormulaireProduitController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Charger les catégories Enum dans le ComboBox
         cmbCategorie.getItems().setAll(CategorieEnum.values());
         chkDisponible.setSelected(true);
 
-        // Personnaliser l'affichage du ComboBox
-        cmbCategorie.setCellFactory(param -> new ListCell<CategorieEnum>() {
+        cmbCategorie.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(CategorieEnum item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item.getNom());
-                }
+                setText(empty || item == null ? null : item.getNom());
             }
         });
 
-        cmbCategorie.setButtonCell(new ListCell<CategorieEnum>() {
+        cmbCategorie.setButtonCell(new ListCell<>() {
             @Override
             protected void updateItem(CategorieEnum item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText("Sélectionner une catégorie");
-                } else {
-                    setText(item.getNom());
-                }
+                setText(empty || item == null ? "Selectionner une categorie" : item.getNom());
             }
         });
     }
@@ -90,82 +95,148 @@ public class FormulaireProduitController implements Initializable {
         remplirFormulaire(produit);
     }
 
-    private void remplirFormulaire(Produit p) {
-        txtNom.setText(p.getNom());
-        txtDescription.setText(p.getDescription());
-        cmbCategorie.setValue(p.getCategorie());  // ← L'Enum s'affiche bien
-        txtPrix.setText(String.valueOf(p.getPrix()));
-        txtStock.setText(String.valueOf(p.getStock()));
-        txtImage.setText(p.getImage());
-        chkDisponible.setSelected(p.getDisponible());
-        chkPrescription.setSelected(p.getPrescriptionRequise());
-        txtMarque.setText(p.getMarque());
-        dpDateExpiration.setValue(p.getDateExpiration());
+    private void remplirFormulaire(Produit produit) {
+        txtNom.setText(produit.getNom());
+        txtDescription.setText(produit.getDescription());
+        cmbCategorie.setValue(produit.getCategorie());
+        txtPrix.setText(String.valueOf(produit.getPrix()));
+        txtStock.setText(String.valueOf(produit.getStock()));
+        txtImage.setText(produit.getImage());
+        chkDisponible.setSelected(Boolean.TRUE.equals(produit.getDisponible()));
+        chkPrescription.setSelected(Boolean.TRUE.equals(produit.getPrescriptionRequise()));
+        txtMarque.setText(produit.getMarque());
+        dpDateExpiration.setValue(produit.getDateExpiration());
     }
 
     private boolean validateInputs() {
-        if (txtNom.getText().isEmpty()) {
-            showAlert("Le nom est obligatoire !");
+        if (txtNom.getText() == null || txtNom.getText().trim().isEmpty()) {
+            showWarningAlert("Le nom est obligatoire !");
             return false;
         }
+
         if (cmbCategorie.getValue() == null) {
-            showAlert("La catégorie est obligatoire !");
+            showWarningAlert("La categorie est obligatoire !");
             return false;
         }
+
         try {
-            Double.parseDouble(txtPrix.getText());
+            double prix = Double.parseDouble(txtPrix.getText().trim());
+            if (prix <= 0) {
+                showWarningAlert("Le prix doit etre superieur a 0 !");
+                return false;
+            }
         } catch (NumberFormatException e) {
-            showAlert("Prix invalide !");
+            showWarningAlert("Prix invalide !");
             return false;
         }
+
+        try {
+            int stock = Integer.parseInt(txtStock.getText().trim());
+            if (stock < 0) {
+                showWarningAlert("Le stock ne peut pas etre inferieur a 0 !");
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            showWarningAlert("Stock invalide !");
+            return false;
+        }
+
+        if (dpDateExpiration.getValue() == null) {
+            showWarningAlert("La date d'expiration est obligatoire !");
+            return false;
+        }
+
+        if (dpDateExpiration.getValue().isBefore(LocalDate.now())) {
+            showWarningAlert("La date d'expiration ne peut pas etre dans le passe !");
+            return false;
+        }
+
         return true;
     }
 
     @FXML
-    private void handleValider() throws SQLException {
+    private void handleValider() {
         ensureServiceProduit();
-        if (!validateInputs()) return;
+        if (!validateInputs()) {
+            return;
+        }
 
         Produit produit = new Produit();
-        produit.setNom(txtNom.getText());
+        produit.setNom(txtNom.getText().trim());
         produit.setDescription(txtDescription.getText());
-        produit.setCategorie(cmbCategorie.getValue());  // ← L'Enum
-        produit.setPrix(Double.parseDouble(txtPrix.getText()));
-        produit.setStock(Integer.parseInt(txtStock.getText()));
+        produit.setCategorie(cmbCategorie.getValue());
+        produit.setPrix(Double.parseDouble(txtPrix.getText().trim()));
+        produit.setStock(Integer.parseInt(txtStock.getText().trim()));
         produit.setImage(txtImage.getText());
         produit.setDisponible(chkDisponible.isSelected());
         produit.setPrescriptionRequise(chkPrescription.isSelected());
         produit.setMarque(txtMarque.getText());
         produit.setDateExpiration(dpDateExpiration.getValue());
 
-        if (!"modifier".equalsIgnoreCase(mode)) {
-            try {
+        try {
+            if (!"modifier".equalsIgnoreCase(mode)) {
                 serviceProduit.ajouter(produit);
-            } catch (SQLException e) {
-                    throw new RuntimeException(e);
+                showInfoAlert("Produit ajoute avec succes !");
+            } else {
+                produit.setId(produitModification.getId());
+                serviceProduit.modifier(produit);
+                showInfoAlert("Produit modifie avec succes !");
             }
-            showAlert("Produit ajouté avec succès !");
-        } else {
-            produit.setId(produitModification.getId());
-            serviceProduit.modifier(produit);
-            showAlert("Produit modifié avec succès !");
+        } catch (SQLException e) {
+            showErrorAlert("Impossible d'enregistrer le produit.");
+            return;
         }
 
         if (listeController != null) {
-            listeController.refreshList();
+            try {
+                listeController.refreshList();
+            } catch (SQLException e) {
+                showErrorAlert("Produit enregistre, mais la liste n'a pas pu etre rechargee.");
+                return;
+            }
         }
 
-        closeWindow();
+        goBackToListOrClose();
     }
 
     @FXML
     private void handleAnnuler() {
+        goBackToListOrClose();
+    }
+
+    private void goBackToListOrClose() {
+        if (tryNavigateMainContent("/fxml/ListProd.fxml")) {
+            return;
+        }
         closeWindow();
+    }
+
+    private boolean tryNavigateMainContent(String fxmlPath) {
+        try {
+            Parent sceneRoot = txtNom.getScene() != null ? txtNom.getScene().getRoot() : null;
+            if (!(sceneRoot instanceof BorderPane borderPane)) {
+                return false;
+            }
+
+            Node center = borderPane.getCenter();
+            if (!(center instanceof StackPane contentArea)) {
+                return false;
+            }
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Node view = loader.load();
+            contentArea.getChildren().setAll(view);
+            return true;
+        } catch (IOException | NullPointerException e) {
+            return false;
+        }
     }
 
     private void closeWindow() {
         Stage stage = (Stage) txtNom.getScene().getWindow();
-        stage.close();
+        if (stage != null) {
+            stage.close();
+        }
     }
 
     private void ensureServiceProduit() {
@@ -178,7 +249,19 @@ public class FormulaireProduitController implements Initializable {
         }
     }
 
-    private void showAlert(String message) {
+    private void showWarningAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showErrorAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showInfoAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setContentText(message);
         alert.showAndWait();

@@ -1,8 +1,11 @@
 package esprit.fx.controllers;
 
 import esprit.fx.entities.ConsultationsArij;
+import esprit.fx.entities.Patient;
 import esprit.fx.services.ServiceConsultationsArij;
+import esprit.fx.services.ServicePatient;
 import esprit.fx.utils.MyDB;
+import esprit.fx.utils.UserSession;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -37,6 +40,7 @@ public class ConsultationListControllerArij {
     @FXML private Label searchErrorLabel;
 
     private final ServiceConsultationsArij service = new ServiceConsultationsArij();
+    private final ServicePatient patientService = new ServicePatient();
 
     // doctorId → [username, phone]
     private Map<Integer, String[]> doctorInfoById = new HashMap<>();
@@ -48,19 +52,22 @@ public class ConsultationListControllerArij {
     private void initialize() {
         doctorInfoById = loadDoctorInfo();
         setupSearchBar();
+        resolvePatientIdFromSession();
         applyRoleUi();
         refreshFromDb();
     }
 
     public void setPatientId(int patientId) {
         this.patientId = patientId;
+        resolvePatientIdFromSession();
         applyRoleUi();
         refreshFromDb();
     }
 
     private void applyRoleUi() {
+        resolvePatientIdFromSession();
         if (newConsultationButton != null) {
-            boolean ready = patientId > 0;
+            boolean ready = isPatientRole();
             newConsultationButton.setVisible(ready);
             newConsultationButton.setManaged(ready);
         }
@@ -68,7 +75,46 @@ public class ConsultationListControllerArij {
 
     @FXML
     private void openNewConsultation() {
+        resolvePatientIdFromSession();
+        if (patientId <= 0) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Patient introuvable");
+            alert.setHeaderText(null);
+            alert.setContentText("Impossible de creer une consultation sans profil patient.");
+            alert.showAndWait();
+            return;
+        }
         openFormModal(null);
+    }
+
+    private void resolvePatientIdFromSession() {
+        if (patientId > 0) {
+            return;
+        }
+        if (!isPatientRole()) {
+            return;
+        }
+        if (UserSession.getCurrentUser() == null) {
+            return;
+        }
+
+        try {
+            Patient patient = patientService.afficherParId(UserSession.getCurrentUser().getId());
+            if (patient != null && patient.getId() > 0) {
+                patientId = patient.getId();
+            }
+        } catch (SQLException e) {
+            System.err.println("resolvePatientIdFromSession: " + e.getMessage());
+        }
+    }
+
+    private boolean isPatientRole() {
+        String role = UserSession.getCurrentRole();
+        if (role == null) {
+            return false;
+        }
+        String normalized = role.trim().toUpperCase();
+        return "PATIENT".equals(normalized) || "ROLE_PATIENT".equals(normalized);
     }
 
     // ─── Search bar ───────────────────────────────────────────────────────────

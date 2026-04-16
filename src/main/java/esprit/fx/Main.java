@@ -16,14 +16,14 @@ public class Main extends Application {
         // Démarre sur la page de login
         Parent root = FXMLLoader.load(Objects.requireNonNull(
                 Main.class.getResource("/Login.fxml")));
-        Scene scene = new Scene(root);
+        Scene scene = new Scene(root, 1100, 760);
         stage.setTitle("MedTimeFX — Connexion");
         stage.setScene(scene);
         stage.setResizable(true);
-        stage.setWidth(800);
-        stage.setHeight(600);
         stage.setMinWidth(600);
         stage.setMinHeight(420);
+        stage.setWidth(1100);
+        stage.setHeight(760);
         stage.centerOnScreen();
         stage.show();
     }

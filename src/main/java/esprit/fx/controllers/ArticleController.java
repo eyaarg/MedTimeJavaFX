@@ -3,12 +3,10 @@ package esprit.fx.controllers;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import esprit.fx.entities.Article;
 import esprit.fx.services.ArticleService;
@@ -181,6 +179,7 @@ public class ArticleController implements Initializable {
     public void ajouterArticle() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AjouterArticle.fxml"));
+            loader.setController(new AjouterArticleController());
             Parent root = loader.load();
             Stage stage = new Stage();
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
@@ -206,7 +205,6 @@ public class ArticleController implements Initializable {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
-    @FXML
     public void supprimerArticle(Article article) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Confirmation");

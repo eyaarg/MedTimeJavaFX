@@ -202,17 +202,14 @@ public class OrdonnanceListControllerArij {
         int pid = ordonnancePatientId.getOrDefault(o.getId(), findPatientIdByConsultation(o.getConsultationId()));
         String[] pInfo = patientInfoById.getOrDefault(pid, new String[]{"Patient #" + pid, "-"});
 
-        // Ligne 1 : nom + numéro ordonnance
+        // Ligne 1 : nom
         HBox top = new HBox(10);
         top.setAlignment(Pos.CENTER_LEFT);
         Label lblName = new Label("👤 " + pInfo[0]);
         lblName.setStyle("-fx-font-size:14px; -fx-font-weight:bold; -fx-text-fill:#0f172a;");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        Label lblNum = new Label("💊 Rx #" + (o.getNumeroOrdonnance() != null ? o.getNumeroOrdonnance() : o.getId()));
-        lblNum.setStyle("-fx-font-size:11px; -fx-font-weight:bold; -fx-text-fill:#6d28d9;" +
-                "-fx-background-color:#f5f3ff; -fx-padding:3 8; -fx-background-radius:999;");
-        top.getChildren().addAll(lblName, spacer, lblNum);
+        top.getChildren().addAll(lblName, spacer);
 
         // Ligne 2 : téléphone
         Label lblPhone = new Label("📞 " + pInfo[1]);

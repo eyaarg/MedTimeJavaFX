@@ -1,6 +1,10 @@
 package esprit.fx.controllers;
 
 import esprit.fx.entities.User;
+import esprit.fx.entities.Doctor;
+import esprit.fx.entities.Patient;
+import esprit.fx.services.ServiceDoctor;
+import esprit.fx.services.ServicePatient;
 import esprit.fx.utils.UserSession;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -47,6 +51,8 @@ public class MainControllerArij {
         if (currentUser != null) {
             userId = currentUser.getId();
         }
+        role = normalizeRole(UserSession.getCurrentRole(), patientId, doctorId);
+        resolveBusinessIds();
         role = normalizeRole(UserSession.getCurrentRole(), patientId, doctorId);
 
         applySessionIdentity();
@@ -179,6 +185,29 @@ public class MainControllerArij {
         }
         if (avatarLabel != null && (avatarLabel.getText() == null || avatarLabel.getText().isBlank())) {
             avatarLabel.setText(isDoctor() ? "M" : "P");
+        }
+    }
+
+    private void resolveBusinessIds() {
+        User currentUser = UserSession.getCurrentUser();
+        if (currentUser == null) {
+            return;
+        }
+
+        try {
+            if (isDoctor()) {
+                Doctor doctor = new ServiceDoctor().afficherParId(currentUser.getId());
+                if (doctor != null) {
+                    doctorId = doctor.getId();
+                }
+            } else {
+                Patient patient = new ServicePatient().afficherParId(currentUser.getId());
+                if (patient != null) {
+                    patientId = patient.getId();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Impossible de resoudre les identifiants metier: " + e.getMessage());
         }
     }
 

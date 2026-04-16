@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.ConsultationManagementControllerArij"
+      stylesheets="@/css/arij-styles.css"
+      style="-fx-background-color:#f0f4f8;"
+      spacing="0">
+
+    <!-- Header -->
+    <VBox styleClass="hero-header">
+        <padding><Insets top="22" right="32" bottom="18" left="32"/></padding>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="👨‍⚕️" style="-fx-font-size:16px;"/>
+            <Label text="Mes Consultations" styleClass="hero-title" style="-fx-font-size:18px;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="countBadge" text="0" styleClass="assistant-badge"/>
+        </HBox>
+        <Label text="Gérez les demandes de vos patients" styleClass="hero-subtitle"/>
+    </VBox>
+
+    <!-- Barre de recherche / tri -->
+    <VBox spacing="6" style="-fx-background-color:white; -fx-border-color:#e2e8f0; -fx-border-width:0 0 1 0; -fx-padding:12 32 10 32;">
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <TextField fx:id="searchPhoneField"
+                       promptText="🔍 Rechercher par téléphone..."
+                       style="-fx-background-color:#f8fafc; -fx-border-color:#cbd5e1; -fx-border-radius:8;
+                              -fx-background-radius:8; -fx-padding:7 12; -fx-font-size:12px;"
+                       HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            <ComboBox fx:id="filterStatusCombo"
+                      style="-fx-background-color:#f8fafc; -fx-border-color:#cbd5e1; -fx-border-radius:8;
+                             -fx-background-radius:8; -fx-font-size:12px;"
+                      prefWidth="140"/>
+            <ComboBox fx:id="sortCombo"
+                      style="-fx-background-color:#f8fafc; -fx-border-color:#cbd5e1; -fx-border-radius:8;
+                             -fx-background-radius:8; -fx-font-size:12px;"
+                      prefWidth="150"/>
+        </HBox>
+        <Label fx:id="searchErrorLabel" text="" visible="false"
+               style="-fx-text-fill:#be123c; -fx-font-size:11px;"/>
+    </VBox>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll">
+        <content>
+            <VBox fx:id="cardsContainer" spacing="12">
+                <padding><Insets top="20" right="32" bottom="20" left="32"/></padding>
+            </VBox>
+        </content>
+    </ScrollPane>
+
+</VBox>

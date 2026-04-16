@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="esprit.fx.controllers.LoginController">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: white; -fx-padding: 15;">
+            <Label style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1e4468;" text="MedTime" />
+            <Pane HBox.hgrow="ALWAYS" />
+            <HBox spacing="25">
+                <Button style="-fx-background-color: transparent; -fx-text-fill: #1e4468;" text="Accueil" />
+                <Button style="-fx-background-color: transparent; -fx-text-fill: #1e4468;" text="À propos" />
+                <Button style="-fx-background-color: transparent; -fx-text-fill: #1e4468;" text="Services" />
+                <Button style="-fx-background-color: transparent; -fx-text-fill: #1e4468;" text="Médecins" />
+                <Button style="-fx-background-color: transparent; -fx-text-fill: #1e4468;" text="Contact" />
+            </HBox>
+        </HBox>
+    </top>
+
+    <center>
+        <StackPane style="-fx-background-color: #f2f6fa;">
+            <VBox alignment="CENTER" spacing="30">
+                <VBox alignment="CENTER" prefWidth="420" spacing="12" style="-fx-background-color: white; -fx-padding: 40 60;                              -fx-background-radius: 12;                              -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 12, 0, 0, 4);">
+
+                    <Text style="-fx-font-size: 26px; -fx-font-weight: bold;" text="Welcome Back" />
+                    <Text fill="#777" text="Connectez-vous à votre compte pour continuer" />
+
+                    <Label style="-fx-font-weight: bold; -fx-font-size: 12px;" text="Username" />
+                    <TextField fx:id="usernameField" maxWidth="Infinity" promptText="Write your username" style="-fx-background-color: #edf2ff; -fx-background-radius: 25; -fx-padding: 8 15;" />
+
+                    <Label style="-fx-font-weight: bold; -fx-font-size: 12px;" text="Mot de passe" />
+                    <PasswordField fx:id="passwordField" maxWidth="Infinity" promptText="Write your password" style="-fx-background-color: #edf2ff; -fx-background-radius: 25; -fx-padding: 8 15;" />
+
+                    <HBox alignment="CENTER_LEFT" spacing="5">
+                        <CheckBox text="Remember me" />
+                        <Pane HBox.hgrow="ALWAYS" />
+                        <Hyperlink text="Forgot password?" />
+                    </HBox>
+
+                    <Button fx:id="signInButton" maxWidth="Infinity" onAction="#handleLogin" style="-fx-background-color: #197bff; -fx-text-fill: white;                                    -fx-font-weight: bold; -fx-background-radius: 25;                                    -fx-padding: 10 60; -fx-cursor: hand;" text="Sign In" />
+
+                    <Button maxWidth="Infinity" onAction="#openRegisterPage" style="-fx-background-color: transparent; -fx-text-fill: #197bff;                                    -fx-font-weight: bold; -fx-border-color: #197bff;                                    -fx-border-radius: 25; -fx-background-radius: 25;                                    -fx-padding: 10 60; -fx-cursor: hand;" text="Create Account" />
+
+                    <Separator style="-fx-padding: 10;" />
+
+                    <VBox alignment="CENTER" spacing="8">
+                        <Text fill="#888" style="-fx-font-size:11px;" text="Accès rapide (développement)" />
+                        <HBox alignment="CENTER" spacing="10">
+                            <Button onAction="#loginAsPatient" style="-fx-background-color: #e9edf8; -fx-background-radius: 8;                                            -fx-text-fill: #333; -fx-cursor: hand;" text="👤 Patient" />
+                            <Button onAction="#loginAsDoctor" style="-fx-background-color: #e9edf8; -fx-background-radius: 8;                                            -fx-text-fill: #333; -fx-cursor: hand;" text="👨‍⚕️ Médecin" />
+                            <Button onAction="#loginAsAdmin" style="-fx-background-color: #e9edf8; -fx-background-radius: 8;                                            -fx-text-fill: #333; -fx-cursor: hand;" text="🔧 Admin" />
+                        </HBox>
+                    </VBox>
+
+                </VBox>
+            </VBox>
+        </StackPane>
+    </center>
+</BorderPane>

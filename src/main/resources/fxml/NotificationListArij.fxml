@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.NotificationListControllerArij"
+      spacing="0" stylesheets="@/css/arij-styles.css"
+      style="-fx-background-color: #f0f4f8;">
+
+    <HBox alignment="CENTER_LEFT" styleClass="page-header">
+        <padding><Insets top="28" right="32" bottom="20" left="32"/></padding>
+        <VBox spacing="3" HBox.hgrow="ALWAYS">
+            <Label text="Notifications" styleClass="page-title"/>
+            <Label text="Restez informé de votre activité de santé" styleClass="page-subtitle"/>
+        </VBox>
+        <Button text="✓  Tout marquer comme lu" styleClass="btn-secondary" onAction="#markAllRead"/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll">
+        <padding><Insets top="16" right="32" bottom="24" left="32"/></padding>
+        <content>
+            <VBox fx:id="notificationsContainer" spacing="10"/>
+        </content>
+    </ScrollPane>
+</VBox>

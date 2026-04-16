@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.DashboardControllerArij"
+      spacing="0" stylesheets="@/css/arij-styles.css"
+      style="-fx-background-color:#f0f4f8;">
+
+    <HBox alignment="CENTER_LEFT" styleClass="page-header">
+        <padding><Insets top="28" right="32" bottom="20" left="32"/></padding>
+        <VBox spacing="3">
+            <Label text="Tableau de bord" styleClass="page-title"/>
+            <Label text="Vue d'ensemble de votre activité de santé" styleClass="page-subtitle"/>
+        </VBox>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll">
+        <content>
+            <VBox spacing="24">
+                <padding><Insets top="24" right="32" bottom="32" left="32"/></padding>
+
+                <!-- ══════════════ SECTION PATIENT ══════════════ -->
+                <VBox fx:id="patientSection" spacing="20">
+
+                    <!-- KPI row 1 -->
+                    <HBox spacing="16">
+                        <VBox styleClass="kpi-card" HBox.hgrow="ALWAYS">
+                            <Label text="Total Consultations" styleClass="kpi-label"/>
+                            <Label fx:id="totalConsultationsLabel" text="0" styleClass="kpi-value"/>
+                        </VBox>
+                        <VBox styleClass="kpi-card" HBox.hgrow="ALWAYS">
+                            <Label text="Prochain Rendez-vous" styleClass="kpi-label"/>
+                            <Label fx:id="nextConsultationLabel" text="N/A" styleClass="kpi-value-sm"/>
+                        </VBox>
+                        <VBox styleClass="kpi-card" HBox.hgrow="ALWAYS">
+                            <Label text="Taux de confirmation" styleClass="kpi-label"/>
+                            <Label fx:id="patientConfirmRateLabel" text="0%" styleClass="kpi-value"/>
+                        </VBox>
+                        <VBox styleClass="kpi-card" HBox.hgrow="ALWAYS">
+                            <Label text="Consultations refusées" styleClass="kpi-label"/>
+                            <Label fx:id="patientRefusedLabel" text="0" styleClass="kpi-value"/>
+                        </VBox>
+                    </HBox>
+
+                    <!-- Pie : statuts -->
+                    <VBox styleClass="chart-card">
+                        <Label text="📊  Répartition par statut" styleClass="section-title"/>
+                        <PieChart fx:id="patientStatusPie" prefHeight="280" legendVisible="true"/>
+                    </VBox>
+
+                    <!-- Bar : consultations par semaine -->
+                    <VBox styleClass="chart-card">
+                        <Label text="📅  Consultations par semaine (4 dernières semaines)" styleClass="section-title"/>
+                        <BarChart fx:id="patientWeeklyBar" prefHeight="240" animated="false">
+                            <xAxis><CategoryAxis label="Semaine"/></xAxis>
+                            <yAxis><NumberAxis label="Nombre"/></yAxis>
+                        </BarChart>
+                    </VBox>
+
+                </VBox>
+
+                <!-- ══════════════ SECTION MÉDECIN ══════════════ -->
+                <VBox fx:id="doctorSection" spacing="20">
+
+                    <!-- KPI row -->
+                    <HBox spacing="16">
+                        <VBox styleClass="kpi-card" HBox.hgrow="ALWAYS">
+                            <Label text="Total Reçues" styleClass="kpi-label"/>
+                            <Label fx:id="totalReceivedLabel" text="0" styleClass="kpi-value"/>
+                        </VBox>
+                        <VBox styleClass="kpi-card" HBox.hgrow="ALWAYS">
+                            <Label text="Taux d'acceptation" styleClass="kpi-label"/>
+                            <Label fx:id="acceptanceRateLabel" text="0%" styleClass="kpi-value"/>
+                        </VBox>
+                        <VBox styleClass="kpi-card" HBox.hgrow="ALWAYS">
+                            <Label text="Ordonnances émises" styleClass="kpi-label"/>
+                            <Label fx:id="totalOrdonnancesLabel" text="0" styleClass="kpi-value"/>
+                        </VBox>
+                        <VBox styleClass="kpi-card" HBox.hgrow="ALWAYS">
+                            <Label text="En attente" styleClass="kpi-label"/>
+                            <Label fx:id="pendingLabel" text="0" styleClass="kpi-value"/>
+                        </VBox>
+                    </HBox>
+
+                    <!-- Bar : par semaine -->
+                    <VBox styleClass="chart-card">
+                        <Label text="📅  Consultations par semaine (4 dernières semaines)" styleClass="section-title"/>
+                        <BarChart fx:id="weeklyBarChart" prefHeight="260" animated="false">
+                            <xAxis><CategoryAxis label="Semaine"/></xAxis>
+                            <yAxis><NumberAxis label="Nombre"/></yAxis>
+                        </BarChart>
+                    </VBox>
+
+                    <!-- Pie : statuts -->
+                    <VBox styleClass="chart-card">
+                        <Label text="📊  Répartition par statut" styleClass="section-title"/>
+                        <PieChart fx:id="doctorStatusPie" prefHeight="280" legendVisible="true"/>
+                    </VBox>
+
+                </VBox>
+
+            </VBox>
+        </content>
+    </ScrollPane>
+</VBox>

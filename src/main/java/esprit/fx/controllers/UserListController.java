@@ -30,6 +30,7 @@ public class UserListController {
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).+$");
 
     @FXML private TextField searchField;
+    @FXML private ComboBox<String> roleFilterComboBox;
     @FXML private Label resultCountLabel;
     @FXML private TableView<User> usersTable;
     @FXML private TableColumn<User, String> usernameColumn;
@@ -47,7 +48,15 @@ public class UserListController {
     @FXML
     private void initialize() {
         setupColumns();
-        searchField.textProperty().addListener((obs, oldValue, newValue) -> applyFilter(newValue));
+
+        List<String> roleFilters = new ArrayList<>();
+        roleFilters.add("Tous");
+        roleFilters.addAll(loadRoleOptions());
+        roleFilterComboBox.setItems(FXCollections.observableArrayList(roleFilters));
+        roleFilterComboBox.setValue("Tous");
+
+        searchField.textProperty().addListener((obs, oldValue, newValue) -> applyFilter());
+        roleFilterComboBox.valueProperty().addListener((obs, oldValue, newValue) -> applyFilter());
         refreshUsers();
     }
 
@@ -56,7 +65,7 @@ public class UserListController {
         try {
             List<User> users = serviceUser.getAll();
             masterData.setAll(users);
-            applyFilter(searchField.getText());
+            applyFilter();
         } catch (SQLException e) {
             System.err.println("Erreur chargement users: " + e.getMessage());
             masterData.clear();
@@ -290,25 +299,58 @@ public class UserListController {
         alert.showAndWait();
     }
 
-    private void applyFilter(String query) {
-        String q = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
+    private void applyFilter() {
+        String q = searchField.getText() == null ? "" : searchField.getText().trim().toLowerCase(Locale.ROOT);
+        String selectedRole = roleFilterComboBox.getValue();
+
         List<User> filtered = masterData.stream()
-                .filter(user -> matches(user, q))
+                .filter(user -> matchesName(user, q))
+                .filter(user -> matchesRole(user, selectedRole))
                 .collect(Collectors.toList());
         usersTable.setItems(FXCollections.observableArrayList(filtered));
         resultCountLabel.setText(filtered.size() + " user(s)");
     }
 
-    private boolean matches(User user, String q) {
+    private boolean matchesName(User user, String q) {
         if (q.isEmpty()) {
             return true;
         }
-        String roles = formatRoles(user.getRoles()).toLowerCase(Locale.ROOT);
-        return safe(user.getUsername()).toLowerCase(Locale.ROOT).contains(q)
-                || safe(user.getEmail()).toLowerCase(Locale.ROOT).contains(q)
-                || safe(user.getPhoneNumber()).toLowerCase(Locale.ROOT).contains(q)
-                || roles.contains(q)
-                || String.valueOf(user.getId()).contains(q);
+        return safe(user.getUsername()).toLowerCase(Locale.ROOT).contains(q);
+    }
+
+    private boolean matchesRole(User user, String selectedRole) {
+        if (selectedRole == null || selectedRole.isBlank() || "Tous".equalsIgnoreCase(selectedRole)) {
+            return true;
+        }
+
+        String expected = normalizeRoleForFilter(selectedRole);
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            return false;
+        }
+
+        return user.getRoles().stream()
+                .map(Role::getName)
+                .filter(name -> name != null && !name.isBlank())
+                .map(this::normalizeRoleForFilter)
+                .anyMatch(expected::equals);
+    }
+
+    private String normalizeRoleForFilter(String role) {
+        if (role == null || role.isBlank()) {
+            return "";
+        }
+
+        String normalized = role.trim().toUpperCase(Locale.ROOT);
+        if ("DOCTOR".equals(normalized) || "ROLE_DOCTOR".equals(normalized) || "MEDECIN".equals(normalized)) {
+            return "MEDECIN";
+        }
+        if ("PATIENT".equals(normalized) || "ROLE_PATIENT".equals(normalized)) {
+            return "PATIENT";
+        }
+        if ("ADMIN".equals(normalized) || "ROLE_ADMIN".equals(normalized)) {
+            return "ADMIN";
+        }
+        return normalized;
     }
 
     private String formatRoles(List<Role> roles) {

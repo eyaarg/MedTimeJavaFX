@@ -408,4 +408,19 @@ public class ServiceUser implements IService<User> {
     }
 
 
+    @Override
+    public User afficherParId(int id) throws SQLException {
+        User user = null;
+        String sql = "SELECT * FROM user WHERE id=?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setInt(1, id);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            user = new User();
+            user.setId(rs.getInt("id"));
+        }
+        return user;
+    }
+
+
 }

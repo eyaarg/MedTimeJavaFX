@@ -50,4 +50,18 @@ public class ServiceRole implements IService<Role> {
         }
             return roles;
     }
+
+
+    @Override
+    public Role afficherParId(int id) throws SQLException {
+        Role role = null;
+        String sql = "SELECT * FROM roles WHERE id=?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setInt(1, id);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            role = new Role(rs.getInt("id"), rs.getString("name"));
+        }
+        return role;
+    }
 }

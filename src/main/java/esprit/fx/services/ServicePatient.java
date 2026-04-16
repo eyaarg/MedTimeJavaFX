@@ -110,4 +110,41 @@ public class ServicePatient implements IService<Patient> {
         }
         return patients;
     }
+
+
+    @Override
+    public Patient afficherParId(int id) throws SQLException {
+        Patient patient = null;
+        String sql = "SELECT u.*, p.id as patient_id, p.region, p.allergies, p.medical_history, p.previous_cancellations, p.birth_date " +
+                "FROM users u JOIN patients p ON u.id = p.user_id WHERE u.id=?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setInt(1, id);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            patient = new Patient(
+                    rs.getInt("id"),
+                    rs.getString("email"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    (Object) null,
+                    rs.getBoolean("is_active"),
+                    rs.getString("phone_number"),
+                    rs.getBoolean("is_verified"),
+                    (String) null,
+                    (LocalDateTime) null,
+                    (String) null,
+                    (LocalDateTime) null,
+                    rs.getInt("failed_attempts"),
+                    rs.getInt("patient_id"),
+                    rs.getInt("id"),
+                    rs.getString("region"),
+                    rs.getString("allergies"),
+                    rs.getString("medical_history"),
+                    rs.getInt("previous_cancellations"),
+                    rs.getDate("birth_date") != null ? rs.getDate("birth_date").toLocalDate() : null,
+                    rs.getTimestamp("created_at").toLocalDateTime()
+            );
+        }
+        return patient;
+    }
 }

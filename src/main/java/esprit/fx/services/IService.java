@@ -8,4 +8,5 @@ public interface IService<Objet> {
     void modifier(Objet objet) throws SQLException;
     void supprimer(int id) throws SQLException;
     List<Objet> getAll() throws SQLException;
+    Objet afficherParId(int id) throws SQLException;
 }

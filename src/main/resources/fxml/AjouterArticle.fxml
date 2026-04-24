@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextArea?>
@@ -73,9 +75,48 @@
 
             <Separator/>
 
+            <!-- ── Planification ── -->
+            <VBox spacing="10"
+                  style="-fx-background-color:#f0f9ff; -fx-background-radius:8;
+                         -fx-border-color:#bae6fd; -fx-border-width:1; -fx-border-radius:8;
+                         -fx-padding:12 14;">
+
+                <CheckBox fx:id="chkPlanifier" text="🗓  Planifier la publication"
+                          style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#0369a1;"
+                          onAction="#togglePlanification"/>
+
+                <HBox fx:id="panneauPlanification" spacing="16" alignment="CENTER_LEFT"
+                      visible="false" managed="false">
+
+                    <VBox spacing="4">
+                        <Label text="Date de publication" styleClass="field-label"/>
+                        <DatePicker fx:id="datePicker" promptText="Choisir une date"
+                                    style="-fx-font-size:13px; -fx-background-radius:7; -fx-border-radius:7;"/>
+                    </VBox>
+
+                    <VBox spacing="4">
+                        <Label text="Heure" styleClass="field-label"/>
+                        <ComboBox fx:id="cbHeure" promptText="Heure"
+                                  style="-fx-font-size:13px; -fx-min-width:90px;"/>
+                    </VBox>
+
+                    <VBox spacing="4">
+                        <Label text="Minutes" styleClass="field-label"/>
+                        <ComboBox fx:id="cbMinutes" promptText="Min"
+                                  style="-fx-font-size:13px; -fx-min-width:80px;"/>
+                    </VBox>
+
+                    <Label fx:id="lblPlanifInfo" text=""
+                           style="-fx-font-size:11px; -fx-text-fill:#0369a1; -fx-wrap-text:true;"
+                           maxWidth="200"/>
+                </HBox>
+            </VBox>
+
+            <Separator/>
+
             <HBox alignment="CENTER_RIGHT" spacing="12">
                 <Button fx:id="btnAnnuler" text="Annuler" styleClass="btn-secondary" onAction="#annuler"/>
-                <Button fx:id="btnAjouter" text="➕ Ajouter" styleClass="btn-primary" onAction="#ajouterArticle"/>
+                <Button fx:id="btnAjouter" text="➕ Publier" styleClass="btn-primary" onAction="#ajouterArticle"/>
             </HBox>
 
         </VBox>

@@ -8,6 +8,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import esprit.fx.entities.Article;
 import esprit.fx.services.ArticleService;
+import esprit.fx.services.UnsplashService;
 
 import java.net.URL;
 import java.sql.Connection;
@@ -38,13 +39,20 @@ public class AjouterArticleController implements Initializable {
     @FXML private ComboBox<String> cbMinutes;
     @FXML private Label      lblPlanifInfo;
 
+    // Image IA
+    @FXML private Button     btnGenererImage;
+    @FXML private HBox       previewBox;
+    @FXML private Label      lblPreviewInfo;
+
     private ArticleService articleService;
     private Map<String, Integer> specialiteMap;
+    private UnsplashService unsplashService;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        articleService = new ArticleService();
-        specialiteMap  = new HashMap<>();
+        articleService  = new ArticleService();
+        specialiteMap   = new HashMap<>();
+        unsplashService = new UnsplashService();
 
         cbStatut.setItems(FXCollections.observableArrayList("publié", "brouillon"));
 
@@ -66,6 +74,53 @@ public class AjouterArticleController implements Initializable {
         cbMinutes.valueProperty().addListener((o, ov, nv)  -> mettreAJourInfoPlanif());
 
         loadSpecialites();
+    }
+
+    @FXML
+    public void genererImage() {
+        String titre      = txtTitre.getText().trim();
+        String specialite = cbCategorie.getValue();
+
+        if (titre.isEmpty() && specialite == null) {
+            showWarningAlert("Champs manquants",
+                "Veuillez saisir un titre ou choisir une catégorie avant de générer une image.");
+            return;
+        }
+
+        // Désactiver le bouton pendant la génération
+        btnGenererImage.setDisable(true);
+        btnGenererImage.setText("⏳ Génération...");
+        previewBox.setVisible(false);
+        previewBox.setManaged(false);
+
+        // Appel dans un thread séparé pour ne pas bloquer l'UI
+        Thread thread = new Thread(() -> {
+            String imageUrl = unsplashService.genererImage(titre, specialite);
+
+            javafx.application.Platform.runLater(() -> {
+                btnGenererImage.setDisable(false);
+                btnGenererImage.setText("🎨 Générer");
+
+                if (imageUrl != null && !imageUrl.isBlank()) {
+                    txtImage.setText(imageUrl);
+
+                    // Afficher info prévisualisation
+                    String source = unsplashService.hasApiKey() ? "Unsplash API" : "Unsplash (mode demo)";
+                    lblPreviewInfo.setText(
+                        "✅ Image générée via " + source + "\n" +
+                        "🔍 Basée sur : " + (titre.isEmpty() ? specialite : titre) + "\n" +
+                        "🔗 " + imageUrl.substring(0, Math.min(60, imageUrl.length())) + "..."
+                    );
+                    previewBox.setVisible(true);
+                    previewBox.setManaged(true);
+                } else {
+                    showWarningAlert("Génération échouée",
+                        "Impossible de générer une image. Vérifiez votre connexion internet.");
+                }
+            });
+        });
+        thread.setDaemon(true);
+        thread.start();
     }
 
     @FXML

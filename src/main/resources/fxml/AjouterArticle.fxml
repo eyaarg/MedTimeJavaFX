@@ -60,9 +60,28 @@
                 </VBox>
 
                 <VBox spacing="6" GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.columnSpan="2">
-                    <Label text="Image URL" styleClass="field-label"/>
-                    <TextField fx:id="txtImage" promptText="https://example.com/image.jpg"
-                               maxWidth="Infinity" styleClass="form-input"/>
+                    <Label text="Image" styleClass="field-label"/>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <TextField fx:id="txtImage" promptText="https://... ou cliquez Générer"
+                                   maxWidth="Infinity" styleClass="form-input"
+                                   HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="btnGenererImage" text="🎨 Générer"
+                                onAction="#genererImage"
+                                style="-fx-background-color:#7c3aed; -fx-text-fill:white;
+                                       -fx-font-size:12px; -fx-font-weight:bold;
+                                       -fx-background-radius:8; -fx-border-color:transparent;
+                                       -fx-padding:8 14; -fx-cursor:hand;"/>
+                    </HBox>
+                    <!-- Prévisualisation de l'image générée -->
+                    <HBox fx:id="previewBox" spacing="10" alignment="CENTER_LEFT"
+                          visible="false" managed="false"
+                          style="-fx-background-color:#faf5ff; -fx-background-radius:8;
+                                 -fx-border-color:#e9d5ff; -fx-border-width:1; -fx-border-radius:8;
+                                 -fx-padding:8 12;">
+                        <Label fx:id="lblPreviewInfo" text=""
+                               style="-fx-font-size:11px; -fx-text-fill:#7c3aed; -fx-wrap-text:true;"
+                               maxWidth="380"/>
+                    </HBox>
                 </VBox>
 
                 <VBox spacing="6" GridPane.rowIndex="3" GridPane.columnIndex="0" GridPane.columnSpan="2">

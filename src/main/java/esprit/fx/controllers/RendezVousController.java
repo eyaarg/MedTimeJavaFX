@@ -27,20 +27,20 @@ import java.util.ResourceBundle;
 public class RendezVousController implements Initializable {
 
     @FXML private TableView<RendezVous> tableRendezVous;
-    @FXML private TableColumn<RendezVous, Integer> colId;
+    // ✅ colId supprimé
     @FXML private TableColumn<RendezVous, String> colPatient;
     @FXML private TableColumn<RendezVous, String> colDocteur;
     @FXML private TableColumn<RendezVous, String> colDate;
     @FXML private TableColumn<RendezVous, String> colMotif;
     @FXML private TableColumn<RendezVous, String> colStatut;
-    
+
     @FXML private Button btnAjouter;
     @FXML private Button btnModifier;
     @FXML private Button btnSupprimer;
     @FXML private Button btnConfirmer;
     @FXML private Button btnAnnuler;
     @FXML private Button btnActualiser;
-    
+
     @FXML private ComboBox<String> filterStatut;
     @FXML private TextField searchField;
 
@@ -55,40 +55,39 @@ public class RendezVousController implements Initializable {
         serviceRendezVous = new ServiceRendezVous();
         serviceUser = new ServiceUser();
         rendezVousList = FXCollections.observableArrayList();
-        
-        // Récupérer les informations de l'utilisateur connecté
+
         User currentUser = UserSession.getCurrentUser();
         currentUserRole = UserSession.getCurrentRole();
         currentUserId = currentUser != null ? currentUser.getId() : 0;
-        
+
         initializeTable();
         initializeFilters();
         configureButtonsBasedOnRole();
         chargerRendezVous();
-        
-        // Listeners
+
         tableRendezVous.getSelectionModel().selectedItemProperty().addListener(
-            (obs, oldSelection, newSelection) -> updateButtonStates(newSelection)
+                (obs, oldSelection, newSelection) -> updateButtonStates(newSelection)
         );
     }
 
     private void initializeTable() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        // ✅ colId.setCellValueFactory supprimé
         colPatient.setCellValueFactory(new PropertyValueFactory<>("patientNom"));
         colDocteur.setCellValueFactory(new PropertyValueFactory<>("doctorNom"));
         colMotif.setCellValueFactory(new PropertyValueFactory<>("motif"));
         colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
-        
+
         // Formater la colonne date
         colDate.setCellValueFactory(cellData -> {
             if (cellData.getValue().getDateHeure() != null) {
                 return new javafx.beans.property.SimpleStringProperty(
-                    cellData.getValue().getDateHeure().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                        cellData.getValue().getDateHeure().format(
+                                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
                 );
             }
             return new javafx.beans.property.SimpleStringProperty("");
         });
-        
+
         // Colorer les statuts
         colStatut.setCellFactory(column -> new TableCell<RendezVous, String>() {
             @Override
@@ -118,36 +117,35 @@ public class RendezVousController implements Initializable {
                 }
             }
         });
-        
+
         tableRendezVous.setItems(rendezVousList);
     }
 
     private void initializeFilters() {
         filterStatut.setItems(FXCollections.observableArrayList(
-            "Tous", "DEMANDE", "CONFIRME", "ANNULE", "TERMINE"
+                "Tous", "DEMANDE", "CONFIRME", "ANNULE", "TERMINE"
         ));
         filterStatut.setValue("Tous");
-        
+
         filterStatut.setOnAction(e -> filtrerRendezVous());
-        searchField.textProperty().addListener((obs, oldText, newText) -> filtrerRendezVous());
+        searchField.textProperty().addListener(
+                (obs, oldText, newText) -> filtrerRendezVous()
+        );
     }
 
     private void configureButtonsBasedOnRole() {
         if ("PATIENT".equals(currentUserRole)) {
-            // Les patients peuvent seulement ajouter et voir leurs rendez-vous
             btnConfirmer.setVisible(false);
             btnAnnuler.setText("Annuler RDV");
         } else if ("DOCTOR".equals(currentUserRole)) {
-            // Les médecins peuvent confirmer, annuler et gérer
             btnAjouter.setText("Créer RDV");
         }
-        // Les admins ont accès à tout
     }
 
     private void chargerRendezVous() {
         try {
             List<RendezVous> rdvs;
-            
+
             if ("PATIENT".equals(currentUserRole)) {
                 rdvs = serviceRendezVous.getRendezVousParPatient(currentUserId);
             } else if ("DOCTOR".equals(currentUserRole)) {
@@ -155,10 +153,10 @@ public class RendezVousController implements Initializable {
             } else {
                 rdvs = serviceRendezVous.getAll();
             }
-            
+
             rendezVousList.clear();
             rendezVousList.addAll(rdvs);
-            
+
         } catch (SQLException e) {
             showAlert("Erreur", "Impossible de charger les rendez-vous : " + e.getMessage());
         }
@@ -167,7 +165,7 @@ public class RendezVousController implements Initializable {
     private void filtrerRendezVous() {
         try {
             List<RendezVous> rdvs;
-            
+
             if ("PATIENT".equals(currentUserRole)) {
                 rdvs = serviceRendezVous.getRendezVousParPatient(currentUserId);
             } else if ("DOCTOR".equals(currentUserRole)) {
@@ -175,30 +173,33 @@ public class RendezVousController implements Initializable {
             } else {
                 rdvs = serviceRendezVous.getAll();
             }
-            
+
             // Filtrer par statut
             String statutFiltre = filterStatut.getValue();
             if (!"Tous".equals(statutFiltre)) {
                 rdvs = rdvs.stream()
-                    .filter(rdv -> statutFiltre.equals(rdv.getStatut()))
-                    .toList();
+                        .filter(rdv -> statutFiltre.equals(rdv.getStatut()))
+                        .toList();
             }
-            
-            // Filtrer par recherche
-            String recherche = searchField.getText().toLowerCase();
+
+            // ✅ Recherche par nom patient, médecin, motif (sans ID)
+            String recherche = searchField.getText().toLowerCase().trim();
             if (!recherche.isEmpty()) {
                 rdvs = rdvs.stream()
-                    .filter(rdv -> 
-                        (rdv.getPatientNom() != null && rdv.getPatientNom().toLowerCase().contains(recherche)) ||
-                        (rdv.getDoctorNom() != null && rdv.getDoctorNom().toLowerCase().contains(recherche)) ||
-                        (rdv.getMotif() != null && rdv.getMotif().toLowerCase().contains(recherche))
-                    )
-                    .toList();
+                        .filter(rdv ->
+                                (rdv.getPatientNom() != null &&
+                                        rdv.getPatientNom().toLowerCase().contains(recherche)) ||
+                                        (rdv.getDoctorNom() != null &&
+                                                rdv.getDoctorNom().toLowerCase().contains(recherche)) ||
+                                        (rdv.getMotif() != null &&
+                                                rdv.getMotif().toLowerCase().contains(recherche))
+                        )
+                        .toList();
             }
-            
+
             rendezVousList.clear();
             rendezVousList.addAll(rdvs);
-            
+
         } catch (SQLException e) {
             showAlert("Erreur", "Erreur lors du filtrage : " + e.getMessage());
         }
@@ -206,14 +207,16 @@ public class RendezVousController implements Initializable {
 
     private void updateButtonStates(RendezVous selectedRdv) {
         boolean hasSelection = selectedRdv != null;
-        
+
         btnModifier.setDisable(!hasSelection);
         btnSupprimer.setDisable(!hasSelection);
-        
+
         if (hasSelection) {
             String statut = selectedRdv.getStatut();
             btnConfirmer.setDisable(!"DEMANDE".equals(statut));
-            btnAnnuler.setDisable("ANNULE".equals(statut) || "TERMINE".equals(statut));
+            btnAnnuler.setDisable(
+                    "ANNULE".equals(statut) || "TERMINE".equals(statut)
+            );
         } else {
             btnConfirmer.setDisable(true);
             btnAnnuler.setDisable(true);
@@ -240,15 +243,18 @@ public class RendezVousController implements Initializable {
             Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
             confirmation.setTitle("Confirmation");
             confirmation.setHeaderText("Supprimer le rendez-vous");
-            confirmation.setContentText("Êtes-vous sûr de vouloir supprimer ce rendez-vous ?");
-            
+            confirmation.setContentText(
+                    "Êtes-vous sûr de vouloir supprimer ce rendez-vous ?"
+            );
+
             if (confirmation.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
                 try {
                     serviceRendezVous.supprimer(selected.getId());
                     chargerRendezVous();
                     showInfo("Succès", "Rendez-vous supprimé avec succès.");
                 } catch (SQLException e) {
-                    showAlert("Erreur", "Impossible de supprimer le rendez-vous : " + e.getMessage());
+                    showAlert("Erreur",
+                            "Impossible de supprimer le rendez-vous : " + e.getMessage());
                 }
             }
         }
@@ -263,7 +269,8 @@ public class RendezVousController implements Initializable {
                 chargerRendezVous();
                 showInfo("Succès", "Rendez-vous confirmé.");
             } catch (SQLException e) {
-                showAlert("Erreur", "Impossible de confirmer le rendez-vous : " + e.getMessage());
+                showAlert("Erreur",
+                        "Impossible de confirmer le rendez-vous : " + e.getMessage());
             }
         }
     }
@@ -277,7 +284,8 @@ public class RendezVousController implements Initializable {
                 chargerRendezVous();
                 showInfo("Succès", "Rendez-vous annulé.");
             } catch (SQLException e) {
-                showAlert("Erreur", "Impossible d'annuler le rendez-vous : " + e.getMessage());
+                showAlert("Erreur",
+                        "Impossible d'annuler le rendez-vous : " + e.getMessage());
             }
         }
     }
@@ -289,19 +297,23 @@ public class RendezVousController implements Initializable {
 
     private void ouvrirFormulaireRendezVous(RendezVous rendezVous) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/FormulaireRendezVous.fxml"));
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/FormulaireRendezVous.fxml")
+            );
             Parent root = loader.load();
-            
+
             FormulaireRendezVousController controller = loader.getController();
             controller.setRendezVous(rendezVous);
             controller.setParentController(this);
-            
+
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle(rendezVous == null ? "Nouveau Rendez-vous" : "Modifier Rendez-vous");
+            stage.setTitle(
+                    rendezVous == null ? "Nouveau Rendez-vous" : "Modifier Rendez-vous"
+            );
             stage.setScene(new Scene(root));
             stage.showAndWait();
-            
+
         } catch (IOException e) {
             showAlert("Erreur", "Impossible d'ouvrir le formulaire : " + e.getMessage());
         }

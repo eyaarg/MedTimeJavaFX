@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.DashboardStatsControllerArij"
+      stylesheets="@/css/arij-styles.css"
+      style="-fx-background-color: #f0f4f8;"
+      spacing="0">
+
+    <!-- ═══════════════════════════════════════════════════
+         EN-TÊTE + FILTRE ANNÉE
+    ═══════════════════════════════════════════════════ -->
+    <HBox alignment="CENTER_LEFT" styleClass="page-header">
+        <padding><Insets top="22" right="32" bottom="18" left="32"/></padding>
+
+        <VBox spacing="3" HBox.hgrow="ALWAYS">
+            <Label text="📊  Statistiques &amp; Analytiques" styleClass="page-title"/>
+            <Label text="Vue globale de l'activité médicale" styleClass="page-subtitle"/>
+        </VBox>
+
+        <!-- Filtre par année -->
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Label text="Année :" styleClass="field-label"
+                   style="-fx-text-fill: #475569;"/>
+            <ComboBox fx:id="anneeCombo"
+                      onAction="#handleAnneeChange"
+                      prefWidth="100"
+                      style="-fx-background-color: #f8fafc;
+                             -fx-border-color: #cbd5e1;
+                             -fx-border-radius: 8;
+                             -fx-background-radius: 8;
+                             -fx-font-size: 13px;"/>
+        </HBox>
+    </HBox>
+
+    <!-- ═══════════════════════════════════════════════════
+         CONTENU PRINCIPAL
+    ═══════════════════════════════════════════════════ -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll">
+        <content>
+            <VBox spacing="24">
+                <padding><Insets top="24" right="32" bottom="32" left="32"/></padding>
+
+                <!-- ── Indicateur de chargement ── -->
+                <HBox fx:id="loadingBox" alignment="CENTER" spacing="12"
+                      visible="false" managed="false"
+                      style="-fx-padding: 20;">
+                    <ProgressIndicator fx:id="loadingSpinner"
+                                       prefWidth="28" prefHeight="28"
+                                       style="-fx-progress-color: #2563eb;"/>
+                    <Label text="Chargement des statistiques…"
+                           style="-fx-font-size: 13px; -fx-text-fill: #64748b; -fx-font-style: italic;"/>
+                </HBox>
+
+                <!-- ══════════════════════════════════════════════
+                     LIGNE 1 — 4 CARTES KPI
+                ══════════════════════════════════════════════ -->
+                <HBox fx:id="kpiRow" spacing="16">
+
+                    <!-- KPI 1 : Total consultations -->
+                    <VBox fx:id="kpiTotal" styleClass="kpi-card" HBox.hgrow="ALWAYS"
+                          spacing="8">
+                        <Label text="📅  Total consultations" styleClass="kpi-label"/>
+                        <Label fx:id="lblTotalConsultations" text="—" styleClass="kpi-value"/>
+                        <Label fx:id="lblTotalSub" text="cette année"
+                               style="-fx-font-size: 11px; -fx-text-fill: #94a3b8;"/>
+                    </VBox>
+
+                    <!-- KPI 2 : Taux d'acceptation -->
+                    <VBox fx:id="kpiTaux" styleClass="kpi-card" HBox.hgrow="ALWAYS"
+                          spacing="8">
+                        <Label text="✅  Taux d'acceptation" styleClass="kpi-label"/>
+                        <Label fx:id="lblTauxAcceptation" text="—" styleClass="kpi-value"/>
+                        <Label text="consultations confirmées"
+                               style="-fx-font-size: 11px; -fx-text-fill: #94a3b8;"/>
+                    </VBox>
+
+                    <!-- KPI 3 : Patients actifs -->
+                    <VBox fx:id="kpiPatients" styleClass="kpi-card" HBox.hgrow="ALWAYS"
+                          spacing="8">
+                        <Label text="👤  Patients actifs" styleClass="kpi-label"/>
+                        <Label fx:id="lblPatientsActifs" text="—" styleClass="kpi-value"/>
+                        <Label text="30 derniers jours"
+                               style="-fx-font-size: 11px; -fx-text-fill: #94a3b8;"/>
+                    </VBox>
+
+                    <!-- KPI 4 : Revenu total -->
+                    <VBox fx:id="kpiRevenu" styleClass="kpi-card" HBox.hgrow="ALWAYS"
+                          spacing="8">
+                        <Label text="💰  Revenu total" styleClass="kpi-label"/>
+                        <Label fx:id="lblRevenuTotal" text="—" styleClass="kpi-value"/>
+                        <Label fx:id="lblRevenuSub" text="TND cette année"
+                               style="-fx-font-size: 11px; -fx-text-fill: #94a3b8;"/>
+                    </VBox>
+
+                </HBox>
+
+                <!-- ══════════════════════════════════════════════
+                     LIGNE 2 — BarChart + PieChart
+                ══════════════════════════════════════════════ -->
+                <HBox spacing="20">
+
+                    <!-- BarChart : consultations par mois -->
+                    <VBox styleClass="chart-card" HBox.hgrow="ALWAYS" spacing="10">
+                        <HBox alignment="CENTER_LEFT">
+                            <Label text="📅  Consultations par mois" styleClass="section-title"
+                                   HBox.hgrow="ALWAYS"/>
+                        </HBox>
+                        <StackPane>
+                            <BarChart fx:id="barConsultations"
+                                      prefHeight="280"
+                                      animated="false"
+                                      legendVisible="false"
+                                      style="-fx-background-color: transparent;">
+                                <xAxis>
+                                    <CategoryAxis fx:id="barXAxis" label="Mois"/>
+                                </xAxis>
+                                <yAxis>
+                                    <NumberAxis fx:id="barYAxis" label="Nombre" minorTickVisible="false"/>
+                                </yAxis>
+                            </BarChart>
+                        </StackPane>
+                    </VBox>
+
+                    <!-- PieChart : spécialités -->
+                    <VBox styleClass="chart-card" prefWidth="340" spacing="10">
+                        <Label text="🩺  Top 5 spécialités" styleClass="section-title"/>
+                        <PieChart fx:id="pieSpecialites"
+                                  prefHeight="280"
+                                  legendVisible="true"
+                                  labelsVisible="true"
+                                  animated="false"/>
+                    </VBox>
+
+                </HBox>
+
+                <!-- ══════════════════════════════════════════════
+                     LIGNE 3 — LineChart revenu mensuel
+                ══════════════════════════════════════════════ -->
+                <VBox styleClass="chart-card" spacing="10">
+                    <HBox alignment="CENTER_LEFT">
+                        <Label text="💰  Revenu mensuel (TND)" styleClass="section-title"
+                               HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="lblRevenuAnnee"
+                               text=""
+                               style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+                    </HBox>
+                    <LineChart fx:id="lineRevenu"
+                               prefHeight="260"
+                               animated="false"
+                               legendVisible="false"
+                               createSymbols="true"
+                               style="-fx-background-color: transparent;">
+                        <xAxis>
+                            <CategoryAxis label="Mois"/>
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis label="TND" minorTickVisible="false"/>
+                        </yAxis>
+                    </LineChart>
+                </VBox>
+
+            </VBox>
+        </content>
+    </ScrollPane>
+
+</VBox>

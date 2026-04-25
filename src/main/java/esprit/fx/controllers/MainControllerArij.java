@@ -683,8 +683,9 @@ public class MainControllerArij {
     private List<HubCard> buildConsultationHubs() {
         if (isDoctor()) {
             return Arrays.asList(
-                    new HubCard("🗓", "Consultations", "Gerez les demandes patients", () -> loadView("/fxml/ConsultationManagementArij.fxml")),
-                    new HubCard("📋", "Ordonnances", "Prescriptions medicales", () -> loadView("/fxml/OrdonnanceListArij.fxml"))
+                    new HubCard("🗓", "Consultations",  "Gerez les demandes patients",  () -> loadView("/fxml/ConsultationManagementArij.fxml")),
+                    new HubCard("📋", "Ordonnances",    "Prescriptions medicales",      () -> loadView("/fxml/OrdonnanceListArij.fxml")),
+                    new HubCard("📊", "Statistiques",   "Analytiques et graphiques",    () -> loadView("/fxml/DashboardStatsArij.fxml"))
             );
         }
 

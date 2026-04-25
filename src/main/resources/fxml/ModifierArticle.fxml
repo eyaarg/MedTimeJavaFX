@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.ModifierArticleController"
+      spacing="0" stylesheets="@/css/arij-styles.css"
+      style="-fx-background-color:#f0f4f8;">
+
+    <!-- Header -->
+    <VBox styleClass="hero-header">
+        <padding><Insets top="22" right="32" bottom="18" left="32"/></padding>
+        <Label text="✏️  Modifier l'article" styleClass="hero-title" style="-fx-font-size:18px;"/>
+        <Label text="Modifiez les informations de l'article" styleClass="hero-subtitle"/>
+    </VBox>
+
+    <VBox spacing="16" style="-fx-padding:28 32;">
+
+        <VBox spacing="14" styleClass="card-static">
+
+            <GridPane hgap="16" vgap="12">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+                    <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+                </columnConstraints>
+
+                <VBox spacing="6" GridPane.rowIndex="0" GridPane.columnIndex="0">
+                    <Label text="Titre" styleClass="field-label"/>
+                    <TextField fx:id="txtTitre" promptText="Modifier le titre"
+                               maxWidth="Infinity" styleClass="form-input"/>
+                </VBox>
+
+                <VBox spacing="6" GridPane.rowIndex="0" GridPane.columnIndex="1">
+                    <Label text="Catégorie" styleClass="field-label"/>
+                    <ComboBox fx:id="cbCategorie" promptText="Choisir catégorie"
+                              maxWidth="Infinity" styleClass="form-input"/>
+                </VBox>
+
+                <VBox spacing="6" GridPane.rowIndex="1" GridPane.columnIndex="0">
+                    <Label text="Tags" styleClass="field-label"/>
+                    <TextField fx:id="txtTags" promptText="ex: santé, médecine"
+                               maxWidth="Infinity" styleClass="form-input"/>
+                </VBox>
+
+                <VBox spacing="6" GridPane.rowIndex="1" GridPane.columnIndex="1">
+                    <Label text="Statut" styleClass="field-label"/>
+                    <ComboBox fx:id="cbStatut" promptText="Choisir statut"
+                              maxWidth="Infinity" styleClass="form-input"/>
+                </VBox>
+
+                <VBox spacing="6" GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.columnSpan="2">
+                    <Label text="Image URL" styleClass="field-label"/>
+                    <TextField fx:id="txtImage" promptText="https://example.com/image.jpg"
+                               maxWidth="Infinity" styleClass="form-input"/>
+                </VBox>
+
+                <VBox spacing="6" GridPane.rowIndex="3" GridPane.columnIndex="0" GridPane.columnSpan="2">
+                    <Label text="Contenu" styleClass="field-label"/>
+                    <TextArea fx:id="txtContenu" wrapText="true" prefRowCount="5"
+                              promptText="Contenu de l'article..."
+                              maxWidth="Infinity" styleClass="form-input"/>
+                </VBox>
+            </GridPane>
+
+            <Separator/>
+
+            <HBox alignment="CENTER_RIGHT" spacing="12">
+                <Button fx:id="btnAnnuler" text="Annuler" styleClass="btn-secondary" onAction="#annuler"/>
+                <Button fx:id="btnModifier" text="💾 Enregistrer" styleClass="btn-primary" onAction="#modifierArticle"/>
+            </HBox>
+
+        </VBox>
+    </VBox>
+
+</VBox>

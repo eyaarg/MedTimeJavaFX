@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="esprit.fx.controllers.RendezVousController"
+      spacing="20" style="-fx-background-color: #f8f9fa;">
+   
+   <padding>
+      <Insets top="30" right="30" bottom="30" left="30" />
+   </padding>
+
+   <!-- Header -->
+   <HBox alignment="CENTER_LEFT" spacing="20">
+      <VBox>
+         <Label text="📅 Gestion des Rendez-vous" 
+                style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+         <Label text="Gérez vos rendez-vous médicaux" 
+                style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;" />
+      </VBox>
+      <Region HBox.hgrow="ALWAYS" />
+      <Button fx:id="btnActualiser" text="🔄 Actualiser" 
+              onAction="#actualiserListe"
+              style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" />
+   </HBox>
+
+   <!-- Filters -->
+   <HBox spacing="15" alignment="CENTER_LEFT">
+      <Label text="Filtres:" style="-fx-font-weight: bold;" />
+      <ComboBox fx:id="filterStatut" promptText="Statut" prefWidth="150" />
+      <TextField fx:id="searchField" promptText="Rechercher..." prefWidth="200" />
+   </HBox>
+
+   <!-- Action Buttons -->
+   <HBox spacing="10">
+      <Button fx:id="btnAjouter" text="➕ Nouveau RDV" 
+              onAction="#ajouterRendezVous"
+              style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" />
+      <Button fx:id="btnModifier" text="✏️ Modifier" 
+              onAction="#modifierRendezVous" disable="true"
+              style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" />
+      <Button fx:id="btnSupprimer" text="🗑️ Supprimer" 
+              onAction="#supprimerRendezVous" disable="true"
+              style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" />
+      <Separator orientation="VERTICAL" />
+      <Button fx:id="btnConfirmer" text="✅ Confirmer" 
+              onAction="#confirmerRendezVous" disable="true"
+              style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" />
+      <Button fx:id="btnAnnuler" text="❌ Annuler" 
+              onAction="#annulerRendezVous" disable="true"
+              style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" />
+   </HBox>
+
+   <!-- Table -->
+   <TableView fx:id="tableRendezVous" VBox.vgrow="ALWAYS"
+              style="-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-radius: 5;">
+      <columns>
+         <TableColumn fx:id="colId" text="ID" prefWidth="60" />
+         <TableColumn fx:id="colPatient" text="Patient" prefWidth="150" />
+         <TableColumn fx:id="colDocteur" text="Médecin" prefWidth="150" />
+         <TableColumn fx:id="colDate" text="Date & Heure" prefWidth="140" />
+         <TableColumn fx:id="colMotif" text="Motif" prefWidth="200" />
+         <TableColumn fx:id="colStatut" text="Statut" prefWidth="100" />
+      </columns>
+   </TableView>
+
+</VBox>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="esprit.fx.controllers.FormulaireRendezVousController"
+      spacing="15" style="-fx-background-color: #f8f9fa;" prefWidth="500" prefHeight="600">
+   
+   <padding>
+      <Insets top="20" right="20" bottom="20" left="20" />
+   </padding>
+
+   <!-- Header -->
+   <Label text="📅 Formulaire Rendez-vous" 
+          style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+   
+   <Separator />
+
+   <!-- Formulaire -->
+   <GridPane hgap="15" vgap="15">
+      <columnConstraints>
+         <ColumnConstraints minWidth="120" prefWidth="120" />
+         <ColumnConstraints minWidth="300" prefWidth="300" hgrow="ALWAYS" />
+      </columnConstraints>
+
+      <!-- Patient -->
+      <Label text="Patient :" GridPane.columnIndex="0" GridPane.rowIndex="0" 
+             style="-fx-font-weight: bold;" />
+      <ComboBox fx:id="comboPatient" GridPane.columnIndex="1" GridPane.rowIndex="0" 
+                maxWidth="Infinity" promptText="Sélectionner un patient" />
+
+      <!-- Médecin -->
+      <Label text="Médecin :" GridPane.columnIndex="0" GridPane.rowIndex="1" 
+             style="-fx-font-weight: bold;" />
+      <ComboBox fx:id="comboDocteur" GridPane.columnIndex="1" GridPane.rowIndex="1" 
+                maxWidth="Infinity" promptText="Sélectionner un médecin" />
+
+      <!-- Date -->
+      <Label text="Date :" GridPane.columnIndex="0" GridPane.rowIndex="2" 
+             style="-fx-font-weight: bold;" />
+      <DatePicker fx:id="datePickerRdv" GridPane.columnIndex="1" GridPane.rowIndex="2" 
+                  maxWidth="Infinity" promptText="Sélectionner une date" />
+
+      <!-- Heure -->
+      <Label text="Heure :" GridPane.columnIndex="0" GridPane.rowIndex="3" 
+             style="-fx-font-weight: bold;" />
+      <ComboBox fx:id="comboHeure" GridPane.columnIndex="1" GridPane.rowIndex="3" 
+                maxWidth="Infinity" promptText="Sélectionner une heure" />
+
+      <!-- Statut -->
+      <Label text="Statut :" GridPane.columnIndex="0" GridPane.rowIndex="4" 
+             style="-fx-font-weight: bold;" />
+      <ComboBox fx:id="comboStatut" GridPane.columnIndex="1" GridPane.rowIndex="4" 
+                maxWidth="Infinity" />
+
+      <!-- Motif -->
+      <Label text="Motif :" GridPane.columnIndex="0" GridPane.rowIndex="5" 
+             style="-fx-font-weight: bold;" />
+      <TextArea fx:id="textAreaMotif" GridPane.columnIndex="1" GridPane.rowIndex="5" 
+                prefRowCount="3" promptText="Décrivez le motif du rendez-vous..." 
+                wrapText="true" />
+
+      <!-- Notes -->
+      <Label text="Notes :" GridPane.columnIndex="0" GridPane.rowIndex="6" 
+             style="-fx-font-weight: bold;" />
+      <TextArea fx:id="textAreaNotes" GridPane.columnIndex="1" GridPane.rowIndex="6" 
+                prefRowCount="2" promptText="Notes additionnelles (optionnel)..." 
+                wrapText="true" />
+   </GridPane>
+
+   <!-- Spacer -->
+   <Region VBox.vgrow="ALWAYS" />
+
+   <!-- Boutons -->
+   <HBox spacing="10" alignment="CENTER_RIGHT">
+      <Button fx:id="btnAnnuler" text="❌ Annuler" onAction="#annuler" 
+              style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" 
+              prefWidth="100" />
+      <Button fx:id="btnSauvegarder" text="💾 Sauvegarder" onAction="#sauvegarder" 
+              style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" 
+              prefWidth="120" />
+   </HBox>
+
+</VBox>

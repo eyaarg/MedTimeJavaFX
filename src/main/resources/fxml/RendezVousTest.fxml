@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="esprit.fx.controllers.RendezVousTestController"
+      spacing="20" style="-fx-background-color: #f8f9fa;">
+   
+   <padding>
+      <Insets top="30" right="30" bottom="30" left="30" />
+   </padding>
+
+   <!-- Header -->
+   <HBox alignment="CENTER_LEFT" spacing="20">
+      <VBox>
+         <Label text="📅 Gestion des Rendez-vous" 
+                style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+         <Label text="Module en cours de développement" 
+                style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;" />
+      </VBox>
+   </HBox>
+
+   <!-- Content -->
+   <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 20; -fx-border-radius: 10;">
+      <Label text="🚧 Module Rendez-vous" 
+             style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+      <Label text="Ce module sera bientôt disponible pour :" />
+      <VBox spacing="5" style="-fx-padding: 0 0 0 20;">
+         <Label text="• Créer des rendez-vous" />
+         <Label text="• Gérer les demandes" />
+         <Label text="• Confirmer/Annuler" />
+         <Label text="• Voir l'historique" />
+      </VBox>
+      
+      <Button text="🔄 Retour aux Disponibilités" 
+              style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;"
+              onAction="#retourDisponibilites" />
+   </VBox>
+
+</VBox>

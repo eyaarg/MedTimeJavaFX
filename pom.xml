@@ -81,6 +81,13 @@
             <version>3.5.2</version>
         </dependency>
 
+        <!-- CalendarFX — vue calendrier interactive -->
+        <dependency>
+            <groupId>com.calendarfx</groupId>
+            <artifactId>view</artifactId>
+            <version>11.8.6</version>
+        </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>

@@ -685,13 +685,15 @@ public class MainControllerArij {
             return Arrays.asList(
                     new HubCard("🗓", "Consultations",  "Gerez les demandes patients",  () -> loadView("/fxml/ConsultationManagementArij.fxml")),
                     new HubCard("📋", "Ordonnances",    "Prescriptions medicales",      () -> loadView("/fxml/OrdonnanceListArij.fxml")),
-                    new HubCard("📊", "Statistiques",   "Analytiques et graphiques",    () -> loadView("/fxml/DashboardStatsArij.fxml"))
+                    new HubCard("📊", "Statistiques",   "Analytiques et graphiques",    () -> loadView("/fxml/DashboardStatsArij.fxml")),
+                    new HubCard("🔍", "Recherche",      "Filtrage avance consultations",() -> loadView("/fxml/ConsultationFiltreArij.fxml"))
             );
         }
 
         return Arrays.asList(
                 new HubCard("📅", "Calendrier",        "Disponibilités et créneaux",       () -> loadView("/fxml/CalendrierArij.fxml")),
                 new HubCard("🗓", "Mes consultations", "Suivez vos rendez-vous medicaux",  () -> loadView("/fxml/ConsultationListArij.fxml")),
+                new HubCard("🔍", "Recherche avancée", "Filtrage multi-criteres",          () -> loadView("/fxml/ConsultationFiltreArij.fxml")),
                 new HubCard("📋", "Mes ordonnances",   "Vos prescriptions medicales",      () -> loadView("/fxml/OrdonnanceListArij.fxml")),
                 new HubCard("🧾", "Mes factures",      "Historique de vos paiements",      () -> loadView("/fxml/FactureListArij.fxml")),
                 new HubCard("🤖", "Assistante IA",     "Posez vos questions medicales",    () -> loadView("/fxml/ChatViewArij.fxml"))

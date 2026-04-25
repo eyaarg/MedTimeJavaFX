@@ -88,8 +88,21 @@
                     <Label fx:id="footerNameLabel" text="Utilisateur" styleClass="footer-name"/>
                     <Label fx:id="footerRoleLabel" text="Patient" styleClass="footer-role"/>
                 </VBox>
-                <Button text="🔔" styleClass="logout-btn" onAction="#showNotifications"
-                        style="-fx-font-size:16px; -fx-text-fill:#bfdbfe;"/>
+                <!-- Cloche notification avec badge rouge -->
+                <!-- StackPane superpose le badge sur la cloche -->
+                <StackPane styleClass="notif-bell-wrap" onMouseClicked="#showNotifications"
+                           style="-fx-cursor: hand;">
+                    <!-- Cloche -->
+                    <Label text="🔔" styleClass="logout-btn"
+                           style="-fx-font-size:16px; -fx-text-fill:#bfdbfe; -fx-padding:4 8 4 8;"/>
+                    <!-- Badge rouge : nombre de notifs non lues
+                         visible=false par défaut, géré par rafraichirBadge() via Timeline -->
+                    <Label fx:id="notifBadge"
+                           text="0"
+                           styleClass="notif-badge"
+                           visible="false" managed="false"
+                           StackPane.alignment="TOP_RIGHT"/>
+                </StackPane>
                 <Button text="⏻" styleClass="logout-btn" onAction="#handleLogout"
                         style="-fx-text-fill:#fca5a5;"/>
             </HBox>

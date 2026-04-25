@@ -1,6 +1,7 @@
 package esprit.fx.services;
 
 import esprit.fx.entities.ConsultationsArij;
+import esprit.fx.entities.NotificationArij;
 import esprit.fx.utils.MyDB;
 
 import java.math.BigDecimal;
@@ -22,6 +23,9 @@ public class ServiceConsultationsArij {
     private Connection conn() {
         return MyDB.getInstance().getConnection();
     }
+
+    // Accès centralisé au service de notification
+    private final NotificationServiceArij notifService = NotificationServiceArij.getInstance();
 
     private static final DateTimeFormatter NOTIF_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
@@ -215,6 +219,12 @@ public class ServiceConsultationsArij {
         c.setUpdatedAt(LocalDateTime.now());
         updateConsultation(c);
         notifyPatientApproved(c);
+
+        // ── Marquer automatiquement le créneau de disponibilité comme occupé ──
+        // Quand le médecin accepte une consultation, le créneau correspondant
+        // dans disponibilite_medecin est marqué est_occupee = true.
+        // Cela empêche d'autres patients de réserver le même créneau.
+        marquerCreneauOccupe(c);
     }
 
     public void rejectConsultation(int id, String reason) {
@@ -357,73 +367,90 @@ public class ServiceConsultationsArij {
         return null;
     }
 
+    // ================================================================== //
+    //  Notifications — délèguent à NotificationServiceArij               //
+    // ================================================================== //
+     * Message : "Nouvelle consultation de {patient} pour le {date}"
+     * Type    : "info"
+     */
     private void notifyDoctorRequest(ConsultationsArij c) {
-        if (c == null) {
-            return;
-        }
+        if (c == null) return;
 
         int doctorUserId = lookupDoctorUserId(c.getDoctorId());
-        if (doctorUserId <= 0) {
-            return;
-        }
+        if (doctorUserId <= 0) return;
 
         String patientName = lookupPatientUsername(c.getPatientId());
-        String when = c.getConsultationDate() != null ? c.getConsultationDate().format(NOTIF_FMT) : "";
-        String msg = (patientName.isBlank() ? "Un patient" : patientName)
-                + " a demandé une consultation online pour le " + when + ".";
+        String when        = c.getConsultationDate() != null
+            ? c.getConsultationDate().format(NOTIF_FMT) : "";
 
-        saveNotification(doctorUserId, "Nouvelle demande de consultation", msg, "consultation_requested");
+        String msg = "Nouvelle consultation de "
+            + (patientName.isBlank() ? "un patient" : patientName)
+            + " pour le " + when + ".";
+
+        notifService.notifier(doctorUserId, msg, NotificationArij.TYPE_INFO, null);
     }
 
+    /**
+     * Médecin accepte une consultation → notifier le patient.
+     * Message : "Consultation acceptée ! Lien Meet : {lien}"
+     * Type    : "success"
+     * Lien    : lien Google Meet (nullable)
+     */
     private void notifyPatientApproved(ConsultationsArij c) {
-        if (c == null) {
-            return;
-        }
+        if (c == null) return;
+
         int patientUserId = lookupPatientUserId(c.getPatientId());
-        if (patientUserId <= 0) {
-            return;
-        }
+        if (patientUserId <= 0) return;
 
         String doctorName = lookupDoctorUsername(c.getDoctorId());
-        String when = c.getConsultationDate() != null ? c.getConsultationDate().format(NOTIF_FMT) : "";
-        String link = c.getLienMeet();
+        String when       = c.getConsultationDate() != null
+            ? c.getConsultationDate().format(NOTIF_FMT) : "";
+        String lien       = c.getLienMeet();
 
-        String msg = "Your consultation with Dr. " + doctorName + " is confirmed for " + when + ".";
-        if (link != null && !link.isBlank()) {
-            msg += " Google Meet link: " + link;
-        }
-        saveNotification(patientUserId, "Your consultation has been confirmed", msg, "consultation_approved");
+        String msg = "Consultation acceptée ! Dr. " + doctorName
+            + " vous attend le " + when + "."
+            + (lien != null && !lien.isBlank() ? " Lien Meet : " + lien : "");
+
+        notifService.notifier(patientUserId, msg, NotificationArij.TYPE_SUCCESS, lien);
     }
 
+    /**
+     * Médecin refuse une consultation → notifier le patient.
+     * Type : "warning"
+     */
     private void notifyPatientRejected(ConsultationsArij c) {
-        if (c == null) {
-            return;
-        }
+        if (c == null) return;
+
         int patientUserId = lookupPatientUserId(c.getPatientId());
-        if (patientUserId <= 0) {
-            return;
-        }
+        if (patientUserId <= 0) return;
 
         String doctorName = lookupDoctorUsername(c.getDoctorId());
-        String reason = c.getRejectionReason();
-        String msg = "Your consultation with Dr. " + doctorName + " has been rejected. "
-                + (reason == null || reason.isBlank() ? "No reason provided." : reason.trim());
-        saveNotification(patientUserId, "Your consultation has been rejected", msg, "consultation_rejected");
+        String reason     = c.getRejectionReason();
+
+        String msg = "Consultation refusée par Dr. " + doctorName + ". "
+            + (reason == null || reason.isBlank() ? "Aucune raison fournie." : reason.trim());
+
+        notifService.notifier(patientUserId, msg, NotificationArij.TYPE_WARNING, null);
     }
 
+    /**
+     * Consultation terminée → notifier le patient.
+     * Type : "info"
+     */
     private void notifyPatientCompleted(ConsultationsArij c) {
-        if (c == null) {
-            return;
-        }
+        if (c == null) return;
+
         int patientUserId = lookupPatientUserId(c.getPatientId());
-        if (patientUserId <= 0) {
-            return;
-        }
+        if (patientUserId <= 0) return;
 
         String doctorName = lookupDoctorUsername(c.getDoctorId());
-        String when = c.getConsultationDate() != null ? c.getConsultationDate().format(NOTIF_FMT) : "";
-        String msg = "Votre consultation avec Dr. " + doctorName + " du " + when + " est marquée comme terminée.";
-        saveNotification(patientUserId, "Consultation terminée", msg, "consultation_completed");
+        String when       = c.getConsultationDate() != null
+            ? c.getConsultationDate().format(NOTIF_FMT) : "";
+
+        String msg = "Votre consultation avec Dr. " + doctorName
+            + " du " + when + " est marquée comme terminée.";
+
+        notifService.notifier(patientUserId, msg, NotificationArij.TYPE_INFO, null);
     }
 
     private int lookupDoctorUserId(int doctorId) {
@@ -482,20 +509,6 @@ public class ServiceConsultationsArij {
         return "";
     }
 
-    private void saveNotification(int userId, String title, String message, String type) {
-        String sql = "INSERT INTO notifications (user_id, title, message, type, is_read, created_at) VALUES (?,?,?,?,0,?)";
-        try (PreparedStatement ps = conn().prepareStatement(sql)) {
-            ps.setInt(1, userId);
-            ps.setString(2, title);
-            ps.setString(3, message);
-            ps.setString(4, type);
-            ps.setTimestamp(5, ts(LocalDateTime.now()));
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            System.err.println("saveNotification: " + e.getMessage());
-        }
-    }
-
     private ConsultationsArij mapRow(ResultSet rs) throws SQLException {
         ConsultationsArij c = new ConsultationsArij();
         c.setId(rs.getInt("id"));
@@ -522,6 +535,11 @@ public class ServiceConsultationsArij {
         c.setConsultationFee(fee != null ? fee.doubleValue() : 0.0);
 
         c.setLienMeet(rs.getString("lien_meet"));
+
+        // Lire le champ sms_suivi_envoye (peut être absent sur ancienne BDD)
+        try { c.setSmsSuiviEnvoye(rs.getBoolean("sms_suivi_envoye")); }
+        catch (SQLException ignored) { c.setSmsSuiviEnvoye(false); }
+
         return c;
     }
 

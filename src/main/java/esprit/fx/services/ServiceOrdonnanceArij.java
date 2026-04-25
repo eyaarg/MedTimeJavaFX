@@ -1,6 +1,7 @@
 package esprit.fx.services;
 
 import esprit.fx.entities.LigneOrdonnanceArij;
+import esprit.fx.entities.NotificationArij;
 import esprit.fx.entities.OrdonnanceArij;
 import esprit.fx.utils.MyDB;
 
@@ -10,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -21,6 +23,9 @@ public class ServiceOrdonnanceArij {
     private Connection conn() {
         return MyDB.getInstance().getConnection();
     }
+
+    // Accès centralisé au service de notification
+    private final NotificationServiceArij notifService = NotificationServiceArij.getInstance();
 
     public OrdonnanceArij getByConsultationId(int consultationId) {
         try (PreparedStatement ps = conn().prepareStatement(
@@ -199,22 +204,46 @@ public class ServiceOrdonnanceArij {
         }
     }
 
+    /**
+     * Médecin envoie une ordonnance → notifier le patient.
+     * Message : "Ordonnance disponible. Prix : {prix} TND"
+     * Type    : "success"
+     *
+     * Le prix est lu depuis consultation_fee de la consultation liée.
+     * Visible immédiatement côté Symfony (table partagée).
+     */
     private void notifyPatient(int consultationId, int ordonnanceId) {
-        String sql = "INSERT INTO notifications (user_id, title, message, type, is_read, created_at) VALUES (?,?,?,?,0,?)";
+        int patientUserId = findPatientUserIdByConsultationId(consultationId);
+        if (patientUserId <= 0) return;
+
+        // Récupérer le prix de la consultation
+        double prix = findConsultationFee(consultationId);
+        String prixStr = prix > 0
+            ? String.format("%.2f", prix)
+            : "à définir";
+
+        String msg = "Ordonnance disponible (réf. #" + ordonnanceId + "). "
+            + "Prix : " + prixStr + " TND.";
+
+        notifService.notifier(patientUserId, msg, NotificationArij.TYPE_SUCCESS, null);
+    }
+
+    /**
+     * Récupère le prix (consultation_fee) d'une consultation.
+     */
+    private double findConsultationFee(int consultationId) {
+        String sql = "SELECT consultation_fee FROM consultations WHERE id = ?";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
-            int patientUserId = findPatientUserIdByConsultationId(consultationId);
-            if (patientUserId <= 0) {
-                return;
+            ps.setInt(1, consultationId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                BigDecimal fee = rs.getBigDecimal("consultation_fee");
+                return fee != null ? fee.doubleValue() : 0.0;
             }
-            ps.setInt(1, patientUserId);
-            ps.setString(2, "Nouvelle ordonnance");
-            ps.setString(3, "Une ordonnance #" + ordonnanceId + " a ete ajoutee pour votre consultation #" + consultationId);
-            ps.setString(4, "ORDONNANCE");
-            ps.setTimestamp(5, ts(LocalDateTime.now()));
-            ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println("notifyPatient: " + e.getMessage());
+            System.err.println("[ServiceOrdonnanceArij] findConsultationFee: " + e.getMessage());
         }
+        return 0.0;
     }
 
     private int findPatientUserIdByConsultationId(int consultationId) {

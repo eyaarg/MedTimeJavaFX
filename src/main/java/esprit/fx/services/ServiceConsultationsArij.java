@@ -219,6 +219,12 @@ public class ServiceConsultationsArij {
         c.setUpdatedAt(LocalDateTime.now());
         updateConsultation(c);
         notifyPatientApproved(c);
+
+        // ── Marquer automatiquement le créneau de disponibilité comme occupé ──
+        // Quand le médecin accepte une consultation, le créneau correspondant
+        // dans disponibilite_medecin est marqué est_occupee = true.
+        // Cela empêche d'autres patients de réserver le même créneau.
+        marquerCreneauOccupe(c);
     }
 
     public void rejectConsultation(int id, String reason) {
@@ -364,9 +370,6 @@ public class ServiceConsultationsArij {
     // ================================================================== //
     //  Notifications — délèguent à NotificationServiceArij               //
     // ================================================================== //
-
-    /**
-     * Patient crée une consultation → notifier le médecin.
      * Message : "Nouvelle consultation de {patient} pour le {date}"
      * Type    : "info"
      */

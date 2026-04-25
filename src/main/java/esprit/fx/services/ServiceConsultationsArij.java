@@ -532,6 +532,11 @@ public class ServiceConsultationsArij {
         c.setConsultationFee(fee != null ? fee.doubleValue() : 0.0);
 
         c.setLienMeet(rs.getString("lien_meet"));
+
+        // Lire le champ sms_suivi_envoye (peut être absent sur ancienne BDD)
+        try { c.setSmsSuiviEnvoye(rs.getBoolean("sms_suivi_envoye")); }
+        catch (SQLException ignored) { c.setSmsSuiviEnvoye(false); }
+
         return c;
     }
 

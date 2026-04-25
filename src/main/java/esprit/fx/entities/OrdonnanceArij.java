@@ -24,6 +24,20 @@ public class OrdonnanceArij {
     private String documentOriginalName;
     private List<LigneOrdonnanceArij> lignes = new ArrayList<>();
 
+    /**
+     * Token UUID unique généré à la création de l'ordonnance.
+     * Utilisé pour construire l'URL de scan QR :
+     *   http://localhost:8000/ordonnance/scan/{accessToken}
+     *
+     * Distinct de tokenVerification (champ Symfony existant) :
+     * accessToken est l'identifiant public de l'ordonnance,
+     * tokenVerification est le token de signature interne.
+     *
+     * Colonne BDD : access_token VARCHAR(36)
+     * Généré automatiquement si null : UUID.randomUUID().toString()
+     */
+    private String accessToken;
+
     public OrdonnanceArij() {}
 
     public int getId() { return id; }
@@ -62,4 +76,24 @@ public class OrdonnanceArij {
     public void setDocumentOriginalName(String documentOriginalName) { this.documentOriginalName = documentOriginalName; }
     public List<LigneOrdonnanceArij> getLignes() { return lignes; }
     public void setLignes(List<LigneOrdonnanceArij> lignes) { this.lignes = lignes != null ? lignes : new ArrayList<>(); }
+
+    /**
+     * Retourne l'accessToken existant ou en génère un nouveau (UUID v4).
+     * Garantit qu'une ordonnance a toujours un token valide.
+     */
+    public String getAccessToken() {
+        if (accessToken == null || accessToken.isBlank()) {
+            accessToken = java.util.UUID.randomUUID().toString();
+        }
+        return accessToken;
+    }
+    public void setAccessToken(String accessToken) { this.accessToken = accessToken; }
+
+    /**
+     * Construit l'URL de scan QR pour cette ordonnance.
+     * @param baseUrl ex: "http://localhost:8000"
+     */
+    public String buildScanUrl(String baseUrl) {
+        return baseUrl + "/ordonnance/scan/" + getAccessToken();
+    }
 }

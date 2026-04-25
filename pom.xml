@@ -31,6 +31,13 @@
             <version>${javafx.version}</version>
         </dependency>
 
+        <!-- javafx.swing requis pour SwingFXUtils.toFXImage() (QR Code → ImageView) -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>

@@ -27,7 +27,7 @@ public class ServiceUser implements IService<User> {
 
         PreparedStatement ps = conn.prepareStatement(req);
 
-        // 🔐 Hash du mot de passe uniquement à la création
+
         String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
 
         ps.setString(1, user.getEmail());
@@ -169,15 +169,14 @@ public class ServiceUser implements IService<User> {
         return roleNames;
     }
 
-    public User login(String username, String password) throws SQLException {
-        String req = "SELECT u.*, r.id as role_id, r.name as role_name " +
-                "FROM `users` u " +
-                "LEFT JOIN `user_roles` ur ON u.id = ur.user_id " +
-                "LEFT JOIN `roles` r ON ur.role_id = r.id " +
-                "WHERE u.username=? OR u.email=?";
-        PreparedStatement ps = conn.prepareStatement(req);
-        ps.setString(1, username);
-        ps.setString(2, username);
+
+    public User login(String email, String rawPassword) throws SQLException {
+        String query = "SELECT u.*, r.id as role_id, r.name as role_name FROM users u " +
+                "LEFT JOIN user_roles ur ON u.id = ur.user_id " +
+                "LEFT JOIN roles r ON ur.role_id = r.id " +
+                "WHERE u.email = ? AND u.is_active = true";
+        PreparedStatement ps = conn.prepareStatement(query);
+        ps.setString(1, email);
         ResultSet rs = ps.executeQuery();
 
         User user = null;
@@ -187,10 +186,13 @@ public class ServiceUser implements IService<User> {
         while (rs.next()) {
             if (user == null) {
                 String storedPassword = rs.getString("password");
-                passwordValid = passwordMatches(password, storedPassword);
+                passwordValid = BCrypt.checkpw(rawPassword, storedPassword);
                 if (!passwordValid) {
+                    incrementFailedAttempts(email);
                     return null;
                 }
+
+                resetFailedAttempts(email);
 
                 user = new User(
                         rs.getInt("id"),
@@ -213,10 +215,126 @@ public class ServiceUser implements IService<User> {
 
         if (user != null) {
             user.setRoles(roles);
-            return user;
         }
 
-        return null;
+        return user;
+    }
+
+    private void incrementFailedAttempts(String email) throws SQLException {
+        String query = "UPDATE users SET failed_attempts = failed_attempts + 1 WHERE email = ?";
+        PreparedStatement ps = conn.prepareStatement(query);
+        ps.setString(1, email);
+        ps.executeUpdate();
+
+        String checkQuery = "SELECT failed_attempts FROM users WHERE email = ?";
+        ps = conn.prepareStatement(checkQuery);
+        ps.setString(1, email);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next() && rs.getInt("failed_attempts") >= 5) {
+            lockAccount(email);
+        }
+    }
+
+    private void resetFailedAttempts(String email) throws SQLException {
+        String query = "UPDATE users SET failed_attempts = 0 WHERE email = ?";
+        PreparedStatement ps = conn.prepareStatement(query);
+        ps.setString(1, email);
+        ps.executeUpdate();
+    }
+
+    private void lockAccount(String email) throws SQLException {
+        String query = "UPDATE users SET is_active = false WHERE email = ?";
+        PreparedStatement ps = conn.prepareStatement(query);
+        ps.setString(1, email);
+        ps.executeUpdate();
+        sendAccountLockedEmail(email);
+    }
+
+    private void sendAccountLockedEmail(String email) {
+        // Implementation for sending account locked email
+    }
+
+    public boolean verifyEmailToken(String token) throws SQLException {
+        String query = "SELECT id, email_verification_token_expires_at FROM users WHERE email_verification_token = ?";
+        PreparedStatement ps = conn.prepareStatement(query);
+        ps.setString(1, token);
+        ResultSet rs = ps.executeQuery();
+
+        if (rs.next()) {
+            Timestamp expiresAt = rs.getTimestamp("email_verification_token_expires_at");
+            if (expiresAt != null && expiresAt.after(new Timestamp(System.currentTimeMillis()))) {
+                String updateQuery = "UPDATE users SET is_verified = true, is_active = true, email_verification_token = NULL, email_verification_token_expires_at = NULL WHERE email_verification_token = ?";
+                ps = conn.prepareStatement(updateQuery);
+                ps.setString(1, token);
+                ps.executeUpdate();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void resendVerificationEmail(String email) throws SQLException {
+        String token = java.util.UUID.randomUUID().toString();
+        Timestamp expiresAt = new Timestamp(System.currentTimeMillis() + 24 * 60 * 60 * 1000);
+
+        String query = "UPDATE users SET email_verification_token = ?, email_verification_token_expires_at = ? WHERE email = ?";
+        PreparedStatement ps = conn.prepareStatement(query);
+        ps.setString(1, token);
+        ps.setTimestamp(2, expiresAt);
+        ps.setString(3, email);
+        ps.executeUpdate();
+
+        sendVerificationEmail(email, token);
+    }
+
+    private void sendVerificationEmail(String email, String token) {
+        // Implementation for sending verification email
+    }
+
+    public void requestPasswordReset(String email) throws SQLException {
+        String token = java.util.UUID.randomUUID().toString();
+        Timestamp expiresAt = new Timestamp(System.currentTimeMillis() + 60 * 60 * 1000);
+
+        String query = "UPDATE users SET password_reset_token = ?, password_reset_token_expires_at = ? WHERE email = ?";
+        PreparedStatement ps = conn.prepareStatement(query);
+        ps.setString(1, token);
+        ps.setTimestamp(2, expiresAt);
+        ps.setString(3, email);
+        ps.executeUpdate();
+
+        sendPasswordResetEmail(email, token);
+    }
+
+    private void sendPasswordResetEmail(String email, String token) {
+        // Implementation for sending password reset email
+    }
+
+    public boolean resetPassword(String token, String newPassword) throws SQLException {
+        String query = "SELECT id, password_reset_token_expires_at FROM users WHERE password_reset_token = ?";
+        PreparedStatement ps = conn.prepareStatement(query);
+        ps.setString(1, token);
+        ResultSet rs = ps.executeQuery();
+
+        if (rs.next()) {
+            Timestamp expiresAt = rs.getTimestamp("password_reset_token_expires_at");
+            if (expiresAt != null && expiresAt.after(new Timestamp(System.currentTimeMillis()))) {
+                String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+                String updateQuery = "UPDATE users SET password = ?, password_reset_token = NULL, password_reset_token_expires_at = NULL WHERE password_reset_token = ?";
+                ps = conn.prepareStatement(updateQuery);
+                ps.setString(1, hashedPassword);
+                ps.setString(2, token);
+                ps.executeUpdate();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void unlockAccount(int userId) throws SQLException {
+        String query = "UPDATE users SET failed_attempts = 0, is_active = true WHERE id = ?";
+        PreparedStatement ps = conn.prepareStatement(query);
+        ps.setInt(1, userId);
+        ps.executeUpdate();
     }
 
     @Override

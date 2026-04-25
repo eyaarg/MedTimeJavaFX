@@ -3,6 +3,7 @@ package esprit.fx.services;
 import esprit.fx.entities.Doctor;
 import esprit.fx.utils.MyDB;
 
+import java.io.File;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -99,6 +100,89 @@ public class ServiceDoctor implements IService<Doctor>{
         return doctors;
     }
 
+    public List<Doctor> getDoctorsPendingVerification() throws SQLException {
+        String query = "SELECT u.*, d.* FROM users u JOIN doctors d ON u.id = d.user_id WHERE d.is_certified = false AND u.is_active = false AND u.is_verified = true";
+        PreparedStatement ps = conn.prepareStatement(query);
+        ResultSet rs = ps.executeQuery();
+        List<Doctor> pendingDoctors = new ArrayList<>();
+        while (rs.next()) {
+            Doctor doctor = new Doctor(
+                rs.getInt("id"),
+                rs.getString("email"),
+                rs.getString("username"),
+                rs.getString("password"),
+                null,
+                rs.getBoolean("is_active"),
+                rs.getString("phone_number"),
+                rs.getBoolean("is_verified"),
+                null, null, null, null,
+                rs.getInt("failed_attempts"),
+                rs.getInt("doctor_id"),
+                rs.getInt("id"),
+                rs.getString("license_code"),
+                rs.getBoolean("is_certified"),
+                rs.getTimestamp("created_at").toLocalDateTime(),
+                rs.getTimestamp("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null
+            );
+            pendingDoctors.add(doctor);
+        }
+        return pendingDoctors;
+    }
 
+    public void approveDoctorCertification(int doctorId) throws SQLException {
+        String updateDoctorQuery = "UPDATE doctors SET is_certified = true WHERE user_id = ?";
+        PreparedStatement psDoctor = conn.prepareStatement(updateDoctorQuery);
+        psDoctor.setInt(1, doctorId);
+        psDoctor.executeUpdate();
 
+        String updateUserQuery = "UPDATE users SET is_active = true WHERE id = ?";
+        PreparedStatement psUser = conn.prepareStatement(updateUserQuery);
+        psUser.setInt(1, doctorId);
+        psUser.executeUpdate();
+
+        sendDoctorApprovedEmail(doctorId);
+    }
+
+    public void rejectDoctorCertification(int doctorId, String reason) throws SQLException {
+        String updateDocumentsQuery = "UPDATE doctor_documents SET status = 'rejected' WHERE doctor_id = ?";
+        PreparedStatement ps = conn.prepareStatement(updateDocumentsQuery);
+        ps.setInt(1, doctorId);
+        ps.executeUpdate();
+
+        sendDoctorRejectedEmail(doctorId, reason);
+    }
+
+    private void sendDoctorApprovedEmail(int doctorId) {
+        // Implementation for sending approval email
+    }
+
+    private void sendDoctorRejectedEmail(int doctorId, String reason) {
+        // Implementation for sending rejection email
+    }
+
+    public int getPendingDoctorsCount() throws SQLException {
+        String query = "SELECT COUNT(*) FROM doctors d JOIN users u ON d.user_id = u.id WHERE d.is_certified = false AND u.is_active = false AND u.is_verified = true";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(query);
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+        return 0;
+    }
+
+    public File getDoctorPdf(int doctorId) throws SQLException {
+        // Exemple : récupérer le chemin du fichier PDF depuis la base de données
+        String query = "SELECT pdf_path FROM doctor_documents WHERE doctor_id = ?";
+        PreparedStatement ps = conn.prepareStatement(query);
+        ps.setInt(1, doctorId);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            String pdfPath = rs.getString("pdf_path");
+            File pdfFile = new File(pdfPath);
+            if (pdfFile.exists()) {
+                return pdfFile;
+            }
+        }
+        return null;
+    }
 }

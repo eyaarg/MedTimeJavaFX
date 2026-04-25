@@ -750,3 +750,66 @@
     -fx-text-fill: #1e40af;
     -fx-font-weight: bold;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Badge notification — cloche dans la sidebar
+═══════════════════════════════════════════════════════════ */
+
+/* Conteneur StackPane cloche + badge */
+.notif-bell-wrap {
+    -fx-cursor: hand;
+}
+.notif-bell-wrap:hover .logout-btn {
+    -fx-text-fill: white;
+}
+
+/*
+ * Badge rouge circulaire affiché par-dessus la cloche.
+ *
+ * Positionnement : StackPane.alignment="TOP_RIGHT" dans le FXML
+ * place le badge en haut à droite de la cloche.
+ *
+ * Visibilité : géré par rafraichirBadge() dans MainControllerArij
+ *   - visible=true  + managed=true  → badge affiché (count > 0)
+ *   - visible=false + managed=false → badge caché  (count = 0)
+ *
+ * managed=false est important : quand caché, le badge ne prend
+ * pas de place dans le layout et ne décale pas les autres éléments.
+ */
+.notif-badge {
+    /* Fond rouge vif */
+    -fx-background-color: #ef4444;
+
+    /* Texte blanc, petit et gras */
+    -fx-text-fill: white;
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+
+    /* Forme circulaire */
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+
+    /* Taille minimale pour rester rond même avec "1" */
+    -fx-min-width: 16px;
+    -fx-min-height: 16px;
+    -fx-pref-width: 16px;
+    -fx-pref-height: 16px;
+
+    /* Centrage du texte */
+    -fx-alignment: center;
+    -fx-padding: 0 3 0 3;
+
+    /* Léger décalage pour sortir de la cloche */
+    -fx-translate-x: 6;
+    -fx-translate-y: -6;
+
+    /* Ombre pour le faire ressortir */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 4, 0, 0, 1);
+}
+
+/* Animation pulse quand le badge est visible (optionnel) */
+.notif-badge:hover {
+    -fx-background-color: #dc2626;
+    -fx-scale-x: 1.15;
+    -fx-scale-y: 1.15;
+}

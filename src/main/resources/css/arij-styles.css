@@ -724,3 +724,29 @@
 .hub-btn-active:hover {
     -fx-background-color: #2563eb;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Chatbot — Session ListView
+═══════════════════════════════════════════════════════════ */
+.session-list-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+.session-list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #334155;
+    -fx-font-size: 12px;
+    -fx-padding: 9 10 9 10;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-cursor: hand;
+}
+.session-list-view .list-cell:hover {
+    -fx-background-color: #eff6ff;
+    -fx-text-fill: #1d4ed8;
+}
+.session-list-view .list-cell:selected {
+    -fx-background-color: #dbeafe;
+    -fx-text-fill: #1e40af;
+    -fx-font-weight: bold;
+}

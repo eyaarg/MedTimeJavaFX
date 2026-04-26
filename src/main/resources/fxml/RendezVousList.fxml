@@ -96,6 +96,14 @@
                            -fx-padding: 10 16;
                            -fx-background-radius: 8;
                            -fx-cursor: hand;" />
+            <Button fx:id="btnListeAttente" text="⏳ Liste d'attente"
+                    onAction="#ouvrirListeAttente"
+                    style="-fx-background-color: #d97706;
+                           -fx-text-fill: white;
+                           -fx-font-weight: 600;
+                           -fx-padding: 10 16;
+                           -fx-background-radius: 8;
+                           -fx-cursor: hand;" />
             <Button fx:id="btnModifier" text="✏️ Modifier"
                     onAction="#modifierRendezVous" disable="true"
                     style="-fx-background-color: #f39c12;

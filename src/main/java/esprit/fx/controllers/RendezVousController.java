@@ -4,6 +4,7 @@ import esprit.fx.entities.RendezVous;
 import esprit.fx.entities.User;
 import esprit.fx.services.GoogleCalendarService;
 import esprit.fx.services.HistoriqueService;
+import esprit.fx.services.ListeAttenteNotificationService;
 import esprit.fx.services.ServiceRendezVous;
 import esprit.fx.services.ServiceUser;
 import esprit.fx.utils.UserSession;
@@ -45,6 +46,7 @@ public class RendezVousController implements Initializable {
     @FXML private Button btnGoogleCalendar;
     @FXML private Button btnHistorique;
     @FXML private Button btnSuggestion;
+    @FXML private Button btnListeAttente;
 
     @FXML private ComboBox<String> filterStatut;
     @FXML private TextField searchField;
@@ -53,6 +55,7 @@ public class RendezVousController implements Initializable {
     private ServiceUser serviceUser;
     private GoogleCalendarService googleCalendarService;
     private HistoriqueService historiqueService;
+    private ListeAttenteNotificationService listeAttenteNotifService;
     private ObservableList<RendezVous> rendezVousList;
     private String currentUserRole;
     private int currentUserId;
@@ -63,6 +66,7 @@ public class RendezVousController implements Initializable {
         serviceUser = new ServiceUser();
         googleCalendarService = new GoogleCalendarService();
         historiqueService = new HistoriqueService();
+        listeAttenteNotifService = new ListeAttenteNotificationService();
         rendezVousList = FXCollections.observableArrayList();
 
         User currentUser = UserSession.getCurrentUser();
@@ -375,12 +379,38 @@ public class RendezVousController implements Initializable {
                 historiqueService.enregistrerChangement(
                     selected.getId(), ancienStatut, "ANNULE", currentUserId
                 );
+                // Vérifier liste d'attente et notifier
+                ListeAttenteNotificationService.NotificationResult notif =
+                        listeAttenteNotifService.verifierEtNotifier(selected);
                 chargerRendezVous();
-                showInfo("Succès", "Rendez-vous annulé.");
+                if (notif != null) {
+                    showInfo("RDV Annulé + Notification",
+                        "Rendez-vous annulé.\n\n🔔 " + notif.message
+                        + "\n\n(" + notif.totalEnAttente + " patient(s) étaient en attente)");
+                } else {
+                    showInfo("Succès", "Rendez-vous annulé.");
+                }
             } catch (SQLException e) {
                 showAlert("Erreur",
                         "Impossible d'annuler le rendez-vous : " + e.getMessage());
             }
+        }
+    }
+
+    @FXML
+    private void ouvrirListeAttente() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/fxml/ListeAttente.fxml")
+            );
+            javafx.scene.Parent root = loader.load();
+            Stage stage = new Stage();
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.setTitle("⏳ Liste d'Attente");
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            showAlert("Erreur", "Impossible d'ouvrir la liste d'attente : " + e.getMessage());
         }
     }
 

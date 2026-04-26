@@ -121,6 +121,14 @@
                            -fx-padding: 10 16;
                            -fx-background-radius: 8;
                            -fx-cursor: hand;" />
+            <Separator orientation="VERTICAL" />
+            <Button fx:id="btnGoogleCalendar" text="📅 Google Calendar"
+                    onAction="#ajouterAGoogleCalendar" disable="true"
+                    style="-fx-background-color: #d1d5db;
+                           -fx-text-fill: #9ca3af;
+                           -fx-font-weight: 700;
+                           -fx-padding: 10 16;
+                           -fx-background-radius: 8;" />
          </HBox>
       </VBox>
    </HBox>

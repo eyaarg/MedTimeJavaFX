@@ -2,6 +2,7 @@ package esprit.fx.controllers;
 
 import esprit.fx.entities.RendezVous;
 import esprit.fx.entities.User;
+import esprit.fx.services.GoogleCalendarService;
 import esprit.fx.services.ServiceRendezVous;
 import esprit.fx.services.ServiceUser;
 import esprit.fx.utils.UserSession;
@@ -40,12 +41,14 @@ public class RendezVousController implements Initializable {
     @FXML private Button btnConfirmer;
     @FXML private Button btnAnnuler;
     @FXML private Button btnActualiser;
+    @FXML private Button btnGoogleCalendar;
 
     @FXML private ComboBox<String> filterStatut;
     @FXML private TextField searchField;
 
     private ServiceRendezVous serviceRendezVous;
     private ServiceUser serviceUser;
+    private GoogleCalendarService googleCalendarService;
     private ObservableList<RendezVous> rendezVousList;
     private String currentUserRole;
     private int currentUserId;
@@ -54,6 +57,7 @@ public class RendezVousController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         serviceRendezVous = new ServiceRendezVous();
         serviceUser = new ServiceUser();
+        googleCalendarService = new GoogleCalendarService();
         rendezVousList = FXCollections.observableArrayList();
 
         User currentUser = UserSession.getCurrentUser();
@@ -217,9 +221,23 @@ public class RendezVousController implements Initializable {
             btnAnnuler.setDisable(
                     "ANNULE".equals(statut) || "TERMINE".equals(statut)
             );
+            // Bouton Google Calendar : visible uniquement si CONFIRME
+            boolean estConfirme = "CONFIRME".equals(statut);
+            btnGoogleCalendar.setDisable(!estConfirme);
+            btnGoogleCalendar.setStyle(estConfirme
+                ? "-fx-background-color: #4285f4; -fx-text-fill: white;" +
+                  "-fx-font-weight: 700; -fx-background-radius: 6; -fx-cursor: hand;"
+                : "-fx-background-color: #d1d5db; -fx-text-fill: #9ca3af;" +
+                  "-fx-font-weight: 700; -fx-background-radius: 6;"
+            );
         } else {
             btnConfirmer.setDisable(true);
             btnAnnuler.setDisable(true);
+            btnGoogleCalendar.setDisable(true);
+            btnGoogleCalendar.setStyle(
+                "-fx-background-color: #d1d5db; -fx-text-fill: #9ca3af;" +
+                "-fx-font-weight: 700; -fx-background-radius: 6;"
+            );
         }
     }
 
@@ -268,10 +286,61 @@ public class RendezVousController implements Initializable {
                 serviceRendezVous.changerStatut(selected.getId(), "CONFIRME");
                 chargerRendezVous();
                 showInfo("Succès", "Rendez-vous confirmé.");
+
+                // Proposer d'ajouter à Google Calendar après confirmation
+                Alert proposer = new Alert(Alert.AlertType.CONFIRMATION);
+                proposer.setTitle("Google Calendar");
+                proposer.setHeaderText("📅 Ajouter à Google Calendar ?");
+                proposer.setContentText(
+                    "Le rendez-vous est confirmé !\n" +
+                    "Voulez-vous l'ajouter à votre Google Calendar ?"
+                );
+                proposer.getButtonTypes().setAll(
+                    new ButtonType("📅 Oui, ajouter", ButtonBar.ButtonData.YES),
+                    new ButtonType("Non merci",       ButtonBar.ButtonData.NO)
+                );
+                proposer.showAndWait().ifPresent(btn -> {
+                    if (btn.getButtonData() == ButtonBar.ButtonData.YES) {
+                        // Recharger le RDV avec statut CONFIRME mis à jour
+                        selected.setStatut("CONFIRME");
+                        ouvrirGoogleCalendar(selected);
+                    }
+                });
+
             } catch (SQLException e) {
                 showAlert("Erreur",
                         "Impossible de confirmer le rendez-vous : " + e.getMessage());
             }
+        }
+    }
+
+    @FXML
+    private void ajouterAGoogleCalendar() {
+        RendezVous selected = tableRendezVous.getSelectionModel().getSelectedItem();
+        if (selected != null && "CONFIRME".equals(selected.getStatut())) {
+            ouvrirGoogleCalendar(selected);
+        }
+    }
+
+    /** Ouvre Google Calendar dans le navigateur avec le RDV pré-rempli. */
+    private void ouvrirGoogleCalendar(RendezVous rdv) {
+        boolean succes = googleCalendarService.ouvrirDansGoogleCalendar(rdv);
+        if (succes) {
+            showInfo("Google Calendar",
+                "✅ Google Calendar ouvert dans votre navigateur.\n" +
+                "Cliquez sur « Enregistrer » pour ajouter le RDV à votre calendrier.");
+        } else {
+            // Fallback : afficher le lien à copier
+            String lien = googleCalendarService.genererLien(rdv);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Google Calendar");
+            alert.setHeaderText("📅 Lien Google Calendar");
+            alert.setContentText(
+                "Impossible d'ouvrir le navigateur automatiquement.\n\n" +
+                "Copiez ce lien dans votre navigateur :\n\n" + lien
+            );
+            alert.getDialogPane().setPrefWidth(600);
+            alert.showAndWait();
         }
     }
 

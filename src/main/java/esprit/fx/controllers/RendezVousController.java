@@ -3,6 +3,7 @@ package esprit.fx.controllers;
 import esprit.fx.entities.RendezVous;
 import esprit.fx.entities.User;
 import esprit.fx.services.GoogleCalendarService;
+import esprit.fx.services.HistoriqueService;
 import esprit.fx.services.ServiceRendezVous;
 import esprit.fx.services.ServiceUser;
 import esprit.fx.utils.UserSession;
@@ -42,6 +43,7 @@ public class RendezVousController implements Initializable {
     @FXML private Button btnAnnuler;
     @FXML private Button btnActualiser;
     @FXML private Button btnGoogleCalendar;
+    @FXML private Button btnHistorique;
 
     @FXML private ComboBox<String> filterStatut;
     @FXML private TextField searchField;
@@ -49,6 +51,7 @@ public class RendezVousController implements Initializable {
     private ServiceRendezVous serviceRendezVous;
     private ServiceUser serviceUser;
     private GoogleCalendarService googleCalendarService;
+    private HistoriqueService historiqueService;
     private ObservableList<RendezVous> rendezVousList;
     private String currentUserRole;
     private int currentUserId;
@@ -58,6 +61,7 @@ public class RendezVousController implements Initializable {
         serviceRendezVous = new ServiceRendezVous();
         serviceUser = new ServiceUser();
         googleCalendarService = new GoogleCalendarService();
+        historiqueService = new HistoriqueService();
         rendezVousList = FXCollections.observableArrayList();
 
         User currentUser = UserSession.getCurrentUser();
@@ -230,11 +234,22 @@ public class RendezVousController implements Initializable {
                 : "-fx-background-color: #d1d5db; -fx-text-fill: #9ca3af;" +
                   "-fx-font-weight: 700; -fx-background-radius: 6;"
             );
+            // Bouton Historique : actif dès qu'un RDV est sélectionné
+            btnHistorique.setDisable(false);
+            btnHistorique.setStyle(
+                "-fx-background-color: #7c3aed; -fx-text-fill: white;" +
+                "-fx-font-weight: 700; -fx-background-radius: 6; -fx-cursor: hand;"
+            );
         } else {
             btnConfirmer.setDisable(true);
             btnAnnuler.setDisable(true);
             btnGoogleCalendar.setDisable(true);
             btnGoogleCalendar.setStyle(
+                "-fx-background-color: #d1d5db; -fx-text-fill: #9ca3af;" +
+                "-fx-font-weight: 700; -fx-background-radius: 6;"
+            );
+            btnHistorique.setDisable(true);
+            btnHistorique.setStyle(
                 "-fx-background-color: #d1d5db; -fx-text-fill: #9ca3af;" +
                 "-fx-font-weight: 700; -fx-background-radius: 6;"
             );
@@ -284,6 +299,10 @@ public class RendezVousController implements Initializable {
         if (selected != null && "DEMANDE".equals(selected.getStatut())) {
             try {
                 serviceRendezVous.changerStatut(selected.getId(), "CONFIRME");
+                // Enregistrer dans l'historique
+                historiqueService.enregistrerChangement(
+                    selected.getId(), selected.getStatut(), "CONFIRME", currentUserId
+                );
                 chargerRendezVous();
                 showInfo("Succès", "Rendez-vous confirmé.");
 
@@ -349,13 +368,40 @@ public class RendezVousController implements Initializable {
         RendezVous selected = tableRendezVous.getSelectionModel().getSelectedItem();
         if (selected != null) {
             try {
+                String ancienStatut = selected.getStatut();
                 serviceRendezVous.changerStatut(selected.getId(), "ANNULE");
+                // Enregistrer dans l'historique
+                historiqueService.enregistrerChangement(
+                    selected.getId(), ancienStatut, "ANNULE", currentUserId
+                );
                 chargerRendezVous();
                 showInfo("Succès", "Rendez-vous annulé.");
             } catch (SQLException e) {
                 showAlert("Erreur",
                         "Impossible d'annuler le rendez-vous : " + e.getMessage());
             }
+        }
+    }
+
+    @FXML
+    private void ouvrirHistorique() {
+        RendezVous selected = tableRendezVous.getSelectionModel().getSelectedItem();
+        if (selected == null) return;
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/fxml/Historique.fxml")
+            );
+            javafx.scene.Parent root = loader.load();
+            HistoriqueController ctrl = loader.getController();
+            ctrl.initHistorique(selected);
+
+            Stage stage = new Stage();
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.setTitle("📋 Historique — RDV #" + selected.getId());
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            showAlert("Erreur", "Impossible d'ouvrir l'historique : " + e.getMessage());
         }
     }
 

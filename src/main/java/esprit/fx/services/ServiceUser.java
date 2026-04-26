@@ -1,10 +1,11 @@
 package esprit.fx.services;
-import esprit.fx.entities.Role;
 import esprit.fx.entities.User;
+import esprit.fx.entities.Role;
 import esprit.fx.utils.MyDB;
 import at.favre.lib.crypto.bcrypt.BCrypt;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -135,6 +136,7 @@ public class ServiceUser implements IService<User> {
         List<Role> roles = new ArrayList<>();
         roles.add(new Role(roleId, resolvedRoleName));
         user.setRoles(roles);
+        ensureRoleProfiles(user);
         return user;
     }
 
@@ -204,6 +206,7 @@ public class ServiceUser implements IService<User> {
 
         if (user != null) {
             user.setRoles(roles);
+            ensureRoleProfiles(user);
             return user;
         }
 
@@ -353,6 +356,66 @@ public class ServiceUser implements IService<User> {
             }
         }
         return "PATIENT";
+    }
+
+    private void ensureRoleProfiles(User user) throws SQLException {
+        if (user == null || user.getId() <= 0) {
+            return;
+        }
+
+        List<Role> roles = user.getRoles();
+        boolean provisioned = false;
+        if (roles != null) {
+            for (Role role : roles) {
+                String normalized = normalizeRoleInput(role != null ? role.getName() : null);
+                if ("DOCTOR".equals(normalized)) {
+                    ensureDoctorProfile(user.getId());
+                    provisioned = true;
+                } else if ("PATIENT".equals(normalized)) {
+                    ensurePatientProfile(user.getId());
+                    provisioned = true;
+                }
+            }
+        }
+
+        if (!provisioned) {
+            ensurePatientProfile(user.getId());
+        }
+    }
+
+    private void ensurePatientProfile(int userId) throws SQLException {
+        if (profileExists("SELECT id FROM patients WHERE user_id = ? LIMIT 1", userId)) {
+            return;
+        }
+
+        String insert = "INSERT INTO patients (created_at, user_id) VALUES (?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(insert)) {
+            ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        }
+    }
+
+    private void ensureDoctorProfile(int userId) throws SQLException {
+        if (profileExists("SELECT id FROM doctors WHERE user_id = ? LIMIT 1", userId)) {
+            return;
+        }
+
+        String insert = "INSERT INTO doctors (created_at, user_id) VALUES (?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(insert)) {
+            ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        }
+    }
+
+    private boolean profileExists(String sql, int userId) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
     }
 
 

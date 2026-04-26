@@ -16,6 +16,13 @@ public class ConsultationsArij {
     private double consultationFee;
     private String lienMeet;
 
+    /**
+     * Indique si le SMS de suivi post-consultation a déjà été envoyé.
+     * Colonne BDD : sms_suivi_envoye (TINYINT(1), défaut 0)
+     * Partagé avec Symfony — Symfony peut aussi lire/écrire ce champ.
+     */
+    private boolean smsSuiviEnvoye = false;
+
     public ConsultationsArij() {}
 
     public int getId() { return id; }
@@ -42,4 +49,7 @@ public class ConsultationsArij {
     public void setConsultationFee(double consultationFee) { this.consultationFee = consultationFee; }
     public String getLienMeet() { return lienMeet; }
     public void setLienMeet(String lienMeet) { this.lienMeet = lienMeet; }
+
+    public boolean isSmsSuiviEnvoye() { return smsSuiviEnvoye; }
+    public void setSmsSuiviEnvoye(boolean smsSuiviEnvoye) { this.smsSuiviEnvoye = smsSuiviEnvoye; }
 }

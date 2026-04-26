@@ -1,6 +1,7 @@
 package esprit.fx.services;
 
 import esprit.fx.entities.FactureArij;
+import esprit.fx.services.NotificationServiceArij;
 import esprit.fx.utils.MyDB;
 
 import java.sql.*;
@@ -10,6 +11,9 @@ import java.util.List;
 
 public class ServiceFactureArij {
     private Connection conn() { return MyDB.getInstance().getConnection(); }
+
+    // Accès centralisé au service de notification
+    private final NotificationServiceArij notifService = NotificationServiceArij.getInstance();
 
     public List<FactureArij> getFacturesByPatient(int patientId) {
         if (patientId <= 0) {
@@ -66,20 +70,12 @@ public class ServiceFactureArij {
             ps.executeUpdate();
         } catch (SQLException e) { System.err.println("createFacture: " + e.getMessage()); return; }
 
-        // 3. Notifier le patient
-        String sqlNotif = "INSERT INTO notifications (user_id, title, message, type, is_read, created_at) VALUES (?,?,?,?,0,?)";
-        try (PreparedStatement ps = conn().prepareStatement(sqlNotif)) {
-            int patientUserId = findPatientUserId(patientId);
-            if (patientUserId <= 0) {
-                return;
-            }
-            ps.setInt(1, patientUserId);
-            ps.setString(2, "Nouvelle facture");
-            ps.setString(3, "Une facture de " + montant + " TND a été générée pour votre consultation #" + consultationId);
-            ps.setString(4, "FACTURE");
-            ps.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
-            ps.executeUpdate();
-        } catch (SQLException e) { System.err.println("notifyFacture: " + e.getMessage()); }
+        // 3. Notifier le patient via NotificationServiceArij
+        int patientUserId = findPatientUserId(patientId);
+        if (patientUserId > 0) {
+            String msg = "Facture disponible : " + montant + " TND pour votre consultation #" + consultationId + ".";
+            notifService.notifier(patientUserId, msg, "info", null);
+        }
     }
 
     public FactureArij findById(int id) {

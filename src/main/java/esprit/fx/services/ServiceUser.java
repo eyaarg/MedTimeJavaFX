@@ -15,16 +15,15 @@ public class ServiceUser implements IService<User> {
     private static final Pattern PHONE_PATTERN = Pattern.compile("^\\d{8}$");
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).+$");
 
-    private Connection conn;
-    public ServiceUser() {
-        conn = MyDB.getInstance().getConnection();
+    private Connection conn() {
+        return MyDB.getInstance().getConnection();
     }
 
     @Override
     public void ajouter(User user) throws SQLException {
         validateUserForCreate(user);
         String req = "INSERT INTO users (email, username, password, created_at, is_active, phone_number, is_verified, email_verification_token, email_verification_token_expires_at, password_reset_token, password_reset_token_expires_at, failed_attempts) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        PreparedStatement ps = conn.prepareStatement(req);
+        PreparedStatement ps = conn().prepareStatement(req);
         String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
         ps.setString(1, user.getEmail());
         ps.setString(2, user.getUsername());
@@ -51,7 +50,7 @@ public class ServiceUser implements IService<User> {
         } else {
             req = "UPDATE users SET email=?, username=?, created_at=?, is_active=?, phone_number=?, is_verified=?, email_verification_token=?, email_verification_token_expires_at=?, password_reset_token=?, password_reset_token_expires_at=?, failed_attempts=? WHERE id=?";
         }
-        PreparedStatement ps = conn.prepareStatement(req);
+        PreparedStatement ps = conn().prepareStatement(req);
         ps.setString(1, user.getEmail());
         ps.setString(2, user.getUsername());
         int index = 3;
@@ -74,7 +73,7 @@ public class ServiceUser implements IService<User> {
 
     @Override
     public void supprimer(int id) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement("DELETE FROM `users` WHERE `id`=?");
+        PreparedStatement ps = conn().prepareStatement("DELETE FROM `users` WHERE `id`=?");
         ps.setInt(1, id);
         ps.executeUpdate();
     }
@@ -99,7 +98,7 @@ public class ServiceUser implements IService<User> {
         }
 
         String req = "INSERT INTO users (email, username, password, created_at, is_active, phone_number, is_verified, email_verification_token, email_verification_token_expires_at, password_reset_token, password_reset_token_expires_at, failed_attempts) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        PreparedStatement ps = conn.prepareStatement(req, Statement.RETURN_GENERATED_KEYS);
+        PreparedStatement ps = conn().prepareStatement(req, Statement.RETURN_GENERATED_KEYS);
         String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
         ps.setString(1, user.getEmail());
         ps.setString(2, user.getUsername());
@@ -121,7 +120,7 @@ public class ServiceUser implements IService<User> {
         }
         int roleId = resolveRoleId(roleName);
         String resolvedRoleName = resolveRoleNameById(roleId);
-        try (PreparedStatement rolePs = conn.prepareStatement("INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)")) {
+        try (PreparedStatement rolePs = conn().prepareStatement("INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)")) {
             rolePs.setInt(1, createdUserId);
             rolePs.setInt(2, roleId);
             rolePs.executeUpdate();
@@ -136,14 +135,16 @@ public class ServiceUser implements IService<User> {
 
         // Envoyer email de vérification pour les patients
         if (!isDoctor && verificationToken != null) {
-            final String tokenFinal = verificationToken;
+            final String tokenFinal    = verificationToken;
+            final String emailFinal    = user.getEmail();
+            final String usernameFinal = user.getUsername();
             new Thread(() -> {
-                System.out.println("[ServiceUser] Thread email vérification démarré pour : " + user.getEmail());
+                System.out.println("Envoi email à : " + emailFinal);
                 try {
-                    EmailService.sendVerificationEmail(user.getEmail(), user.getUsername(), tokenFinal);
-                    System.out.println("[ServiceUser] Thread email vérification terminé pour : " + user.getEmail());
+                    EmailService.sendVerificationEmail(emailFinal, usernameFinal, tokenFinal);
+                    System.out.println("[ServiceUser] Email vérification envoyé à : " + emailFinal);
                 } catch (Exception e) {
-                    System.err.println("[ServiceUser] ERREUR thread email vérification : " + e.getMessage());
+                    System.err.println("[ServiceUser] ERREUR envoi email vérification : " + e.getMessage());
                     e.printStackTrace();
                 }
             }, "email-verification-thread").start();
@@ -153,11 +154,11 @@ public class ServiceUser implements IService<User> {
 
     public void updateUserRole(int userId, String roleName) throws SQLException {
         int roleId = resolveRoleId(roleName);
-        try (PreparedStatement deletePs = conn.prepareStatement("DELETE FROM user_roles WHERE user_id=?")) {
+        try (PreparedStatement deletePs = conn().prepareStatement("DELETE FROM user_roles WHERE user_id=?")) {
             deletePs.setInt(1, userId);
             deletePs.executeUpdate();
         }
-        try (PreparedStatement insertPs = conn.prepareStatement("INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)")) {
+        try (PreparedStatement insertPs = conn().prepareStatement("INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)")) {
             insertPs.setInt(1, userId);
             insertPs.setInt(2, roleId);
             insertPs.executeUpdate();
@@ -176,7 +177,7 @@ public class ServiceUser implements IService<User> {
                 "LEFT JOIN user_roles ur ON u.id = ur.user_id " +
                 "LEFT JOIN roles r ON ur.role_id = r.id " +
                 "WHERE (u.email = ? OR u.username = ?)";
-        PreparedStatement ps = conn.prepareStatement(query);
+        PreparedStatement ps = conn().prepareStatement(query);
         ps.setString(1, identifier);
         ps.setString(2, identifier);
         ResultSet rs = ps.executeQuery();
@@ -222,12 +223,12 @@ public class ServiceUser implements IService<User> {
     }
 
     private void incrementFailedAttempts(String identifier) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement(
+        PreparedStatement ps = conn().prepareStatement(
                 "UPDATE users SET failed_attempts = failed_attempts + 1 WHERE email=? OR username=?");
         ps.setString(1, identifier);
         ps.setString(2, identifier);
         ps.executeUpdate();
-        PreparedStatement checkPs = conn.prepareStatement(
+        PreparedStatement checkPs = conn().prepareStatement(
                 "SELECT failed_attempts FROM users WHERE email=? OR username=?");
         checkPs.setString(1, identifier);
         checkPs.setString(2, identifier);
@@ -238,7 +239,7 @@ public class ServiceUser implements IService<User> {
     }
 
     private void resetFailedAttempts(String identifier) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement(
+        PreparedStatement ps = conn().prepareStatement(
                 "UPDATE users SET failed_attempts = 0 WHERE email=? OR username=?");
         ps.setString(1, identifier);
         ps.setString(2, identifier);
@@ -246,7 +247,7 @@ public class ServiceUser implements IService<User> {
     }
 
     private void lockAccount(String identifier) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement(
+        PreparedStatement ps = conn().prepareStatement(
                 "UPDATE users SET is_active = false WHERE email=? OR username=?");
         ps.setString(1, identifier);
         ps.setString(2, identifier);
@@ -258,7 +259,7 @@ public class ServiceUser implements IService<User> {
         try {
             String username = getUsernameByEmail(identifier);
             String email    = getEmailByIdentifier(identifier);
-            System.out.println("[ServiceUser] Envoi email compte bloqué à : " + email);
+            System.out.println("Envoi email à : " + email);
             EmailService.sendAccountLockedEmail(email, username);
             System.out.println("[ServiceUser] Email compte bloqué envoyé à : " + email);
         } catch (Exception e) {
@@ -268,14 +269,14 @@ public class ServiceUser implements IService<User> {
     }
 
     public boolean verifyEmailToken(String token) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement(
+        PreparedStatement ps = conn().prepareStatement(
                 "SELECT id, email_verification_token_expires_at FROM users WHERE email_verification_token = ?");
         ps.setString(1, token);
         ResultSet rs = ps.executeQuery();
         if (rs.next()) {
             Timestamp expiresAt = rs.getTimestamp("email_verification_token_expires_at");
             if (expiresAt != null && expiresAt.after(new Timestamp(System.currentTimeMillis()))) {
-                PreparedStatement updatePs = conn.prepareStatement(
+                PreparedStatement updatePs = conn().prepareStatement(
                         "UPDATE users SET is_verified = true, is_active = true, email_verification_token = NULL, email_verification_token_expires_at = NULL WHERE email_verification_token = ?");
                 updatePs.setString(1, token);
                 updatePs.executeUpdate();
@@ -288,7 +289,7 @@ public class ServiceUser implements IService<User> {
     public void resendVerificationEmail(String email) throws SQLException {
         String token = java.util.UUID.randomUUID().toString();
         Timestamp expiresAt = new Timestamp(System.currentTimeMillis() + 24 * 60 * 60 * 1000);
-        PreparedStatement ps = conn.prepareStatement(
+        PreparedStatement ps = conn().prepareStatement(
                 "UPDATE users SET email_verification_token = ?, email_verification_token_expires_at = ? WHERE email = ?");
         ps.setString(1, token);
         ps.setTimestamp(2, expiresAt);
@@ -312,7 +313,7 @@ public class ServiceUser implements IService<User> {
     public void requestPasswordReset(String email) throws SQLException {
         String token = java.util.UUID.randomUUID().toString();
         Timestamp expiresAt = new Timestamp(System.currentTimeMillis() + 60 * 60 * 1000);
-        PreparedStatement ps = conn.prepareStatement(
+        PreparedStatement ps = conn().prepareStatement(
                 "UPDATE users SET password_reset_token = ?, password_reset_token_expires_at = ? WHERE email = ?");
         ps.setString(1, token);
         ps.setTimestamp(2, expiresAt);
@@ -324,7 +325,7 @@ public class ServiceUser implements IService<User> {
     private void sendPasswordResetEmail(String email, String token) {
         try {
             String username = getUsernameByEmail(email);
-            System.out.println("[ServiceUser] Envoi email reset password à : " + email);
+            System.out.println("Envoi email à : " + email);
             EmailService.sendPasswordResetEmail(email, username, token);
             System.out.println("[ServiceUser] Email reset password envoyé à : " + email);
         } catch (Exception e) {
@@ -334,7 +335,7 @@ public class ServiceUser implements IService<User> {
     }
 
     public boolean resetPassword(String token, String newPassword) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement(
+        PreparedStatement ps = conn().prepareStatement(
                 "SELECT id, password_reset_token_expires_at FROM users WHERE password_reset_token = ?");
         ps.setString(1, token);
         ResultSet rs = ps.executeQuery();
@@ -342,7 +343,7 @@ public class ServiceUser implements IService<User> {
             Timestamp expiresAt = rs.getTimestamp("password_reset_token_expires_at");
             if (expiresAt != null && expiresAt.after(new Timestamp(System.currentTimeMillis()))) {
                 String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
-                PreparedStatement updatePs = conn.prepareStatement(
+                PreparedStatement updatePs = conn().prepareStatement(
                         "UPDATE users SET password = ?, password_reset_token = NULL, password_reset_token_expires_at = NULL WHERE password_reset_token = ?");
                 updatePs.setString(1, hashedPassword);
                 updatePs.setString(2, token);
@@ -354,7 +355,7 @@ public class ServiceUser implements IService<User> {
     }
 
     public void unlockAccount(int userId) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement(
+        PreparedStatement ps = conn().prepareStatement(
                 "UPDATE users SET failed_attempts = 0, is_active = true WHERE id = ?");
         ps.setInt(1, userId);
         ps.executeUpdate();
@@ -366,7 +367,7 @@ public class ServiceUser implements IService<User> {
                 "LEFT JOIN `user_roles` ur ON u.id = ur.user_id " +
                 "LEFT JOIN `roles` r ON ur.role_id = r.id " +
                 "ORDER BY u.id";
-        Statement statement = conn.createStatement();
+        Statement statement = conn().createStatement();
         ResultSet rs = statement.executeQuery(req);
         // Dédupliquer : un user peut avoir plusieurs rôles → plusieurs lignes
         java.util.LinkedHashMap<Integer, User> userMap = new java.util.LinkedHashMap<>();
@@ -400,7 +401,7 @@ public class ServiceUser implements IService<User> {
 
 
     public User afficherParId(int id) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement(
+        PreparedStatement ps = conn().prepareStatement(
                 "SELECT u.*, r.id as role_id, r.name as role_name FROM users u " +
                         "LEFT JOIN user_roles ur ON u.id = ur.user_id " +
                         "LEFT JOIN roles r ON ur.role_id = r.id WHERE u.id=?");
@@ -436,7 +437,7 @@ public class ServiceUser implements IService<User> {
 
     private String getUsernameByEmail(String identifier) {
         try {
-            PreparedStatement ps = conn.prepareStatement(
+            PreparedStatement ps = conn().prepareStatement(
                     "SELECT username FROM users WHERE email=? OR username=?");
             ps.setString(1, identifier);
             ps.setString(2, identifier);
@@ -450,7 +451,7 @@ public class ServiceUser implements IService<User> {
 
     private String getEmailByIdentifier(String identifier) {
         try {
-            PreparedStatement ps = conn.prepareStatement(
+            PreparedStatement ps = conn().prepareStatement(
                     "SELECT email FROM users WHERE email=? OR username=?");
             ps.setString(1, identifier);
             ps.setString(2, identifier);
@@ -519,7 +520,7 @@ public class ServiceUser implements IService<User> {
     }
 
     private int createRoleAndReturnId(String roleName) throws SQLException {
-        try (PreparedStatement ps = conn.prepareStatement(
+        try (PreparedStatement ps = conn().prepareStatement(
                 "INSERT INTO roles (name) VALUES (?)", Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, roleName);
             ps.executeUpdate();
@@ -534,7 +535,7 @@ public class ServiceUser implements IService<User> {
 
     private Integer findRoleId(String roleName) throws SQLException {
         if (roleName == null || roleName.isBlank()) return null;
-        try (PreparedStatement ps = conn.prepareStatement(
+        try (PreparedStatement ps = conn().prepareStatement(
                 "SELECT id FROM roles WHERE UPPER(name)=UPPER(?) LIMIT 1")) {
             ps.setString(1, roleName.trim());
             try (ResultSet rs = ps.executeQuery()) {
@@ -545,7 +546,7 @@ public class ServiceUser implements IService<User> {
     }
 
     private String resolveRoleNameById(int roleId) throws SQLException {
-        try (PreparedStatement ps = conn.prepareStatement("SELECT name FROM roles WHERE id=?")) {
+        try (PreparedStatement ps = conn().prepareStatement("SELECT name FROM roles WHERE id=?")) {
             ps.setInt(1, roleId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getString("name");

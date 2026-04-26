@@ -13,10 +13,10 @@ import java.util.Properties;
 
 public class EmailService {
 
-    private static final String SMTP_HOST     = "sandbox.smtp.mailtrap.io";
-    private static final int    SMTP_PORT     = 2525;
-    private static final String SMTP_USERNAME = "691e29acfee8fe";
-    private static final String SMTP_PASSWORD = "47a0807d668f22";
+    private static final String SMTP_HOST     = "smtp.gmail.com";
+    private static final int    SMTP_PORT     = 587;
+    private static final String SMTP_USERNAME = "eyaargoubi64@gmail.com";
+    private static final String SMTP_PASSWORD = "nqgakpndluzejkyw";
     private static final String FROM_ADDRESS  = "no-reply@medtimefx.com";
 
     // ── Session ──────────────────────────────────────────────────────────────
@@ -25,8 +25,9 @@ public class EmailService {
         Properties props = new Properties();
         props.put("mail.smtp.auth",            "true");
         props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host",            SMTP_HOST);
-        props.put("mail.smtp.port",            String.valueOf(SMTP_PORT));
+        props.put("mail.smtp.host",            "smtp.gmail.com");
+        props.put("mail.smtp.port",            "587");
+        props.put("mail.smtp.ssl.trust",       "smtp.gmail.com");
         props.put("mail.smtp.connectiontimeout", "5000");
         props.put("mail.smtp.timeout",           "5000");
         props.put("mail.smtp.writetimeout",      "5000");

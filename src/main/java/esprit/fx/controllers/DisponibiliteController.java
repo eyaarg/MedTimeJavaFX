@@ -2,18 +2,26 @@ package esprit.fx.controllers;
 
 import esprit.fx.entities.Disponibilite;
 import esprit.fx.entities.User;
+import esprit.fx.services.OpenStreetMapService;
 import esprit.fx.services.ServiceDisponibilite;
+import esprit.fx.services.ServiceDoctor;
 import esprit.fx.services.ServiceUser;
+import esprit.fx.entities.Doctor;
 import esprit.fx.utils.NotificationUtil;
 import esprit.fx.utils.UserSession;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
@@ -31,6 +39,7 @@ public class DisponibiliteController implements Initializable {
 
     private ServiceDisponibilite serviceDisponibilite;
     private ServiceUser serviceUser;
+    private ServiceDoctor serviceDoctor;
     private String currentUserRole;
     private int currentUserId;
 
@@ -38,6 +47,7 @@ public class DisponibiliteController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         serviceDisponibilite = new ServiceDisponibilite();
         serviceUser = new ServiceUser();
+        serviceDoctor = new ServiceDoctor();
 
         User currentUser = UserSession.getCurrentUser();
         currentUserRole = UserSession.getCurrentRole();
@@ -288,6 +298,17 @@ public class DisponibiliteController implements Initializable {
             HBox actionsBox = new HBox(10);
             actionsBox.setAlignment(Pos.CENTER_RIGHT);
 
+            Button btnLocalisation = new Button("📍 Localisation");
+            btnLocalisation.setStyle(
+                    "-fx-background-color: #10b981;" +
+                            "-fx-text-fill: white;" +
+                            "-fx-font-weight: 600;" +
+                            "-fx-padding: 10 20;" +
+                            "-fx-background-radius: 8;" +
+                            "-fx-cursor: hand;"
+            );
+            btnLocalisation.setOnAction(e -> ouvrirCarte(dispo));
+
             Button btnModifier = new Button("✏️ Modifier");
             btnModifier.setStyle(
                     "-fx-background-color: #3b82f6;" +
@@ -310,8 +331,25 @@ public class DisponibiliteController implements Initializable {
             );
             btnSupprimer.setOnAction(e -> supprimerDisponibilite(dispo));
 
-            actionsBox.getChildren().addAll(btnModifier, btnSupprimer);
+            actionsBox.getChildren().addAll(btnLocalisation, btnModifier, btnSupprimer);
             card.getChildren().add(actionsBox);
+        } else {
+            // PATIENT : bouton localisation uniquement
+            HBox patientActionsBox = new HBox(10);
+            patientActionsBox.setAlignment(Pos.CENTER_RIGHT);
+
+            Button btnLocalisationPatient = new Button("📍 Voir le cabinet");
+            btnLocalisationPatient.setStyle(
+                    "-fx-background-color: #10b981;" +
+                            "-fx-text-fill: white;" +
+                            "-fx-font-weight: 600;" +
+                            "-fx-padding: 10 20;" +
+                            "-fx-background-radius: 8;" +
+                            "-fx-cursor: hand;"
+            );
+            btnLocalisationPatient.setOnAction(e -> ouvrirCarte(dispo));
+            patientActionsBox.getChildren().add(btnLocalisationPatient);
+            card.getChildren().add(patientActionsBox);
         }
 
         return card;
@@ -389,6 +427,48 @@ public class DisponibiliteController implements Initializable {
     @FXML
     private void actualiserListe() {
         chargerDisponibilites();
+    }
+
+    /** Ouvre la fenêtre carte OpenStreetMap pour localiser le cabinet du médecin. */
+    private void ouvrirCarte(Disponibilite dispo) {
+        try {
+            // Récupérer l'adresse du médecin depuis la table doctors
+            String adresse = "";
+            try {
+                Doctor doctor = serviceDoctor.afficherParId(dispo.getDoctorId());
+                if (doctor != null && doctor.getAdresse() != null) {
+                    adresse = doctor.getAdresse();
+                }
+            } catch (SQLException e) {
+                System.err.println("Adresse médecin non trouvée: " + e.getMessage());
+            }
+
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/Carte.fxml")
+            );
+            Parent root = loader.load();
+
+            CarteController carteController = loader.getController();
+            carteController.initCarte(
+                    dispo.getDoctorNom() != null ? dispo.getDoctorNom() : "Médecin",
+                    adresse
+            );
+
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("📍 Localisation — Cabinet Dr. " + dispo.getDoctorNom());
+            stage.setScene(new Scene(root));
+            stage.setResizable(true);
+            stage.show();
+
+        } catch (IOException e) {
+            Stage stage = (Stage) containerDisponibilites.getScene().getWindow();
+            NotificationUtil.showNotification(
+                    stage,
+                    "Impossible d'ouvrir la carte: " + e.getMessage(),
+                    NotificationUtil.NotificationType.ERROR
+            );
+        }
     }
 
     private void ouvrirFormulaireDisponibilite(Disponibilite disponibilite) {

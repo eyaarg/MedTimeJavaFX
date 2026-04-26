@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Localisation Cabinet</title>
+
+    <!-- Leaflet.js CSS -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f8fafc;
+        }
+
+        #info-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        #info-bar .icon { font-size: 22px; }
+
+        #info-bar .text { flex: 1; }
+
+        #info-bar .title {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        #info-bar .subtitle {
+            font-size: 12px;
+            opacity: 0.85;
+            margin-top: 2px;
+        }
+
+        #map {
+            width: 100%;
+            height: calc(100vh - 60px);
+        }
+
+        .custom-popup .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            border: none;
+        }
+
+        .popup-content {
+            text-align: center;
+            padding: 4px;
+        }
+
+        .popup-content .popup-icon { font-size: 28px; }
+
+        .popup-content .popup-name {
+            font-weight: 700;
+            font-size: 14px;
+            color: #1f2937;
+            margin: 6px 0 4px;
+        }
+
+        .popup-content .popup-adresse {
+            font-size: 12px;
+            color: #6b7280;
+            max-width: 200px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="info-bar">
+    <span class="icon">📍</span>
+    <div class="text">
+        <div class="title" id="bar-title">Cabinet médical</div>
+        <div class="subtitle" id="bar-adresse">Chargement...</div>
+    </div>
+</div>
+
+<div id="map"></div>
+
+<!-- Leaflet.js JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    // Variables injectées depuis Java via WebEngine.executeScript()
+    var LAT     = 36.8065;   // défaut : Tunis
+    var LON     = 10.1815;
+    var NOM     = "Cabinet médical";
+    var ADRESSE = "Tunis, Tunisie";
+
+    // Initialiser la carte
+    var map = L.map('map').setView([LAT, LON], 15);
+
+    // Tuile OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19
+    }).addTo(map);
+
+    // Icône personnalisée rouge
+    var redIcon = L.divIcon({
+        html: '<div style="font-size:32px; line-height:1;">📍</div>',
+        iconSize:   [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor:[0, -32],
+        className: ''
+    });
+
+    // Marqueur
+    var marker = L.marker([LAT, LON], { icon: redIcon }).addTo(map);
+
+    // Popup
+    marker.bindPopup(
+        '<div class="popup-content">' +
+        '  <div class="popup-icon">🏥</div>' +
+        '  <div class="popup-name">' + NOM + '</div>' +
+        '  <div class="popup-adresse">' + ADRESSE + '</div>' +
+        '</div>',
+        { className: 'custom-popup', maxWidth: 250 }
+    ).openPopup();
+
+    // Mettre à jour la barre d'info
+    document.getElementById('bar-title').textContent   = NOM;
+    document.getElementById('bar-adresse').textContent = ADRESSE;
+
+    // Fonction appelée depuis Java pour mettre à jour la carte
+    function updateMap(lat, lon, nom, adresse) {
+        LAT     = lat;
+        LON     = lon;
+        NOM     = nom;
+        ADRESSE = adresse;
+
+        map.setView([lat, lon], 15);
+        marker.setLatLng([lat, lon]);
+
+        marker.setPopupContent(
+            '<div class="popup-content">' +
+            '  <div class="popup-icon">🏥</div>' +
+            '  <div class="popup-name">' + nom + '</div>' +
+            '  <div class="popup-adresse">' + adresse + '</div>' +
+            '</div>'
+        );
+        marker.openPopup();
+
+        document.getElementById('bar-title').textContent   = nom;
+        document.getElementById('bar-adresse').textContent = adresse;
+    }
+</script>
+</body>
+</html>

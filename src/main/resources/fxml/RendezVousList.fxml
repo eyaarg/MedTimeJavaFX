@@ -88,6 +88,14 @@
                            -fx-padding: 10 16;
                            -fx-background-radius: 8;
                            -fx-cursor: hand;" />
+            <Button fx:id="btnSuggestion" text="💡 Suggérer un créneau"
+                    onAction="#ouvrirSuggestion"
+                    style="-fx-background-color: #7c3aed;
+                           -fx-text-fill: white;
+                           -fx-font-weight: 600;
+                           -fx-padding: 10 16;
+                           -fx-background-radius: 8;
+                           -fx-cursor: hand;" />
             <Button fx:id="btnModifier" text="✏️ Modifier"
                     onAction="#modifierRendezVous" disable="true"
                     style="-fx-background-color: #f39c12;

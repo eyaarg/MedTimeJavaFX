@@ -44,6 +44,7 @@ public class RendezVousController implements Initializable {
     @FXML private Button btnActualiser;
     @FXML private Button btnGoogleCalendar;
     @FXML private Button btnHistorique;
+    @FXML private Button btnSuggestion;
 
     @FXML private ComboBox<String> filterStatut;
     @FXML private TextField searchField;
@@ -380,6 +381,26 @@ public class RendezVousController implements Initializable {
                 showAlert("Erreur",
                         "Impossible d'annuler le rendez-vous : " + e.getMessage());
             }
+        }
+    }
+
+    @FXML
+    private void ouvrirSuggestion() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/fxml/SuggestionDisponibilite.fxml")
+            );
+            javafx.scene.Parent root = loader.load();
+            SuggestionController ctrl = loader.getController();
+            ctrl.setParentController(this);
+
+            Stage stage = new Stage();
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.setTitle("💡 Suggestion de Créneaux");
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            showAlert("Erreur", "Impossible d'ouvrir la suggestion : " + e.getMessage());
         }
     }
 

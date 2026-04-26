@@ -54,6 +54,20 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- JSON parsing pour OpenWeatherMap et OpenStreetMap API -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20240303</version>
+        </dependency>
+
+        <!-- WebView pour la carte OpenStreetMap -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>

@@ -466,19 +466,6 @@ public class MainControllerArij {
     private record HubCard(String icon, String name, String description, Runnable action) {}
 }
 
-public class MainControllerArij {
-
-    @FXML private StackPane contentArea;
-    @FXML private Button btnSideDashboard;
-    @FXML private Button btnModuleConsultation;
-    @FXML private Button btnModulePrendreRdv;
-    @FXML private Button btnModuleDisponibilite;
-    @FXML private Button btnModuleMarket;
-    @FXML private Button btnModuleForum;
-    @FXML private Button btnUsers;
-    @FXML private Label footerNameLabel;
-    @FXML private Label footerRoleLabel;
-    @FXML private Label avatarLabel;
 
     private int userId = 0;
     private int patientId = 0;

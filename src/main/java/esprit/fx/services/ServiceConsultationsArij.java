@@ -1,5 +1,7 @@
 package esprit.fx.services;
 
+import com.google.protobuf.Message;
+import com.google.protobuf.Type;
 import esprit.fx.entities.ConsultationsArij;
 import esprit.fx.entities.NotificationArij;
 import esprit.fx.utils.MyDB;
@@ -370,6 +372,7 @@ public class ServiceConsultationsArij {
     // ================================================================== //
     //  Notifications — délèguent à NotificationServiceArij               //
     // ================================================================== //
+    /**
      * Message : "Nouvelle consultation de {patient} pour le {date}"
      * Type    : "info"
      */

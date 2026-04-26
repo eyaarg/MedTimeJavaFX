@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter;
  */
 public class WeatherService {
 
-    private static final String API_KEY  = "VOTRE_CLE_API_ICI"; // ← remplacer par ta clé
+    private static final String API_KEY  = "da03b5f76b6d1714965d8dbc402fc5ee";
     private static final String CITY     = "Tunis";
     private static final String BASE_URL =
             "https://api.openweathermap.org/data/2.5/forecast"

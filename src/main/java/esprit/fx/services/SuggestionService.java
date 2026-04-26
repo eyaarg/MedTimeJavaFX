@@ -65,6 +65,8 @@ public class SuggestionService {
 
     /**
      * Retourne les TOP {@code limit} créneaux libres pour un médecin.
+     * Optimisation : si la semaine choisie est vide, élargit automatiquement
+     * aux 4 semaines suivantes pour toujours proposer des résultats.
      *
      * @param doctorId  ID du médecin
      * @param plage     "Matin" | "Après-midi" | "Soir" | "Tous"
@@ -85,27 +87,35 @@ public class SuggestionService {
         // Étape 3 : générer tous les créneaux de 30 min
         List<Creneau> tousLesCreneaux = genererCreneaux(dispos);
 
-        // Étape 4 : éliminer créneaux occupés
+        // Étape 4 : éliminer créneaux occupés et passés
         List<Creneau> libres = tousLesCreneaux.stream()
                 .filter(c -> !estOccupe(c, rdvExistants))
-                .filter(c -> c.debut.isAfter(LocalDateTime.now())) // pas dans le passé
+                .filter(c -> c.debut.isAfter(LocalDateTime.now()))
                 .toList();
 
         // Étape 5 : filtrer par plage horaire
-        libres = filtrerParPlage(libres, plage);
+        List<Creneau> filtresPlage = filtrerParPlage(libres, plage);
 
-        // Étape 6 : filtrer par semaine
-        if (semaine != null) {
-            libres = filtrerParSemaine(libres, semaine);
+        // Étape 6 : filtrer par semaine — avec élargissement automatique si vide
+        List<Creneau> resultat = new ArrayList<>();
+        LocalDate semaineTest = semaine != null ? semaine : getLundiDeSemaine(LocalDate.now());
+
+        for (int tentative = 0; tentative < 5 && resultat.size() < limit; tentative++) {
+            List<Creneau> candidats = filtrerParSemaine(filtresPlage, semaineTest);
+            resultat.addAll(candidats);
+            semaineTest = semaineTest.plusWeeks(1); // semaine suivante si pas assez
         }
 
+        // Dédoublonner (au cas où)
+        resultat = resultat.stream().distinct().toList();
+
         // Étape 7 : trier par date la plus proche
-        libres = libres.stream()
+        resultat = resultat.stream()
                 .sorted(Comparator.comparing(c -> c.debut))
                 .toList();
 
         // Étape 8 : top N
-        return libres.stream().limit(limit).toList();
+        return resultat.stream().limit(limit).toList();
     }
 
     // -------------------------------------------------------------------------

@@ -26,8 +26,8 @@ public class ServiceDoctor implements IService<Doctor>{
         if (generatedKeys.next()) {
             userId = generatedKeys.getInt(1);
         }
-        String reqDoctor = "INSERT INTO `doctors` (`license_code`, `is_certified`, `created_at`, `updated_at`, `user_id`) " +
-                "VALUES ('" + doctor.getLicenseCode() + "', " + doctor.isCertified() + ", '" + LocalDateTime.now() + "', '" + LocalDateTime.now() + "', " + userId + ")";
+        String reqDoctor = "INSERT INTO `doctors` (`license_code`, `is_certified`, `created_at`, `updated_at`, `user_id`, `adresse`) " +
+                "VALUES ('" + doctor.getLicenseCode() + "', " + doctor.isCertified() + ", '" + LocalDateTime.now() + "', '" + LocalDateTime.now() + "', " + userId + ", '" + (doctor.getAdresse() != null ? doctor.getAdresse() : "") + "')";
         stmt.executeUpdate(reqDoctor);
     }
     public void modifier(Doctor doctor) throws SQLException {
@@ -42,12 +42,13 @@ public class ServiceDoctor implements IService<Doctor>{
         ps.executeUpdate();
 
         // 2 - UPDATE doctors
-        String reqDoctor = "UPDATE `doctors` SET `license_code`=?, `is_certified`=?, `updated_at`=? WHERE `user_id`=?";
+        String reqDoctor = "UPDATE `doctors` SET `license_code`=?, `is_certified`=?, `updated_at`=?, `adresse`=? WHERE `user_id`=?";
         PreparedStatement ps2 = conn.prepareStatement(reqDoctor);
         ps2.setString(1, doctor.getLicenseCode());
         ps2.setBoolean(2, doctor.isCertified());
         ps2.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
-        ps2.setInt(4, doctor.getId());
+        ps2.setString(4, doctor.getAdresse() != null ? doctor.getAdresse() : "");
+        ps2.setInt(5, doctor.getId());
         ps2.executeUpdate();
     }
     @Override
@@ -70,7 +71,7 @@ public class ServiceDoctor implements IService<Doctor>{
 
     @Override
     public List<Doctor> getAll() throws SQLException {
-        String req = "SELECT u.*, d.id as doctor_id, d.license_code, d.is_certified, d.updated_at " +
+        String req = "SELECT u.*, d.id as doctor_id, d.license_code, d.is_certified, d.updated_at, d.adresse " +
                 "FROM `users` u JOIN `doctors` d ON u.id = d.user_id";
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(req);
@@ -94,6 +95,7 @@ public class ServiceDoctor implements IService<Doctor>{
                     rs.getTimestamp("created_at").toLocalDateTime(),
                     rs.getTimestamp("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null
             );
+            doctor.setAdresse(rs.getString("adresse"));
             doctors.add(doctor);
         }
         return doctors;
@@ -106,7 +108,7 @@ public class ServiceDoctor implements IService<Doctor>{
     @Override
     public Doctor afficherParId(int id) throws SQLException {
         Doctor doctor = null;
-        String sql = "SELECT u.*, d.id as doctor_id, d.license_code, d.is_certified, d.updated_at " +
+        String sql = "SELECT u.*, d.id as doctor_id, d.license_code, d.is_certified, d.updated_at, d.adresse " +
                 "FROM users u JOIN doctors d ON u.id = d.user_id WHERE u.id=?";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setInt(1, id);
@@ -131,6 +133,7 @@ public class ServiceDoctor implements IService<Doctor>{
                     rs.getTimestamp("updated_at") != null ?
                             rs.getTimestamp("updated_at").toLocalDateTime() : null
             );
+            doctor.setAdresse(rs.getString("adresse"));
         }
         return doctor;
     }

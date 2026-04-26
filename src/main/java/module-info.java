@@ -4,6 +4,7 @@ module MedTimeFX {
     requires java.sql;
     requires jakarta.mail;
     requires java.desktop;
+    requires org.apache.pdfbox;
     requires jbcrypt;
 
     opens esprit.fx.controllers to javafx.fxml;

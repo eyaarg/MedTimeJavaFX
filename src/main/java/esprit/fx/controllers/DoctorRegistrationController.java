@@ -3,6 +3,8 @@ package esprit.fx.controllers;
 import esprit.fx.entities.Doctor;
 import esprit.fx.services.ServiceDoctor;
 import esprit.fx.services.ServiceDoctorDocument;
+import esprit.fx.utils.UserSession;
+import esprit.fx.entities.User;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -10,28 +12,32 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 
 import java.io.File;
-import java.time.LocalDateTime;
-import java.util.regex.Pattern;
 
 public class DoctorRegistrationController {
 
     private final ServiceDoctor serviceDoctor = new ServiceDoctor();
     private final ServiceDoctorDocument serviceDoctorDocument = new ServiceDoctorDocument();
 
-    private TextField usernameField;
-    private TextField emailField;
-    private TextField phoneNumberField;
     private TextField licenseCodeField;
-    private PasswordField passwordField;
-    private PasswordField confirmPasswordField;
     private Label pdfLabel;
-    private ProgressBar uploadProgressBar;
     private File selectedPdf;
+    private User receivedUser;
 
-    public static void showAsStage() {
+    public static void showAsStage(User user) {
+        if (user == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Attention");
+            alert.setHeaderText(null);
+            alert.setContentText("Veuillez d'abord créer un compte via le formulaire d'inscription avant de compléter votre profil médecin.");
+            alert.showAndWait();
+            return;
+        }
         DoctorRegistrationController controller = new DoctorRegistrationController();
+        controller.receivedUser = user;
         Stage stage = new Stage();
         stage.setTitle("Inscription Médecin");
         controller.initialize(stage);
@@ -43,37 +49,19 @@ public class DoctorRegistrationController {
         root.setPadding(new Insets(15));
         root.setAlignment(Pos.CENTER);
 
-        usernameField = new TextField();
-        usernameField.setPromptText("Nom d'utilisateur");
-
-        emailField = new TextField();
-        emailField.setPromptText("Email");
-
-        phoneNumberField = new TextField();
-        phoneNumberField.setPromptText("Numéro de téléphone");
-
         licenseCodeField = new TextField();
         licenseCodeField.setPromptText("Code de licence");
-
-        passwordField = new PasswordField();
-        passwordField.setPromptText("Mot de passe");
-
-        confirmPasswordField = new PasswordField();
-        confirmPasswordField.setPromptText("Confirmez le mot de passe");
 
         pdfLabel = new Label("Aucun fichier sélectionné");
         Button choosePdfButton = new Button("Choisir un fichier PDF");
         choosePdfButton.setOnAction(event -> choosePdf());
 
-        uploadProgressBar = new ProgressBar();
-        uploadProgressBar.setVisible(false);
-
         Button registerButton = new Button("S'inscrire");
-        registerButton.setOnAction(event -> register(stage));
+        registerButton.setOnAction(event -> handleRegister(stage));
 
-        root.getChildren().addAll(usernameField, emailField, phoneNumberField, licenseCodeField, passwordField, confirmPasswordField, pdfLabel, choosePdfButton, uploadProgressBar, registerButton);
+        root.getChildren().addAll(licenseCodeField, pdfLabel, choosePdfButton, registerButton);
 
-        Scene scene = new Scene(root, 400, 500);
+        Scene scene = new Scene(root, 400, 300);
         stage.setScene(scene);
     }
 
@@ -88,39 +76,32 @@ public class DoctorRegistrationController {
         }
     }
 
-    private void register(Stage stage) {
+    private void handleRegister(Stage stage) {
         try {
-            String username = usernameField.getText();
-            String email = emailField.getText();
-            String phoneNumber = phoneNumberField.getText();
             String licenseCode = licenseCodeField.getText();
-            String password = passwordField.getText();
 
-            // Validation des champs
-            if (username.isEmpty() || email.isEmpty() || phoneNumber.isEmpty() || licenseCode.isEmpty() || password.isEmpty()) {
+            if (licenseCode.isEmpty() || selectedPdf == null) {
                 showAlert("Erreur", "Tous les champs sont obligatoires.");
                 return;
             }
 
-            if (!Pattern.matches("^\\d{8}$", phoneNumber)) {
-                showAlert("Erreur", "Le numéro de téléphone doit contenir exactement 8 chiffres.");
-                return;
-            }
+            Doctor doctor = new Doctor();
+            doctor.setUserId(receivedUser.getId());
+            doctor.setLicenseCode(licenseCode);
 
-            // Création de l'objet Doctor
-            Doctor doctor = new Doctor(0, email, username, password, null, true, phoneNumber, false, null, null, null, null, 0, 0, 0, licenseCode, false, LocalDateTime.now(), LocalDateTime.now());
-
-            // Ajout du docteur
             serviceDoctor.ajouter(doctor);
-
-            // Téléchargement du document
             serviceDoctorDocument.uploadDocument(doctor.getId(), selectedPdf);
 
-            // Affichage de la vérification par email
-            EmailVerificationController.showAsStage(email);
-
-            showInfo("Succès", "Inscription réussie.");
+            showInfo("Succès", "Inscription réussie ! Compte en attente de validation.");
             stage.close();
+
+            // Open Login.fxml in a new stage
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Login.fxml"));
+            Parent root = loader.load();
+            Stage loginStage = new Stage();
+            loginStage.setTitle("Login");
+            loginStage.setScene(new Scene(root, 980, 720));
+            loginStage.show();
         } catch (Exception e) {
             showAlert("Erreur", "Une erreur s'est produite : " + e.getMessage());
         }

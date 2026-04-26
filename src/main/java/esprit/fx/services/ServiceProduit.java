@@ -113,7 +113,7 @@ public class ServiceProduit implements IService<Produit>{
         }
         return listproduits;
     }
-    @Override
+
     public Produit afficherParId(int id) throws SQLException {
         String requete = "SELECT * FROM product WHERE id = ?";
         PreparedStatement ps = conn.prepareStatement(requete);

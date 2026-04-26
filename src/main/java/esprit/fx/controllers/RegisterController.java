@@ -120,6 +120,31 @@ public class RegisterController {
             showAlert("Erreur", "Veuillez accepter les conditions d'utilisation");
             return;
         }
+        if (role != null && (role.equalsIgnoreCase("Doctor") ||
+                role.equalsIgnoreCase("Medecin"))) {
+            try {
+                User userToCreate = new User();
+                userToCreate.setUsername(username.trim());
+                userToCreate.setEmail(email.trim());
+                userToCreate.setPhoneNumber(phone == null ? null : phone.trim());
+                userToCreate.setPassword(password);
+                userToCreate.setRequestedRole(role);
+                userToCreate.setCreatedAt(LocalDateTime.now());
+                userToCreate.setActive(true);
+                userToCreate.setVerified(true);
+                userToCreate.setFailedAttempts(0);
+
+                User createdUser = serviceUser.registerUser(userToCreate, role);
+                DoctorRegistrationController.showAsStage(createdUser);
+                Stage stage = (Stage) createAccountBtn.getScene().getWindow();
+                stage.close();
+            } catch (SQLException e) {
+                showAlert("Erreur", "Impossible de créer le compte : " + e.getMessage());
+            } catch (Exception e) {
+                showAlert("Erreur", "Une erreur inattendue est survenue : " + e.getMessage());
+            }
+            return;
+        }
 
         try {
             User userToCreate = new User();

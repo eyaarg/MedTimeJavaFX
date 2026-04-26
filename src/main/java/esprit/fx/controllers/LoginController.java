@@ -12,11 +12,16 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import esprit.fx.entities.Doctor;
 
 public class LoginController {
 
@@ -30,10 +35,20 @@ public class LoginController {
     private Button signInButton;
 
     private final ServiceUser serviceUser = new ServiceUser();
+    private static final Logger LOGGER = Logger.getLogger(LoginController.class.getName());
 
     @FXML
     private void initialize() {
-        signInButton.setOnAction(e -> handleLogin());
+        // Rétablissement des paramètres dans les expressions lambda
+        signInButton.setOnAction(event -> handleLogin());
+
+        Hyperlink forgotPasswordLink = new Hyperlink("Mot de passe oublié ?");
+        forgotPasswordLink.setOnAction(event -> new ForgotPasswordController().showAsStage());
+
+        Hyperlink registerDoctorLink = new Hyperlink("S'inscrire comme médecin");
+        registerDoctorLink.setOnAction(event -> DoctorRegistrationController.showAsStage(null));
+
+        ((VBox) signInButton.getParent()).getChildren().addAll(forgotPasswordLink, registerDoctorLink);
     }
 
     @FXML
@@ -52,14 +67,32 @@ public class LoginController {
             if (user != null) {
                 UserSession.setCurrentUser(user);
                 UserSession.setCurrentRole(extractPrimaryRole(user));
-                openMainView();
+
+                String role = extractPrimaryRole(user);
+                if (role.contains("ADMIN")) {
+                    openMainView();
+                } else if (role.contains("DOCTOR")) {
+                    if (user instanceof Doctor && !((Doctor) user).isCertified()) {
+                        showAlert("Compte en attente", "Votre compte médecin est en attente de validation par un administrateur.");
+                    } else {
+                        openMainView();
+                    }
+                } else if (role.contains("PATIENT")) {
+                    openMainView();
+                }
             } else {
                 showAlert("Connexion échouée", "Identifiant ou mot de passe incorrect.");
             }
 
         } catch (Exception e) {
             System.err.println("Login error: " + e.getMessage());
-            showAlert("Erreur", "Erreur de connexion : " + e.getMessage());
+            if (e.getMessage().contains("non vérifié")) {
+                EmailVerificationController.showAsStage(username);
+            } else if (e.getMessage().contains("verrouillé") || e.getMessage().contains("bloqué")) {
+                showAlert("Compte verrouillé", "Compte verrouillé, contactez l'administrateur.");
+            } else {
+                showAlert("Erreur", "Erreur de connexion : " + e.getMessage());
+            }
         }
     }
 
@@ -94,7 +127,7 @@ public class LoginController {
             stage.setMaximized(true);
         } catch (IOException e) {
             System.err.println("Erreur ouverture MainView: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Erreur ouverture MainView", e);
         }
     }
 
@@ -114,7 +147,7 @@ public class LoginController {
             stage.centerOnScreen();
         } catch (IOException e) {
             System.err.println("Erreur ouverture Register: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Erreur ouverture Register", e);
         }
     }
 
@@ -126,7 +159,7 @@ public class LoginController {
         if (roles == null || roles.isEmpty() || roles.get(0) == null || roles.get(0).getName() == null) {
             return "PATIENT";
         }
-        return roles.get(0).getName().toUpperCase();
+        return roles.stream().findFirst().map(role -> role.getName().toUpperCase()).orElse("PATIENT");
     }
 
     private void showAlert(String title, String message) {

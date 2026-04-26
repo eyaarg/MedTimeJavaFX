@@ -23,13 +23,21 @@ public class ServiceDoctor implements IService<Doctor>{
         Statement stmt = conn.createStatement();
         stmt.executeUpdate(reqUser, Statement.RETURN_GENERATED_KEYS);
         ResultSet generatedKeys = stmt.getGeneratedKeys();
+
         int userId = 0;
         if (generatedKeys.next()) {
             userId = generatedKeys.getInt(1);
         }
+
         String reqDoctor = "INSERT INTO `doctors` (`license_code`, `is_certified`, `created_at`, `updated_at`, `user_id`) " +
                 "VALUES ('" + doctor.getLicenseCode() + "', " + doctor.isCertified() + ", '" + LocalDateTime.now() + "', '" + LocalDateTime.now() + "', " + userId + ")";
-        stmt.executeUpdate(reqDoctor);
+        stmt.executeUpdate(reqDoctor, Statement.RETURN_GENERATED_KEYS);
+
+        ResultSet doctorGeneratedKeys = stmt.getGeneratedKeys();
+        if (doctorGeneratedKeys.next()) {
+            int doctorId = doctorGeneratedKeys.getInt(1);
+            doctor.setId(doctorId); // Set the generated ID in the Doctor object
+        }
     }
     public void modifier(Doctor doctor) throws SQLException {
         // 1 - UPDATE users
@@ -185,4 +193,5 @@ public class ServiceDoctor implements IService<Doctor>{
         }
         return null;
     }
+
 }

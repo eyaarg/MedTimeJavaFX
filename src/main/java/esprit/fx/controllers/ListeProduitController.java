@@ -4,9 +4,9 @@ import esprit.fx.entities.Produit;
 import esprit.fx.entities.CategorieEnum;
 import esprit.fx.services.ServiceFavoris;
 import esprit.fx.services.ServiceProduit;
+import esprit.fx.service.SmartSearchService;
 import esprit.fx.utils.MyDB;
 // NOUVEAUX IMPORTS POUR L'IA
-import esprit.fx.service.SmartSearchService;
 import javafx.application.Platform;
 import java.util.stream.Collectors;
 // ---
@@ -39,7 +39,7 @@ public class ListeProduitController implements Initializable {
     private List<Produit> produitsList;
 
     // AJOUT : Instance du service IA
-    private final SmartSearchService aiService = new SmartSearchService();
+    private final SmartSearchService aiService = new esprit.fx.service.SmartSearchService();
 
     private final ServiceFavoris serviceFavoris = ServiceFavoris.getInstance();
 

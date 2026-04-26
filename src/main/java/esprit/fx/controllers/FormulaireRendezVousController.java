@@ -5,7 +5,9 @@ import esprit.fx.entities.User;
 import esprit.fx.services.ServiceRendezVous;
 import esprit.fx.services.ServiceUser;
 import esprit.fx.services.ServiceDisponibilite;
+import esprit.fx.services.WeatherService;
 import esprit.fx.utils.UserSession;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -25,6 +27,7 @@ public class FormulaireRendezVousController implements Initializable {
     @FXML private ComboBox<User> comboPatient;
     @FXML private ComboBox<User> comboDocteur;
     @FXML private DatePicker datePickerRdv;
+    @FXML private Label labelMeteo;
     @FXML private ComboBox<String> comboHeure;
     @FXML private TextArea textAreaMotif;
     @FXML private TextArea textAreaNotes;
@@ -35,6 +38,7 @@ public class FormulaireRendezVousController implements Initializable {
     private ServiceRendezVous serviceRendezVous;
     private ServiceUser serviceUser;
     private ServiceDisponibilite serviceDisponibilite;
+    private WeatherService weatherService;
     private RendezVous rendezVousActuel;
     private RendezVousController parentController;
     private String currentUserRole;
@@ -45,6 +49,7 @@ public class FormulaireRendezVousController implements Initializable {
         serviceRendezVous = new ServiceRendezVous();
         serviceUser = new ServiceUser();
         serviceDisponibilite = new ServiceDisponibilite();
+        weatherService = new WeatherService();
         
         User currentUser = UserSession.getCurrentUser();
         currentUserRole = UserSession.getCurrentRole();
@@ -52,6 +57,63 @@ public class FormulaireRendezVousController implements Initializable {
         
         initializeComboBoxes();
         configureBasedOnRole();
+        setupWeatherListener();
+    }
+
+    /** Écoute le DatePicker et déclenche l'appel météo dans un thread séparé. */
+    private void setupWeatherListener() {
+        datePickerRdv.valueProperty().addListener((obs, oldDate, newDate) -> {
+            if (newDate == null) {
+                labelMeteo.setVisible(false);
+                labelMeteo.setManaged(false);
+                return;
+            }
+            // Afficher un message de chargement immédiatement
+            labelMeteo.setText("⏳ Chargement de la météo...");
+            labelMeteo.setStyle(
+                    "-fx-font-size: 12px; -fx-text-fill: #6b7280;" +
+                    "-fx-background-color: #f3f4f6; -fx-background-radius: 6;" +
+                    "-fx-padding: 6 10; -fx-border-color: #e5e7eb; -fx-border-radius: 6;");
+            labelMeteo.setVisible(true);
+            labelMeteo.setManaged(true);
+
+            // Appel API en arrière-plan pour ne pas bloquer l'UI
+            Thread thread = new Thread(() -> {
+                WeatherService.MeteoResult result = weatherService.getMeteo(newDate);
+                Platform.runLater(() -> afficherMeteo(newDate, result));
+            });
+            thread.setDaemon(true);
+            thread.start();
+        });
+    }
+
+    /** Met à jour le label météo avec le résultat de l'API. */
+    private void afficherMeteo(LocalDate date, WeatherService.MeteoResult result) {
+        if (result == null) {
+            labelMeteo.setText("⚠️ Météo indisponible pour cette date (hors plage 5 jours)");
+            labelMeteo.setStyle(
+                    "-fx-font-size: 12px; -fx-text-fill: #92400e;" +
+                    "-fx-background-color: #fef3c7; -fx-background-radius: 6;" +
+                    "-fx-padding: 6 10; -fx-border-color: #fde68a; -fx-border-radius: 6;");
+        } else {
+            labelMeteo.setText(result.toDisplayString(date));
+            // Couleur selon la météo
+            boolean isBad = result.icone.startsWith("09") || result.icone.startsWith("10")
+                         || result.icone.startsWith("11") || result.icone.startsWith("13");
+            if (isBad) {
+                labelMeteo.setStyle(
+                        "-fx-font-size: 12px; -fx-text-fill: #1e40af;" +
+                        "-fx-background-color: #dbeafe; -fx-background-radius: 6;" +
+                        "-fx-padding: 6 10; -fx-border-color: #93c5fd; -fx-border-radius: 6;");
+            } else {
+                labelMeteo.setStyle(
+                        "-fx-font-size: 12px; -fx-text-fill: #065f46;" +
+                        "-fx-background-color: #d1fae5; -fx-background-radius: 6;" +
+                        "-fx-padding: 6 10; -fx-border-color: #6ee7b7; -fx-border-radius: 6;");
+            }
+        }
+        labelMeteo.setVisible(true);
+        labelMeteo.setManaged(true);
     }
 
     private void initializeComboBoxes() {

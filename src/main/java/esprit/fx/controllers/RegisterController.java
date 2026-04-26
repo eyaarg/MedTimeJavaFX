@@ -130,7 +130,7 @@ public class RegisterController {
                 userToCreate.setPassword(password);
                 userToCreate.setRequestedRole(role);
                 userToCreate.setCreatedAt(LocalDateTime.now());
-                userToCreate.setActive(true);
+                userToCreate.setActive(false);
                 userToCreate.setVerified(true);
                 userToCreate.setFailedAttempts(0);
 
@@ -154,17 +154,18 @@ public class RegisterController {
             userToCreate.setPassword(password);
             userToCreate.setRequestedRole(role);
             userToCreate.setCreatedAt(LocalDateTime.now());
-            userToCreate.setActive(true);
-            userToCreate.setVerified(true);
+            userToCreate.setActive(false);
+            userToCreate.setVerified(false);
             userToCreate.setFailedAttempts(0);
 
             User createdUser = serviceUser.registerUser(userToCreate, role);
 
-            UserSession.setCurrentUser(createdUser);
-            UserSession.setCurrentRole(extractPrimaryRole(createdUser));
-
-            showInfo("Succès", "Compte créé avec succès. Bienvenue " + createdUser.getUsername() + " !");
-            openMainView();
+            showInfo("Inscription réussie",
+                    "Un email de vérification a été envoyé à " + createdUser.getEmail() +
+                    ".\nVeuillez saisir le code reçu pour activer votre compte.");
+            EmailVerificationController.showAsStage(createdUser.getEmail());
+            Stage stage = (Stage) createAccountBtn.getScene().getWindow();
+            stage.close();
         } catch (SQLException e) {
             showAlert("Erreur", "Impossible de créer le compte : " + e.getMessage());
         } catch (Exception e) {

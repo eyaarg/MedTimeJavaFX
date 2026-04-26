@@ -72,7 +72,10 @@ public class UserStatsService {
     }
 
     public int getLockedAccounts() throws SQLException {
-        String sql = "SELECT COUNT(*) FROM users WHERE failed_attempts >= 3";
+        // Comptes bloqués = is_active=false ET is_verified=true (pas en attente de vérif email)
+        // Exclure les médecins en attente de validation (ils ont is_active=false mais c'est normal)
+        String sql = "SELECT COUNT(*) FROM users u WHERE u.is_active = false AND u.is_verified = true " +
+                "AND u.id NOT IN (SELECT user_id FROM doctors WHERE is_certified = false)";
         try (Connection conn = MyDB.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {

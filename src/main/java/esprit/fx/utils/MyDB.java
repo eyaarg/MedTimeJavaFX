@@ -21,6 +21,14 @@ public class MyDB {
     }
 
     public Connection getConnection() {
+        try {
+            if (connection == null || connection.isClosed() || !connection.isValid(2)) {
+                connection = DriverManager.getConnection(url, user, password);
+                System.out.println("Reconnected to database successfully");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Impossible de se reconnecter : " + e.getMessage());
+        }
         return connection;
     }
 

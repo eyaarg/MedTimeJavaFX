@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import esprit.fx.entities.Doctor;
 
 public class LoginController {
 
@@ -39,7 +38,6 @@ public class LoginController {
 
     @FXML
     private void initialize() {
-        // Rétablissement des paramètres dans les expressions lambda
         signInButton.setOnAction(event -> handleLogin());
 
         Hyperlink forgotPasswordLink = new Hyperlink("Mot de passe oublié ?");
@@ -57,42 +55,56 @@ public class LoginController {
         String password = passwordField.getText().trim();
 
         if (username.isEmpty() || password.isEmpty()) {
-            showAlert("Champs requis", "Veuillez saisir votre email et mot de passe.");
+            showAlert(Alert.AlertType.ERROR, "Champs requis", "Veuillez saisir votre email et mot de passe.");
             return;
         }
 
         try {
             User user = serviceUser.login(username, password);
 
-            if (user != null) {
-                UserSession.setCurrentUser(user);
-                UserSession.setCurrentRole(extractPrimaryRole(user));
-
-                String role = extractPrimaryRole(user);
-                if (role.contains("ADMIN")) {
-                    openMainView();
-                } else if (role.contains("DOCTOR")) {
-                    if (user instanceof Doctor && !((Doctor) user).isCertified()) {
-                        showAlert("Compte en attente", "Votre compte médecin est en attente de validation par un administrateur.");
-                    } else {
-                        openMainView();
-                    }
-                } else if (role.contains("PATIENT")) {
-                    openMainView();
-                }
-            } else {
-                showAlert("Connexion échouée", "Identifiant ou mot de passe incorrect.");
+            // Identifiant ou mot de passe incorrect
+            if (user == null) {
+                showAlert(Alert.AlertType.ERROR, "Connexion échouée", "Identifiant ou mot de passe incorrect.");
+                return;
             }
+
+            String role = extractPrimaryRole(user);
+            boolean isDoctor = role.contains("DOCTOR") || role.contains("MEDECIN");
+
+            // CAS 1 — Email non vérifié
+            if (!user.isVerified()) {
+                showAlert(Alert.AlertType.WARNING, "Compte non activé",
+                        "Votre compte n'est pas encore activé. Un email de vérification a été envoyé à votre adresse. " +
+                        "Veuillez vérifier votre boîte mail et saisir le code de confirmation.");
+                EmailVerificationController.showAsStage(user.getEmail());
+                return;
+            }
+
+            // CAS 2 — Médecin en attente de validation admin
+            if (!user.isActive() && isDoctor) {
+                showAlert(Alert.AlertType.WARNING, "Compte en cours de vérification",
+                        "Votre compte médecin est en cours de vérification. Un administrateur doit examiner votre dossier " +
+                        "et valider votre diplôme avant que vous puissiez accéder à la plateforme. " +
+                        "Vous recevrez un email dès que votre compte sera approuvé.");
+                return;
+            }
+
+            // CAS 3 — Compte bloqué (non médecin)
+            if (!user.isActive()) {
+                showAlert(Alert.AlertType.ERROR, "Compte suspendu",
+                        "Votre compte a été suspendu suite à plusieurs tentatives de connexion échouées. " +
+                        "Veuillez contacter l'administrateur pour débloquer votre accès.");
+                return;
+            }
+
+            // CAS 4 — Login réussi
+            UserSession.setCurrentUser(user);
+            UserSession.setCurrentRole(role);
+            openMainView();
 
         } catch (Exception e) {
-            System.err.println("Login error: " + e.getMessage());
-            if (e.getMessage().contains("non vérifié")) {
-                EmailVerificationController.showAsStage(username);
-            } else if (e.getMessage().contains("verrouillé") || e.getMessage().contains("bloqué")) {
-                showAlert("Compte verrouillé", "Compte verrouillé, contactez l'administrateur.");
-            } else {
-                showAlert("Erreur", "Erreur de connexion : " + e.getMessage());
-            }
+            LOGGER.log(Level.SEVERE, "Erreur inattendue lors du login", e);
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Une erreur inattendue est survenue : " + e.getMessage());
         }
     }
 
@@ -162,11 +174,11 @@ public class LoginController {
         return roles.stream().findFirst().map(role -> role.getName().toUpperCase()).orElse("PATIENT");
     }
 
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
+    private void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
-        alert.show();
+        alert.showAndWait();
     }
 }

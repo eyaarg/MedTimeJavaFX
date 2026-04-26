@@ -3,8 +3,8 @@ package esprit.fx.controllers;
 import esprit.fx.entities.Doctor;
 import esprit.fx.services.ServiceDoctor;
 import esprit.fx.services.ServiceDoctorDocument;
-import esprit.fx.utils.UserSession;
 import esprit.fx.entities.User;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -78,7 +78,7 @@ public class DoctorRegistrationController {
 
     private void handleRegister(Stage stage) {
         try {
-            String licenseCode = licenseCodeField.getText();
+            String licenseCode = licenseCodeField.getText().trim();
 
             if (licenseCode.isEmpty() || selectedPdf == null) {
                 showAlert("Erreur", "Tous les champs sont obligatoires.");
@@ -88,20 +88,27 @@ public class DoctorRegistrationController {
             Doctor doctor = new Doctor();
             doctor.setUserId(receivedUser.getId());
             doctor.setLicenseCode(licenseCode);
+            doctor.setCertified(false);
 
             serviceDoctor.ajouter(doctor);
             serviceDoctorDocument.uploadDocument(doctor.getId(), selectedPdf);
 
-            showInfo("Succès", "Inscription réussie ! Compte en attente de validation.");
+            showInfo("Succès", "Inscription réussie ! Votre dossier est en attente de validation par un administrateur.");
             stage.close();
 
-            // Open Login.fxml in a new stage
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Login.fxml"));
-            Parent root = loader.load();
-            Stage loginStage = new Stage();
-            loginStage.setTitle("Login");
-            loginStage.setScene(new Scene(root, 980, 720));
-            loginStage.show();
+            // Retour au login
+            javafx.application.Platform.runLater(() -> {
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/Login.fxml"));
+                    Parent root = loader.load();
+                    Stage loginStage = new Stage();
+                    loginStage.setTitle("MedTimeFX — Connexion");
+                    loginStage.setScene(new Scene(root, 980, 720));
+                    loginStage.show();
+                } catch (Exception ex) {
+                    System.err.println("Erreur ouverture login: " + ex.getMessage());
+                }
+            });
         } catch (Exception e) {
             showAlert("Erreur", "Une erreur s'est produite : " + e.getMessage());
         }

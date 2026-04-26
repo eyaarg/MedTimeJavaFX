@@ -1,7 +1,9 @@
 package esprit.fx.controllers;
 
 import esprit.fx.entities.Doctor;
+import esprit.fx.entities.Doctor_documents;
 import esprit.fx.services.ServiceDoctor;
+import esprit.fx.services.ServiceDoctorDocument;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -13,6 +15,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -21,6 +24,7 @@ import java.util.List;
 public class AdminDoctorValidationController {
 
     private final ServiceDoctor serviceDoctor = new ServiceDoctor();
+    private final ServiceDoctorDocument serviceDoctorDocument = new ServiceDoctorDocument();
     private TableView<Doctor> doctorTable;
     private Label pendingDoctorsLabel;
 
@@ -127,14 +131,34 @@ public class AdminDoctorValidationController {
     }
 
     private void viewPdf(Doctor doctor) {
+        // doctor.getId() = doctor_id dans la table doctors
+        Doctor_documents doc;
         try {
-            File pdfFile = serviceDoctor.getDoctorPdf(doctor.getId());
-            if (pdfFile != null && pdfFile.exists()) {
-                java.awt.Desktop.getDesktop().open(pdfFile);
-            } else {
-                showAlert("Erreur", "Fichier PDF introuvable.");
-            }
-        } catch (IOException | SQLException e) {
+            doc = serviceDoctorDocument.getLatestDocumentByDoctorId(doctor.getId());
+        } catch (SQLException e) {
+            showAlert("Erreur", "Erreur lors de la récupération du document : " + e.getMessage());
+            return;
+        }
+
+        if (doc == null) {
+            showAlert("Fichier PDF introuvable", "Le médecin n'a pas encore uploadé son document.");
+            return;
+        }
+
+        File pdfFile = new File(doc.getFolder_name() + "/" + doc.getStored_name());
+        if (!pdfFile.exists()) {
+            showAlert("Fichier PDF introuvable", "Le médecin n'a pas encore uploadé son document.");
+            return;
+        }
+
+        if (!Desktop.isDesktopSupported()) {
+            showAlert("Erreur", "Impossible d'ouvrir le PDF sur ce système.");
+            return;
+        }
+
+        try {
+            Desktop.getDesktop().open(pdfFile);
+        } catch (IOException e) {
             showAlert("Erreur", "Impossible d'ouvrir le fichier PDF : " + e.getMessage());
         }
     }
@@ -147,8 +171,9 @@ public class AdminDoctorValidationController {
 
         if (confirmationAlert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             try {
-                serviceDoctor.approveDoctorCertification(doctor.getId());
+                serviceDoctor.approveDoctorCertification(doctor.getUserId());
                 refreshTable();
+                showInfo("Succès", "Médecin approuvé. Un email de confirmation a été envoyé.");
             } catch (SQLException e) {
                 showAlert("Erreur", "Impossible d'approuver le médecin : " + e.getMessage());
             }
@@ -176,14 +201,23 @@ public class AdminDoctorValidationController {
         String reason = dialog.showAndWait().orElse(null);
         if (reason != null && !reason.trim().isEmpty()) {
             try {
-                serviceDoctor.rejectDoctorCertification(doctor.getId(), reason);
+                serviceDoctor.rejectDoctorCertification(doctor.getUserId(), reason.trim());
                 refreshTable();
+                showInfo("Refus enregistré", "Le médecin a été notifié par email.");
             } catch (SQLException e) {
                 showAlert("Erreur", "Impossible de refuser le médecin : " + e.getMessage());
             }
         } else if (reason != null) {
             showAlert("Erreur", "Le motif de refus est obligatoire.");
         }
+    }
+
+    private void showInfo(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     private void showAlert(String title, String message) {

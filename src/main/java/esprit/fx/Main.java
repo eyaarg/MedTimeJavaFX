@@ -1,5 +1,6 @@
 package esprit.fx;
 
+import esprit.fx.utils.EmailService;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -13,7 +14,6 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        // Démarre sur la page de login avec une taille lisible.
         Parent root = FXMLLoader.load(Objects.requireNonNull(
                 Main.class.getResource("/Login.fxml")));
         Scene scene = new Scene(root);
@@ -29,6 +29,16 @@ public class Main extends Application {
     }
 
     public static void main(String[] args) {
+        // Test de connexion Mailtrap au démarrage
+        new Thread(() -> {
+            try {
+                EmailService.testConnection();
+            } catch (Exception e) {
+                System.err.println("[Main] Test email ÉCHOUÉ : " + e.getMessage());
+                e.printStackTrace();
+            }
+        }, "email-test-thread").start();
+
         launch(args);
     }
 }

@@ -81,6 +81,23 @@ public class ServiceUser implements IService<User> {
 
     public User registerUser(User user, String roleName) throws SQLException {
         validateUserForCreate(user);
+        String normalizedRole = normalizeRoleInput(roleName);
+        boolean isDoctor = "DOCTOR".equals(normalizedRole);
+
+        // Pour les patients : générer token de vérification, is_active=false, is_verified=false
+        // Pour les médecins : is_active=false (en attente admin), is_verified=true (pas besoin email verif)
+        String verificationToken = null;
+        Timestamp tokenExpiry = null;
+        boolean isActive = false;
+        boolean isVerified;
+        if (isDoctor) {
+            isVerified = true; // médecin : pas de vérif email, bloqué par is_active=false
+        } else {
+            isVerified = false;
+            verificationToken = java.util.UUID.randomUUID().toString();
+            tokenExpiry = new Timestamp(System.currentTimeMillis() + 24L * 60 * 60 * 1000);
+        }
+
         String req = "INSERT INTO users (email, username, password, created_at, is_active, phone_number, is_verified, email_verification_token, email_verification_token_expires_at, password_reset_token, password_reset_token_expires_at, failed_attempts) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement ps = conn.prepareStatement(req, Statement.RETURN_GENERATED_KEYS);
         String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
@@ -88,14 +105,14 @@ public class ServiceUser implements IService<User> {
         ps.setString(2, user.getUsername());
         ps.setString(3, hashedPassword);
         ps.setTimestamp(4, Timestamp.valueOf(user.getCreatedAt()));
-        ps.setBoolean(5, user.isActive());
+        ps.setBoolean(5, isActive);
         ps.setString(6, user.getPhoneNumber());
-        ps.setBoolean(7, user.isVerified());
-        ps.setString(8, null);
-        ps.setTimestamp(9, null);
+        ps.setBoolean(7, isVerified);
+        ps.setString(8, verificationToken);
+        ps.setTimestamp(9, tokenExpiry);
         ps.setString(10, null);
         ps.setTimestamp(11, null);
-        ps.setInt(12, user.getFailedAttempts());
+        ps.setInt(12, 0);
         ps.executeUpdate();
         int createdUserId;
         try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
@@ -111,9 +128,26 @@ public class ServiceUser implements IService<User> {
         }
         user.setId(createdUserId);
         user.setPassword(hashedPassword);
+        user.setActive(isActive);
+        user.setVerified(isVerified);
         List<Role> roles = new ArrayList<>();
         roles.add(new Role(roleId, resolvedRoleName));
         user.setRoles(roles);
+
+        // Envoyer email de vérification pour les patients
+        if (!isDoctor && verificationToken != null) {
+            final String tokenFinal = verificationToken;
+            new Thread(() -> {
+                System.out.println("[ServiceUser] Thread email vérification démarré pour : " + user.getEmail());
+                try {
+                    EmailService.sendVerificationEmail(user.getEmail(), user.getUsername(), tokenFinal);
+                    System.out.println("[ServiceUser] Thread email vérification terminé pour : " + user.getEmail());
+                } catch (Exception e) {
+                    System.err.println("[ServiceUser] ERREUR thread email vérification : " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }, "email-verification-thread").start();
+        }
         return user;
     }
 
@@ -141,34 +175,50 @@ public class ServiceUser implements IService<User> {
         String query = "SELECT u.*, r.id as role_id, r.name as role_name FROM users u " +
                 "LEFT JOIN user_roles ur ON u.id = ur.user_id " +
                 "LEFT JOIN roles r ON ur.role_id = r.id " +
-                "WHERE (u.email = ? OR u.username = ?) AND u.is_active = true";
+                "WHERE (u.email = ? OR u.username = ?)";
         PreparedStatement ps = conn.prepareStatement(query);
         ps.setString(1, identifier);
         ps.setString(2, identifier);
         ResultSet rs = ps.executeQuery();
+
         User user = null;
         List<Role> roles = new ArrayList<>();
+
         while (rs.next()) {
             if (user == null) {
                 String storedPassword = rs.getString("password");
                 if (!passwordMatches(password, storedPassword)) {
                     incrementFailedAttempts(identifier);
-                    return null;
+                    return null; // mot de passe incorrect
                 }
-                resetFailedAttempts(identifier);
+                // Mot de passe correct : construire le user avec tous ses flags
+                boolean isActive   = rs.getBoolean("is_active");
+                boolean isVerified = rs.getBoolean("is_verified");
                 user = new User(
                         rs.getInt("id"), rs.getString("email"), rs.getString("username"),
-                        storedPassword, null, rs.getBoolean("is_active"),
-                        rs.getString("phone_number"), rs.getBoolean("is_verified"),
-                        null, null, null, null, rs.getInt("failed_attempts")
+                        storedPassword, null, isActive,
+                        rs.getString("phone_number"), isVerified,
+                        rs.getString("email_verification_token"), null,
+                        null, null, rs.getInt("failed_attempts")
                 );
+                user.setCreatedAt(rs.getTimestamp("created_at") != null
+                        ? rs.getTimestamp("created_at").toLocalDateTime() : null);
             }
             if (rs.getString("role_name") != null) {
                 roles.add(new Role(rs.getInt("role_id"), rs.getString("role_name")));
             }
         }
-        if (user != null) user.setRoles(roles);
-        return user;
+
+        if (user == null) return null; // identifiant introuvable
+
+        user.setRoles(roles);
+
+        // Réinitialiser les tentatives seulement si le compte est actif et vérifié
+        if (user.isActive() && user.isVerified()) {
+            resetFailedAttempts(identifier);
+        }
+
+        return user; // retourner le user dans tous les cas (controller gère les cas)
     }
 
     private void incrementFailedAttempts(String identifier) throws SQLException {
@@ -207,10 +257,13 @@ public class ServiceUser implements IService<User> {
     private void sendAccountLockedEmail(String identifier) {
         try {
             String username = getUsernameByEmail(identifier);
-            String email = getEmailByIdentifier(identifier);
+            String email    = getEmailByIdentifier(identifier);
+            System.out.println("[ServiceUser] Envoi email compte bloqué à : " + email);
             EmailService.sendAccountLockedEmail(email, username);
+            System.out.println("[ServiceUser] Email compte bloqué envoyé à : " + email);
         } catch (Exception e) {
-            System.err.println("Erreur envoi email: " + e.getMessage());
+            System.err.println("[ServiceUser] ERREUR envoi email compte bloqué : " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -247,9 +300,12 @@ public class ServiceUser implements IService<User> {
     private void sendVerificationEmail(String email, String token) {
         try {
             String username = getUsernameByEmail(email);
+            System.out.println("[ServiceUser] Envoi email vérification à : " + email);
             EmailService.sendVerificationEmail(email, username, token);
+            System.out.println("[ServiceUser] Email vérification envoyé à : " + email);
         } catch (Exception e) {
-            System.err.println("Erreur envoi email: " + e.getMessage());
+            System.err.println("[ServiceUser] ERREUR envoi email vérification : " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -268,9 +324,12 @@ public class ServiceUser implements IService<User> {
     private void sendPasswordResetEmail(String email, String token) {
         try {
             String username = getUsernameByEmail(email);
+            System.out.println("[ServiceUser] Envoi email reset password à : " + email);
             EmailService.sendPasswordResetEmail(email, username, token);
+            System.out.println("[ServiceUser] Email reset password envoyé à : " + email);
         } catch (Exception e) {
-            System.err.println("Erreur envoi email: " + e.getMessage());
+            System.err.println("[ServiceUser] ERREUR envoi email reset password : " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -305,31 +364,38 @@ public class ServiceUser implements IService<User> {
     public List<User> getAll() throws SQLException {
         String req = "SELECT u.*, r.id as role_id, r.name as role_name FROM `users` u " +
                 "LEFT JOIN `user_roles` ur ON u.id = ur.user_id " +
-                "LEFT JOIN `roles` r ON ur.role_id = r.id";
+                "LEFT JOIN `roles` r ON ur.role_id = r.id " +
+                "ORDER BY u.id";
         Statement statement = conn.createStatement();
         ResultSet rs = statement.executeQuery(req);
-        List<User> users = new ArrayList<>();
+        // Dédupliquer : un user peut avoir plusieurs rôles → plusieurs lignes
+        java.util.LinkedHashMap<Integer, User> userMap = new java.util.LinkedHashMap<>();
         while (rs.next()) {
-            User user = new User(
-                    rs.getInt("id"), rs.getString("email"), rs.getString("username"),
-                    rs.getString("password"), null, rs.getBoolean("is_active"),
-                    rs.getString("phone_number"), rs.getBoolean("is_verified"),
-                    rs.getString("email_verification_token"),
-                    rs.getTimestamp("email_verification_token_expires_at") != null ?
-                            rs.getTimestamp("email_verification_token_expires_at").toLocalDateTime() : null,
-                    rs.getString("password_reset_token"),
-                    rs.getTimestamp("password_reset_token_expires_at") != null ?
-                            rs.getTimestamp("password_reset_token_expires_at").toLocalDateTime() : null,
-                    rs.getInt("failed_attempts")
-            );
-            List<Role> roles = new ArrayList<>();
-            if (rs.getString("role_name") != null) {
-                roles.add(new Role(rs.getInt("role_id"), rs.getString("role_name")));
+            int uid = rs.getInt("id");
+            User user = userMap.get(uid);
+            if (user == null) {
+                user = new User(
+                        uid, rs.getString("email"), rs.getString("username"),
+                        rs.getString("password"), null, rs.getBoolean("is_active"),
+                        rs.getString("phone_number"), rs.getBoolean("is_verified"),
+                        rs.getString("email_verification_token"),
+                        rs.getTimestamp("email_verification_token_expires_at") != null ?
+                                rs.getTimestamp("email_verification_token_expires_at").toLocalDateTime() : null,
+                        rs.getString("password_reset_token"),
+                        rs.getTimestamp("password_reset_token_expires_at") != null ?
+                                rs.getTimestamp("password_reset_token_expires_at").toLocalDateTime() : null,
+                        rs.getInt("failed_attempts")
+                );
+                user.setCreatedAt(rs.getTimestamp("created_at") != null ?
+                        rs.getTimestamp("created_at").toLocalDateTime() : null);
+                user.setRoles(new ArrayList<>());
+                userMap.put(uid, user);
             }
-            user.setRoles(roles);
-            users.add(user);
+            if (rs.getString("role_name") != null) {
+                user.getRoles().add(new Role(rs.getInt("role_id"), rs.getString("role_name")));
+            }
         }
-        return users;
+        return new ArrayList<>(userMap.values());
     }
 
 

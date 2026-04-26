@@ -339,7 +339,7 @@ public class MainControllerArij {
             }
 
             contentArea.getChildren().setAll(view);
-        } catch (IOException | NullPointerException e) {
+        } catch (Exception e) {
             System.err.println("Erreur chargement vue " + fxmlPath + ": " + e.getMessage());
             e.printStackTrace();
         }

@@ -33,6 +33,7 @@ public class MainControllerArij {
     @FXML private Label footerNameLabel;
     @FXML private Label footerRoleLabel;
     @FXML private Label avatarLabel;
+    @FXML private javafx.scene.image.ImageView avatarImageView;
 
     private int userId = 0;
     private int patientId = 0;
@@ -54,6 +55,11 @@ public class MainControllerArij {
             boolean isAdmin = UserSession.isAdmin();
             btnUsers.setVisible(isAdmin);
             btnUsers.setManaged(isAdmin);
+        }
+
+        // Avatar cliquable → ouvre le profil (conservé pour compatibilité)
+        if (avatarLabel != null) {
+            avatarLabel.setStyle(avatarLabel.getStyle() + " -fx-cursor: hand;");
         }
 
         showDashboardView();
@@ -98,6 +104,11 @@ public class MainControllerArij {
     }
 
     @FXML
+    private void showProfile() {
+        ProfileController.showAsStage();
+    }
+
+    @FXML
     private void showUsers() {
         if (!UserSession.isAdmin()) {
             System.err.println("Acces refuse: Users reserve a l'admin.");
@@ -132,7 +143,6 @@ public class MainControllerArij {
 
     private void applySessionIdentity() {
         User currentUser = UserSession.getCurrentUser();
-        String displayRole = formatRole(UserSession.getCurrentRole());
 
         String displayName;
         if (currentUser != null && currentUser.getUsername() != null && !currentUser.getUsername().isBlank()) {
@@ -143,23 +153,56 @@ public class MainControllerArij {
             displayName = "Utilisateur";
         }
 
-        if (footerNameLabel != null) {
-            footerNameLabel.setText(displayName);
-        }
-        if (footerRoleLabel != null) {
-            footerRoleLabel.setText(displayRole);
-        }
-        if (avatarLabel != null) {
-            avatarLabel.setText(initialOf(displayName));
+        // Rôle affiché correctement
+        String displayRole = formatRoleLabel(UserSession.getCurrentRole());
+
+        if (footerNameLabel != null) footerNameLabel.setText(displayName);
+        if (footerRoleLabel  != null) footerRoleLabel.setText(displayRole);
+        if (avatarLabel      != null) avatarLabel.setText(initialOf(displayName));
+
+        // Charger la photo de profil si disponible
+        if (currentUser != null) {
+            loadSidebarPhoto(currentUser.getId());
         }
     }
 
-    private void applyRoleUi() {
-        if (footerRoleLabel != null) {
-            footerRoleLabel.setText(isDoctor() ? "Medecin" : "Patient");
+    /** Charge la photo de profil dans l'avatar du sidebar. */
+    private void loadSidebarPhoto(int userId) {
+        try {
+            esprit.fx.services.ServiceProfilePhoto photoService =
+                    new esprit.fx.services.ServiceProfilePhoto();
+            java.io.File photo = photoService.getPhotoFile(userId);
+            if (photo != null && avatarImageView != null) {
+                try (java.io.FileInputStream fis = new java.io.FileInputStream(photo)) {
+                    javafx.scene.image.Image img = new javafx.scene.image.Image(fis);
+                    // Clip circulaire
+                    javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(18, 18, 18);
+                    avatarImageView.setClip(clip);
+                    avatarImageView.setImage(img);
+                    avatarImageView.setVisible(true);
+                    if (avatarLabel != null) avatarLabel.setVisible(false);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("loadSidebarPhoto: " + e.getMessage());
         }
+    }
+
+    private String formatRoleLabel(String rawRole) {
+        if (rawRole == null || rawRole.isBlank()) return "Patient";
+        String r = rawRole.trim().toUpperCase();
+        if (r.contains("ADMIN"))  return "Admin";
+        if (r.contains("DOCTOR") || r.contains("MEDECIN")) return "Médecin";
+        return "Patient";
+    }
+
+    private void applyRoleUi() {
+        // Ne pas écraser le rôle déjà défini par applySessionIdentity()
+        // Juste mettre à jour l'initiale de l'avatar si elle est vide
         if (avatarLabel != null && (avatarLabel.getText() == null || avatarLabel.getText().isBlank())) {
-            avatarLabel.setText(isDoctor() ? "M" : "P");
+            User currentUser = UserSession.getCurrentUser();
+            String name = currentUser != null ? currentUser.getUsername() : null;
+            avatarLabel.setText(name != null ? initialOf(name) : (isDoctor() ? "M" : "P"));
         }
     }
 

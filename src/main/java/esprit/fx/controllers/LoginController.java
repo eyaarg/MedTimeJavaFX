@@ -43,10 +43,7 @@ public class LoginController {
         Hyperlink forgotPasswordLink = new Hyperlink("Mot de passe oublié ?");
         forgotPasswordLink.setOnAction(event -> new ForgotPasswordController().showAsStage());
 
-        Hyperlink registerDoctorLink = new Hyperlink("S'inscrire comme médecin");
-        registerDoctorLink.setOnAction(event -> DoctorRegistrationController.showAsStage(null));
-
-        ((VBox) signInButton.getParent()).getChildren().addAll(forgotPasswordLink, registerDoctorLink);
+        ((VBox) signInButton.getParent()).getChildren().add(forgotPasswordLink);
     }
 
     @FXML

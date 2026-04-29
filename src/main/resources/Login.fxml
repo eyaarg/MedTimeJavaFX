@@ -37,23 +37,11 @@
                     <HBox alignment="CENTER_LEFT" spacing="5">
                         <CheckBox text="Remember me" />
                         <Pane HBox.hgrow="ALWAYS" />
-                        <Hyperlink text="Forgot password?" />
                     </HBox>
 
                     <Button fx:id="signInButton" maxWidth="Infinity" onAction="#handleLogin" style="-fx-background-color: #197bff; -fx-text-fill: white;                                    -fx-font-weight: bold; -fx-background-radius: 25;                                    -fx-padding: 10 60; -fx-cursor: hand;" text="Sign In" />
 
                     <Button maxWidth="Infinity" onAction="#openRegisterPage" style="-fx-background-color: transparent; -fx-text-fill: #197bff;                                    -fx-font-weight: bold; -fx-border-color: #197bff;                                    -fx-border-radius: 25; -fx-background-radius: 25;                                    -fx-padding: 10 60; -fx-cursor: hand;" text="Create Account" />
-
-                    <Separator style="-fx-padding: 10;" />
-
-                    <VBox alignment="CENTER" spacing="8">
-                        <Text fill="#888" style="-fx-font-size:11px;" text="Accès rapide (développement)" />
-                        <HBox alignment="CENTER" spacing="10">
-                            <Button onAction="#loginAsPatient" style="-fx-background-color: #e9edf8; -fx-background-radius: 8;                                            -fx-text-fill: #333; -fx-cursor: hand;" text="👤 Patient" />
-                            <Button onAction="#loginAsDoctor" style="-fx-background-color: #e9edf8; -fx-background-radius: 8;                                            -fx-text-fill: #333; -fx-cursor: hand;" text="👨‍⚕️ Médecin" />
-                            <Button onAction="#loginAsAdmin" style="-fx-background-color: #e9edf8; -fx-background-radius: 8;                                            -fx-text-fill: #333; -fx-cursor: hand;" text="🔧 Admin" />
-                        </HBox>
-                    </VBox>
 
                 </VBox>
             </VBox>

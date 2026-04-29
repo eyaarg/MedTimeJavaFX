@@ -361,6 +361,57 @@ public class ServiceUser implements IService<User> {
         ps.executeUpdate();
     }
 
+    /**
+     * Met à jour username, email, téléphone d'un utilisateur connecté.
+     */
+    public void updateProfile(int userId, String username, String email, String phone) throws SQLException {
+        // Validations
+        if (username == null || username.trim().length() < 3)
+            throw new SQLException("Le username doit contenir au moins 3 caractères.");
+        if (!EMAIL_PATTERN.matcher(email.trim()).matches())
+            throw new SQLException("Email invalide.");
+        if (!PHONE_PATTERN.matcher(phone.trim()).matches())
+            throw new SQLException("Le numéro de téléphone doit contenir exactement 8 chiffres.");
+
+        PreparedStatement ps = conn().prepareStatement(
+                "UPDATE users SET username=?, email=?, phone_number=? WHERE id=?");
+        ps.setString(1, username.trim());
+        ps.setString(2, email.trim());
+        ps.setString(3, phone.trim());
+        ps.setInt(4, userId);
+        ps.executeUpdate();
+    }
+
+    /**
+     * Change le mot de passe après vérification de l'ancien.
+     * Retourne true si succès, false si ancien mot de passe incorrect.
+     */
+    public boolean changePassword(int userId, String oldPassword, String newPassword) throws SQLException {
+        if (!PASSWORD_PATTERN.matcher(newPassword).matches())
+            throw new SQLException("Le nouveau mot de passe doit contenir des lettres et des chiffres.");
+
+        // Récupérer le hash actuel
+        PreparedStatement ps = conn().prepareStatement(
+                "SELECT password FROM users WHERE id=?");
+        ps.setInt(1, userId);
+        ResultSet rs = ps.executeQuery();
+        if (!rs.next()) throw new SQLException("Utilisateur introuvable.");
+
+        String storedHash = rs.getString("password");
+        if (!passwordMatches(oldPassword, storedHash)) {
+            return false; // ancien mot de passe incorrect
+        }
+
+        // Mettre à jour avec le nouveau hash
+        String newHash = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+        PreparedStatement updatePs = conn().prepareStatement(
+                "UPDATE users SET password=? WHERE id=?");
+        updatePs.setString(1, newHash);
+        updatePs.setInt(2, userId);
+        updatePs.executeUpdate();
+        return true;
+    }
+
     @Override
     public List<User> getAll() throws SQLException {
         String req = "SELECT u.*, r.id as role_id, r.name as role_name FROM `users` u " +

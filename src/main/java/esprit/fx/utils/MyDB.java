@@ -35,14 +35,14 @@ public class MyDB {
                 this.password = props.getProperty("db.password", "");
             } else {
                 // Valeurs par défaut si le fichier n'existe pas
-                this.url = "jdbc:mysql://localhost:3306/mediplatform";
+                this.url = "jdbc:mysql://localhost:3306/mediplatform_test_test";
                 this.user = "root";
                 this.password = "";
             }
         } catch (IOException e) {
             System.err.println("Erreur lors du chargement de la configuration : " + e.getMessage());
             // Utiliser les valeurs par défaut
-            this.url = "jdbc:mysql://localhost:3306/mediplatform";
+            this.url = "jdbc:mysql://localhost:3306/mediplatform_test_test";
             this.user = "root";
             this.password = "";
         }

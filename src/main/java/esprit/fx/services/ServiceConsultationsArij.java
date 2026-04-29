@@ -368,8 +368,9 @@ public class ServiceConsultationsArij {
     }
 
     // ================================================================== //
-    //  Notifications ÔÇö d├®l├¿guent ├á NotificationServiceArij               //
+    //  Notifications — délèguent à NotificationServiceArij               //
     // ================================================================== //
+    /**
      * Message : "Nouvelle consultation de {patient} pour le {date}"
      * Type    : "info"
      */

@@ -83,10 +83,10 @@ public class FormulaireProduitController implements Initializable {
         this.mode = mode;
         if ("ajouter".equalsIgnoreCase(mode)) {
             lblTitre.setText(" Ajouter un produit");
-            btnValider.setText("➕");
+            btnValider.setText("Ô×ò");
         } else {
-            lblTitre.setText("✏ Modifier un produit");
-            btnValider.setText("✏");
+            lblTitre.setText("Ô£Å Modifier un produit");
+            btnValider.setText("Ô£Å");
         }
     }
 

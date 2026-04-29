@@ -22,7 +22,7 @@ public class ServiceUser implements IService<User> {
 
         PreparedStatement ps = conn.prepareStatement(req);
 
-        // 🔐 Hash du mot de passe uniquement à la création
+        // ­ƒöÉ Hash du mot de passe uniquement ├á la cr├®ation
         String hashedPassword = BCrypt.withDefaults().hashToString(12, user.getPassword().toCharArray());
 
         ps.setString(1, user.getEmail());
@@ -240,7 +240,7 @@ public class ServiceUser implements IService<User> {
                             rs.getTimestamp("password_reset_token_expires_at").toLocalDateTime() : null,
                     rs.getInt("failed_attempts")
             );
-            // récupérer le rôle du user
+            // r├®cup├®rer le r├┤le du user
             List<Role> roles = new ArrayList<>();
             if (rs.getString("role_name") != null) {
                 roles.add(new Role(rs.getInt("role_id"), rs.getString("role_name")));
@@ -434,7 +434,7 @@ public class ServiceUser implements IService<User> {
     }
 
     /**
-     * Récupère tous les utilisateurs ayant le rôle DOCTOR
+     * R├®cup├¿re tous les utilisateurs ayant le r├┤le DOCTOR
      */
     public List<User> getAllDoctors() throws SQLException {
         List<User> doctors = new ArrayList<>();

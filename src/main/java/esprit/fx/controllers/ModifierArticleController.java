@@ -59,7 +59,7 @@ public class ModifierArticleController implements Initializable {
         articleService = new ArticleService();
         specialiteMap = new HashMap<>();
 
-        cbStatut.setItems(FXCollections.observableArrayList("publié", "brouillon"));
+        cbStatut.setItems(FXCollections.observableArrayList("publi├®", "brouillon"));
         loadSpecialites();
     }
 
@@ -144,8 +144,8 @@ public class ModifierArticleController implements Initializable {
         articleService.modifier(articleAModifier);
 
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Succès");
-        alert.setContentText("Article modifié avec succès !");
+        alert.setTitle("Succ├¿s");
+        alert.setContentText("Article modifi├® avec succ├¿s !");
         alert.show();
 
         Stage stage = (Stage) btnModifier.getScene().getWindow();

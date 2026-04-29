@@ -75,7 +75,7 @@ public class ListeProduitController implements Initializable {
         card.setPrefHeight(280);
         card.setPadding(new Insets(12));
 
-        // Icône selon catégorie
+        // Ic├┤ne selon cat├®gorie
         Label iconLabel = new Label(getIconForCategorie(p.getCategorie()));
         iconLabel.setStyle("-fx-font-size: 40px;");
         iconLabel.setMaxWidth(Double.MAX_VALUE);
@@ -88,32 +88,32 @@ public class ListeProduitController implements Initializable {
         nomLabel.setMaxWidth(200);
 
         // Prix
-        Label prixLabel = new Label(String.format("%.2f €", p.getPrix()));
+        Label prixLabel = new Label(String.format("%.2f Ôé¼", p.getPrix()));
         prixLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #27ae60;");
 
         // Stock
-        Label stockLabel = new Label("📦 Stock: " + p.getStock());
+        Label stockLabel = new Label("­ƒôª Stock: " + p.getStock());
         stockLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #7f8c8d;");
 
-        // Disponibilité
-        Label dispoLabel = new Label(p.getDisponible() ? "✅ Disponible" : "❌ Indisponible");
+        // Disponibilit├®
+        Label dispoLabel = new Label(p.getDisponible() ? "Ô£à Disponible" : "ÔØî Indisponible");
         dispoLabel.setStyle(p.getDisponible() ? "-fx-text-fill: #27ae60; -fx-font-size: 11px;" : "-fx-text-fill: #e74c3c; -fx-font-size: 11px;");
 
         // Boutons
         HBox buttonsBox = new HBox(10);
         buttonsBox.setAlignment(javafx.geometry.Pos.CENTER);
 
-        Button detailsBtn = new Button("👁");
+        Button detailsBtn = new Button("­ƒæü");
         detailsBtn.setTooltip(new Tooltip("Afficher"));
         detailsBtn.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 16; -fx-padding: 5 10;");
         detailsBtn.setOnAction(e -> handleAfficher(p));
 
-        Button modifierBtn = new Button("✏");
+        Button modifierBtn = new Button("Ô£Å");
         modifierBtn.setTooltip(new Tooltip("Modifier"));
         modifierBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 16; -fx-padding: 5 10;");
         modifierBtn.setOnAction(e -> handleModifier(p));
 
-        Button supprimerBtn = new Button("🗑");
+        Button supprimerBtn = new Button("­ƒùæ");
         supprimerBtn.setTooltip(new Tooltip("Supprimer"));
         supprimerBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 16; -fx-padding: 5 10;");
         supprimerBtn.setOnAction(e -> {
@@ -126,21 +126,21 @@ public class ListeProduitController implements Initializable {
 
         buttonsBox.getChildren().addAll(detailsBtn, modifierBtn, supprimerBtn);
 
-        // Ajouter tous les éléments à la carte
+        // Ajouter tous les ├®l├®ments ├á la carte
         card.getChildren().addAll(iconLabel, nomLabel, prixLabel, stockLabel, dispoLabel, buttonsBox);
 
         return card;
     }
 
     private String getIconForCategorie(CategorieEnum categorie) {
-        if (categorie == null) return "📦";
+        if (categorie == null) return "­ƒôª";
         switch (categorie) {
-            case MEDICAMENT: return "💊";
-            case MATERIEL_MEDICAL: return "🩺";
-            case PARAPHARMACIE: return "🧴";
-            case HYGIENE: return "🧼";
-            case COMPLEMENT_ALIMENTAIRE: return "🥗";
-            default: return "📦";
+            case MEDICAMENT: return "­ƒÆè";
+            case MATERIEL_MEDICAL: return "­ƒ®║";
+            case PARAPHARMACIE: return "­ƒº┤";
+            case HYGIENE: return "­ƒº╝";
+            case COMPLEMENT_ALIMENTAIRE: return "­ƒÑù";
+            default: return "­ƒôª";
         }
     }
 
@@ -167,7 +167,7 @@ public class ListeProduitController implements Initializable {
     }
 
     private void updateStatus(int count) {
-        lblStatus.setText("📊 " + count + " produit(s)");
+        lblStatus.setText("­ƒôè " + count + " produit(s)");
     }
 
     @FXML
@@ -218,10 +218,10 @@ public class ListeProduitController implements Initializable {
 
     private void handleAfficher(Produit produit) {
         Alert info = new Alert(Alert.AlertType.INFORMATION);
-        info.setTitle("Détails produit");
+        info.setTitle("D├®tails produit");
         info.setHeaderText(produit.getNom());
         info.setContentText(
-                "Catégorie: " + (produit.getCategorie() != null ? produit.getCategorie().name() : "N/A") + "\n" +
+                "Cat├®gorie: " + (produit.getCategorie() != null ? produit.getCategorie().name() : "N/A") + "\n" +
                 "Prix: " + produit.getPrix() + "\n" +
                 "Stock: " + produit.getStock() + "\n" +
                 "Marque: " + (produit.getMarque() != null ? produit.getMarque() : "-") + "\n" +

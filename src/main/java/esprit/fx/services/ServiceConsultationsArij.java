@@ -220,11 +220,9 @@ public class ServiceConsultationsArij {
         updateConsultation(c);
         notifyPatientApproved(c);
 
-        // ÔöÇÔöÇ Marquer automatiquement le cr├®neau de disponibilit├® comme occup├® ÔöÇÔöÇ
-        // Quand le m├®decin accepte une consultation, le cr├®neau correspondant
-        // dans disponibilite_medecin est marqu├® est_occupee = true.
-        // Cela emp├¬che d'autres patients de r├®server le m├¬me cr├®neau.
-        marquerCreneauOccupe(c);
+        // Marquer automatiquement le créneau de disponibilité comme occupé
+        // TODO: méthode marquerCreneauOccupe à implémenter
+        // marquerCreneauOccupe(c);
     }
 
     public void rejectConsultation(int id, String reason) {

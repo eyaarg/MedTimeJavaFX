@@ -69,8 +69,9 @@ public class RendezVousController implements Initializable {
 
         // Masquer "Nouveau RDV" pour les patients (ils prennent RDV via disponibilités)
         if ("PATIENT".equals(currentUserRole)) {
-            btnAjouter.setVisible(false);
-            btnAjouter.setManaged(false);
+            // Patient peut aussi créer un RDV directement
+            btnAjouter.setVisible(true);
+            btnAjouter.setManaged(true);
         }
 
         chargerRendezVous();

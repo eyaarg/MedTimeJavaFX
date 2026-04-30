@@ -70,19 +70,19 @@ public class CarteController implements Initializable {
                                 "Cabinet Dr. " + doctorNom,
                                 coords.adresseComplete);
                 } else {
-                    // Fallback : centre de Tunis
+                    // Fallback : centre de Tunis (36.8065, 10.1815)
                     updateCarte(36.8065, 10.1815,
                                 "Cabinet Dr. " + doctorNom,
                                 adresse != null && !adresse.isEmpty()
-                                    ? adresse : "Tunis, Tunisie");
-                    labelChargement.setText("⚠️ Adresse approximative — Tunis centre");
-                    loadingBar.setVisible(true);
-                    loadingBar.setManaged(true);
+                                    ? adresse + ", Tunis, Tunisie" : "Tunis, Tunisie");
+                    labelChargement.setText("⚠️ Adresse approximative — Centre de Tunis");
+                    labelChargement.setStyle(
+                        "-fx-font-size: 13px; -fx-text-fill: #92400e; -fx-font-weight: 600;");
                     loadingBar.setStyle(
                         "-fx-background-color: #fef3c7; -fx-padding: 10;" +
                         "-fx-border-color: #fde68a; -fx-border-width: 0 0 1 0;");
-                    labelChargement.setStyle(
-                        "-fx-font-size: 13px; -fx-text-fill: #92400e; -fx-font-weight: 600;");
+                    loadingBar.setVisible(true);
+                    loadingBar.setManaged(true);
                 }
             });
         });

@@ -87,7 +87,10 @@ public class OpenStreetMapService {
         if (adresse != null && !adresse.trim().isEmpty()) {
             return adresse.trim() + ", Tunisie";
         }
-        // Fallback : chercher juste "Tunis" si pas d'adresse
+        // Fallback : chercher par nom du médecin à Tunis
+        if (doctorNom != null && !doctorNom.trim().isEmpty()) {
+            return "Cabinet médical " + doctorNom + ", Tunis, Tunisie";
+        }
         return "Tunis, Tunisie";
     }
 }

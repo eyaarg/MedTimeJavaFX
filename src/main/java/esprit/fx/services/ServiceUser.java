@@ -422,13 +422,26 @@ public class ServiceUser implements IService<User> {
     @Override
     public User afficherParId(int id) throws SQLException {
         User user = null;
-        String sql = "SELECT * FROM user WHERE id=?";
+        String sql = "SELECT u.*, r.id as role_id, r.name as role_name " +
+                     "FROM users u " +
+                     "LEFT JOIN user_roles ur ON u.id = ur.user_id " +
+                     "LEFT JOIN roles r ON ur.role_id = r.id " +
+                     "WHERE u.id=?";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setInt(1, id);
         ResultSet rs = ps.executeQuery();
         if (rs.next()) {
             user = new User();
             user.setId(rs.getInt("id"));
+            user.setUsername(rs.getString("username"));
+            user.setEmail(rs.getString("email"));
+            user.setPhoneNumber(rs.getString("phone_number"));
+            user.setActive(rs.getBoolean("is_active"));
+            java.util.List<esprit.fx.entities.Role> roles = new java.util.ArrayList<>();
+            if (rs.getString("role_name") != null) {
+                roles.add(new esprit.fx.entities.Role(rs.getInt("role_id"), rs.getString("role_name")));
+            }
+            user.setRoles(roles);
         }
         return user;
     }

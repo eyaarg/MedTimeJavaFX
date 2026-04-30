@@ -1,7 +1,6 @@
 package esprit.fx.test;
 
 import esprit.fx.entities.Article;
-import esprit.fx.entities.Commentaire;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

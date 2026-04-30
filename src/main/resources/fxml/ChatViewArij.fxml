@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+<VBox xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="esprit.fx.controllers.ChatControllerArij"
       spacing="0" stylesheets="@/css/arij-styles.css"
       style="-fx-background-color: #f0f4f8;">
@@ -49,7 +49,7 @@
         <VBox spacing="0" HBox.hgrow="ALWAYS" styleClass="chat-panel">
             <VBox styleClass="ai-panel-header">
                 <padding><Insets top="14" right="18" bottom="14" left="18"/></padding>
-                <Label text="🤖  Assistant Médical IA" styleClass="panel-title"/>
+                <Label text="🩺  MediAssist — Assistant Médical IA" styleClass="panel-title"/>
             </VBox>
             <VBox spacing="14" VBox.vgrow="ALWAYS" style="-fx-background-color: white;">
                 <padding><Insets top="16" right="18" bottom="18" left="18"/></padding>

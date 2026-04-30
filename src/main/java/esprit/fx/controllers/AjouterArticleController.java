@@ -1,5 +1,8 @@
 package esprit.fx.controllers;
 
+import esprit.fx.entities.Article;
+import esprit.fx.services.ArticleService;
+import esprit.fx.utils.MyDB;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;

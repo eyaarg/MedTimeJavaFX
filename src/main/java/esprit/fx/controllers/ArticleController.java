@@ -545,6 +545,7 @@ public class ArticleController implements Initializable {
     public void ajouterArticle() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AjouterArticle.fxml"));
+            loader.setController(new AjouterArticleController());
             Parent root = loader.load();
             Stage stage = new Stage();
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);

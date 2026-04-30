@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="esprit.fx.controllers.PrendreRendezVousController"
+      spacing="20" style="-fx-background-color: #f3f4f6;">
+   
+   <padding>
+      <Insets top="20" right="20" bottom="20" left="20" />
+   </padding>
+
+   <!-- Header moderne -->
+   <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: linear-gradient(to right, #667eea 0%, #764ba2 100%); -fx-padding: 30; -fx-background-radius: 16; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 2);">
+      <VBox spacing="5">
+         <Label text="💊 Prendre un Rendez-vous" 
+                style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;" />
+         <Label text="Consultez les disponibilités et gérez vos rendez-vous facilement" 
+                style="-fx-font-size: 15px; -fx-text-fill: rgba(255,255,255,0.9);" />
+      </VBox>
+      <Region HBox.hgrow="ALWAYS" />
+      <Button fx:id="btnActualiser" text="🔄 Actualiser" 
+              onAction="#actualiser"
+              style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 24; -fx-background-radius: 10; -fx-font-size: 14px; -fx-border-color: rgba(255,255,255,0.3); -fx-border-width: 1; -fx-border-radius: 10; -fx-cursor: hand;" />
+   </HBox>
+
+   <!-- Tabs modernes -->
+   <TabPane VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE" 
+            style="-fx-background-color: transparent; -fx-border-color: transparent;">
+      
+      <!-- Tab 1: Disponibilités avec cartes -->
+      <Tab text="📅 Disponibilités des Médecins">
+         <VBox spacing="15" style="-fx-background-color: transparent; -fx-padding: 10;" VBox.vgrow="ALWAYS">
+            
+            <!-- Container pour les cartes de disponibilités -->
+            <ScrollPane fx:id="scrollDisponibilites" fitToWidth="true" VBox.vgrow="ALWAYS"
+                       style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+               <VBox fx:id="containerDisponibilites" spacing="15" style="-fx-background-color: transparent; -fx-padding: 10;" />
+            </ScrollPane>
+
+         </VBox>
+      </Tab>
+
+      <!-- Tab 2: Mes Rendez-vous avec cartes -->
+      <Tab text="📋 Mes Rendez-vous">
+         <VBox spacing="15" style="-fx-background-color: transparent; -fx-padding: 10;" VBox.vgrow="ALWAYS">
+            
+            <!-- Container pour les cartes de rendez-vous -->
+            <ScrollPane fx:id="scrollRendezVous" fitToWidth="true" VBox.vgrow="ALWAYS"
+                       style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+               <VBox fx:id="containerRendezVous" spacing="15" style="-fx-background-color: transparent; -fx-padding: 10;" />
+            </ScrollPane>
+
+         </VBox>
+      </Tab>
+
+   </TabPane>
+
+</VBox>

@@ -289,4 +289,22 @@ public class ServiceOrdonnanceArij {
     private String randomHex(int n) {
         return UUID.randomUUID().toString().replace("-", "").substring(0, n);
     }
+
+    /**
+     * Récupère toutes les ordonnances d'un médecin - utilisé par ExcelExportServiceArij.
+     */
+    public List<OrdonnanceArij> findByDoctor(int doctorId) {
+        List<OrdonnanceArij> list = new ArrayList<>();
+        String sql = "SELECT * FROM ordonnances WHERE doctor_id = ? ORDER BY date_emission DESC";
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
+            ps.setInt(1, doctorId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("findByDoctor: " + e.getMessage());
+        }
+        return list;
+    }
 }

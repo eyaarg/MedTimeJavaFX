@@ -211,10 +211,31 @@ public class ServiceConsultationsArij {
         if (c == null) {
             return;
         }
+
+        // Générer le lien Google Meet
+        String lienMeet = genererLienMeet();
+        System.out.println("[ServiceConsultationsArij] Lien Meet généré : " + lienMeet);
+
         c.setStatus("CONFIRMEE");
+        c.setLienMeet(lienMeet);
         c.setUpdatedAt(LocalDateTime.now());
         updateConsultation(c);
         notifyPatientApproved(c);
+    }
+
+    /**
+     * Génère un lien Google Meet unique au format https://meet.google.com/xxx-xxxx-xxx
+     */
+    private String genererLienMeet() {
+        String chars = "abcdefghijklmnopqrstuvwxyz";
+        java.util.Random r = new java.util.Random();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 3; i++) sb.append(chars.charAt(r.nextInt(26)));
+        sb.append("-");
+        for (int i = 0; i < 4; i++) sb.append(chars.charAt(r.nextInt(26)));
+        sb.append("-");
+        for (int i = 0; i < 3; i++) sb.append(chars.charAt(r.nextInt(26)));
+        return "https://meet.google.com/" + sb;
     }
 
     public void rejectConsultation(int id, String reason) {
@@ -376,23 +397,27 @@ public class ServiceConsultationsArij {
     }
 
     private void notifyPatientApproved(ConsultationsArij c) {
-        if (c == null) {
-            return;
-        }
+        if (c == null) return;
+
         int patientUserId = lookupPatientUserId(c.getPatientId());
-        if (patientUserId <= 0) {
-            return;
-        }
+        if (patientUserId <= 0) return;
 
         String doctorName = lookupDoctorUsername(c.getDoctorId());
-        String when = c.getConsultationDate() != null ? c.getConsultationDate().format(NOTIF_FMT) : "";
-        String link = c.getLienMeet();
+        String when = c.getConsultationDate() != null
+                ? c.getConsultationDate().format(NOTIF_FMT) : "";
+        String lienMeet = c.getLienMeet();
 
-        String msg = "Your consultation with Dr. " + doctorName + " is confirmed for " + when + ".";
-        if (link != null && !link.isBlank()) {
-            msg += " Google Meet link: " + link;
+        String msg = "✅ Votre consultation avec Dr. " + doctorName
+                + " est confirmée pour le " + when + ".";
+        if (lienMeet != null && !lienMeet.isBlank()) {
+            msg += " Cliquez sur le bouton pour rejoindre Google Meet.";
         }
-        saveNotification(patientUserId, "Your consultation has been confirmed", msg, "consultation_approved");
+
+        saveNotification(patientUserId,
+                "Consultation confirmée",
+                msg,
+                "consultation_approved",
+                lienMeet);
     }
 
     private void notifyPatientRejected(ConsultationsArij c) {
@@ -483,14 +508,22 @@ public class ServiceConsultationsArij {
     }
 
     private void saveNotification(int userId, String title, String message, String type) {
-        String sql = "INSERT INTO notifications (user_id, title, message, type, is_read, created_at) VALUES (?,?,?,?,0,?)";
+        saveNotification(userId, title, message, type, null);
+    }
+
+    private void saveNotification(int userId, String title, String message, String type, String link) {
+        String sql = "INSERT INTO notifications (user_id, title, message, type, is_read, created_at, link) " +
+                     "VALUES (?,?,?,?,0,?,?)";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setString(2, title);
             ps.setString(3, message);
             ps.setString(4, type);
             ps.setTimestamp(5, ts(LocalDateTime.now()));
+            ps.setString(6, link);
             ps.executeUpdate();
+            System.out.println("[ServiceConsultationsArij] ✅ Notification envoyée à userId=" + userId
+                    + (link != null ? " avec lien Meet" : ""));
         } catch (SQLException e) {
             System.err.println("saveNotification: " + e.getMessage());
         }
@@ -579,5 +612,30 @@ public class ServiceConsultationsArij {
             case "cabinet", "in_person", "inperson" -> "IN_PERSON";
             default -> t.toUpperCase();
         };
+    }
+
+    /**
+     * Alias pour getConsultationsByDoctor - utilisé par ExcelExportServiceArij.
+     */
+    public List<ConsultationsArij> findByDoctor(int doctorId) {
+        return getConsultationsByDoctor(doctorId);
+    }
+
+    /**
+     * Compte le nombre total de consultations pour un médecin.
+     */
+    public int countByDoctor(int doctorId) {
+        String sql = "SELECT COUNT(*) FROM consultations WHERE doctor_id = ?";
+        try (Connection conn = conn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, doctorId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("countByDoctor: " + e.getMessage());
+        }
+        return 0;
     }
 }

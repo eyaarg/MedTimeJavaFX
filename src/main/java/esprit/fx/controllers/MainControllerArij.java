@@ -4,8 +4,12 @@ import esprit.fx.entities.User;
 import esprit.fx.entities.Doctor;
 import esprit.fx.entities.Patient;
 import esprit.fx.services.ServiceDoctor;
+import esprit.fx.services.ServiceNotificationsArij;
 import esprit.fx.services.ServicePatient;
 import esprit.fx.utils.UserSession;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -20,6 +24,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -39,6 +44,10 @@ public class MainControllerArij {
     @FXML private Label footerNameLabel;
     @FXML private Label footerRoleLabel;
     @FXML private Label avatarLabel;
+    @FXML private Label notifBadgeLabel;
+
+    private final ServiceNotificationsArij notifService = new ServiceNotificationsArij();
+    private Timeline notifBadgeTimeline;
 
     private int userId = 0;
     private int patientId = 0;
@@ -65,6 +74,30 @@ public class MainControllerArij {
         }
 
         showDashboardView();
+        startNotifBadge();
+    }
+
+    /** Met à jour le badge de notifications toutes les 30 secondes */
+    private void startNotifBadge() {
+        updateNotifBadge();
+        notifBadgeTimeline = new Timeline(
+            new KeyFrame(Duration.seconds(30), e -> updateNotifBadge())
+        );
+        notifBadgeTimeline.setCycleCount(Timeline.INDEFINITE);
+        notifBadgeTimeline.play();
+    }
+
+    private void updateNotifBadge() {
+        if (notifBadgeLabel == null || userId <= 0) return;
+        int count = notifService.getUnreadCount(userId);
+        Platform.runLater(() -> {
+            if (count > 0) {
+                notifBadgeLabel.setText(count > 99 ? "99+" : String.valueOf(count));
+                notifBadgeLabel.setVisible(true);
+            } else {
+                notifBadgeLabel.setVisible(false);
+            }
+        });
     }
 
     public void setUserContext(int userId, int patientId, int doctorId, String role) {
@@ -124,6 +157,8 @@ public class MainControllerArij {
     @FXML
     private void showNotifications() {
         loadView("/fxml/NotificationListArij.fxml");
+        // Rafraîchir le badge après avoir vu les notifications
+        Platform.runLater(() -> updateNotifBadge());
     }
 
     @FXML

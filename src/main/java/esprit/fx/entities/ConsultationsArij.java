@@ -1,5 +1,6 @@
 package esprit.fx.entities;
 
+import esprit.fx.services.ChiffrementServiceArij;
 import java.time.LocalDateTime;
 
 public class ConsultationsArij {
@@ -15,6 +16,10 @@ public class ConsultationsArij {
     private String rejectionReason;
     private double consultationFee;
     private String lienMeet;
+    
+    // Références aux entités (pour faciliter l'accès aux données)
+    private User patient;
+    private User doctor;
 
     public ConsultationsArij() {}
 
@@ -26,6 +31,12 @@ public class ConsultationsArij {
     public void setDoctorId(int doctorId) { this.doctorId = doctorId; }
     public LocalDateTime getConsultationDate() { return consultationDate; }
     public void setConsultationDate(LocalDateTime consultationDate) { this.consultationDate = consultationDate; }
+    
+    // Alias pour setDateConsultation (utilisé par ConsultationServiceArij)
+    public void setDateConsultation(LocalDateTime dateConsultation) { 
+        this.consultationDate = dateConsultation; 
+    }
+    
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
     public String getStatus() { return status; }
@@ -42,4 +53,30 @@ public class ConsultationsArij {
     public void setConsultationFee(double consultationFee) { this.consultationFee = consultationFee; }
     public String getLienMeet() { return lienMeet; }
     public void setLienMeet(String lienMeet) { this.lienMeet = lienMeet; }
+    
+    // Getters pour les entités
+    public User getPatient() { return patient; }
+    public void setPatient(User patient) { this.patient = patient; }
+    public User getDoctor() { return doctor; }
+    public void setDoctor(User doctor) { this.doctor = doctor; }
+
+    /**
+     * Déchiffre les données après chargement depuis la BDD.
+     */
+    public void dechiffrerApresChargement() {
+        ChiffrementServiceArij cs = ChiffrementServiceArij.getInstance();
+        this.type = cs.dechiffrer(this.type);
+        this.rejectionReason = cs.dechiffrer(this.rejectionReason);
+        System.out.println("[ConsultationsArij] Données déchiffrées après chargement");
+    }
+
+    /**
+     * Chiffre les données avant sauvegarde en BDD.
+     */
+    public void chiffrerAvantSauvegarde() {
+        ChiffrementServiceArij cs = ChiffrementServiceArij.getInstance();
+        this.type = cs.chiffrer(this.type);
+        this.rejectionReason = cs.chiffrer(this.rejectionReason);
+        System.out.println("[ConsultationsArij] Données chiffrées avant sauvegarde");
+    }
 }

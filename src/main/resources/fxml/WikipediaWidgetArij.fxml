@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.WikipediaWidgetControllerArij"
+      spacing="12"
+      style="-fx-background-color:white;
+             -fx-border-radius:12;
+             -fx-background-radius:12;
+             -fx-padding:20;
+             -fx-effect:dropshadow(gaussian,rgba(0,0,0,0.1),5,0,0,2);">
+
+    <!-- ── HEADER ─────────────────────────────────────────────── -->
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="📚 Informations Santé"
+               style="-fx-font-size:15px;-fx-font-weight:bold;-fx-text-fill:#1565c0;"/>
+    </HBox>
+
+    <!-- ── SEARCH BOX ─────────────────────────────────────────── -->
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <TextField fx:id="searchField"
+                   promptText="Chercher une maladie ou symptôme..."
+                   style="-fx-font-size:12px;-fx-padding:8 10;
+                          -fx-border-color:#d0d0d0;-fx-border-radius:6;
+                          -fx-background-radius:6;"
+                   HBox.hgrow="ALWAYS"/>
+        <Button fx:id="searchButton" text="🔍 Chercher"
+                style="-fx-font-size:12px;-fx-padding:8 14;
+                       -fx-background-color:#1976d2;-fx-text-fill:white;
+                       -fx-background-radius:6;-fx-cursor:hand;-fx-font-weight:bold;"/>
+    </HBox>
+
+    <!-- ── LOADING ────────────────────────────────────────────── -->
+    <VBox fx:id="loadingContainer" alignment="CENTER" spacing="8"
+          prefHeight="80" visible="false" managed="false">
+        <ProgressIndicator prefWidth="40" prefHeight="40"/>
+        <Label text="Recherche en cours..."
+               style="-fx-font-size:11px;-fx-text-fill:#888;"/>
+    </VBox>
+
+    <!-- ── RESULTS ────────────────────────────────────────────── -->
+    <VBox fx:id="resultsContainer" spacing="10"
+          visible="false" managed="false">
+
+        <!-- Titre -->
+        <Label fx:id="titleLabel" text=""
+               wrapText="true"
+               style="-fx-font-size:15px;-fx-font-weight:bold;-fx-text-fill:#1a1a1a;"/>
+
+        <!-- Image -->
+        <ImageView fx:id="imageView"
+                   fitWidth="320" fitHeight="160"
+                   preserveRatio="true"
+                   visible="false"/>
+
+        <!-- Résumé dans un ScrollPane pour éviter overflow -->
+        <ScrollPane fitToWidth="true" prefHeight="120"
+                    style="-fx-background-color:transparent;-fx-border-color:transparent;">
+            <Label fx:id="summaryLabel" text=""
+                   wrapText="true"
+                   style="-fx-font-size:12px;-fx-text-fill:#333;-fx-line-spacing:2;"/>
+        </ScrollPane>
+
+        <!-- Bouton article -->
+        <Button fx:id="linkButton" text="📖 Lire l'article complet sur Wikipedia"
+                maxWidth="Infinity"
+                style="-fx-font-size:12px;-fx-padding:8 16;
+                       -fx-background-color:#4CAF50;-fx-text-fill:white;
+                       -fx-background-radius:6;-fx-cursor:hand;-fx-font-weight:bold;"/>
+    </VBox>
+
+    <!-- ── NO RESULTS ─────────────────────────────────────────── -->
+    <Label fx:id="noResultsLabel" text="Aucun résultat trouvé"
+           style="-fx-font-size:12px;-fx-text-fill:#999;"
+           visible="false" managed="false"/>
+
+</VBox>

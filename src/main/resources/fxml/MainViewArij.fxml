@@ -89,7 +89,17 @@
                     <Label fx:id="footerRoleLabel" text="Patient" styleClass="footer-role"/>
                 </VBox>
                 <Button text="🔔" styleClass="logout-btn" onAction="#showNotifications"
-                        style="-fx-font-size:16px; -fx-text-fill:#bfdbfe;"/>
+                        style="-fx-font-size:16px; -fx-text-fill:#bfdbfe;">
+                    <graphic>
+                        <StackPane>
+                            <Label text="🔔" style="-fx-font-size:16px; -fx-text-fill:#bfdbfe;"/>
+                            <Label fx:id="notifBadgeLabel" text=""
+                                   style="-fx-background-color:#dc2626;-fx-text-fill:white;-fx-font-size:9px;-fx-font-weight:bold;-fx-padding:1 4;-fx-background-radius:8;"
+                                   visible="false"
+                                   StackPane.alignment="TOP_RIGHT"/>
+                        </StackPane>
+                    </graphic>
+                </Button>
                 <Button text="⏻" styleClass="logout-btn" onAction="#handleLogout"
                         style="-fx-text-fill:#fca5a5;"/>
             </HBox>

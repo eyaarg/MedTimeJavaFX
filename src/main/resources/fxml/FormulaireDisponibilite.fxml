@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" 
+<VBox xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" 
       fx:controller="esprit.fx.controllers.FormulaireDisponibiliteController"
       spacing="15" style="-fx-background-color: #f8f9fa;" prefWidth="500" prefHeight="550">
    
@@ -13,7 +13,7 @@
    </padding>
 
    <!-- Header -->
-   <Label text="🕒 Formulaire Disponibilité" 
+   <Label text="ðŸ•’ Formulaire DisponibilitÃ©" 
           style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
    
    <Separator />
@@ -25,17 +25,17 @@
          <ColumnConstraints minWidth="300" prefWidth="300" hgrow="ALWAYS" />
       </columnConstraints>
 
-      <!-- Médecin -->
-      <Label text="Médecin :" GridPane.columnIndex="0" GridPane.rowIndex="0" 
+      <!-- MÃ©decin -->
+      <Label text="MÃ©decin :" GridPane.columnIndex="0" GridPane.rowIndex="0" 
              style="-fx-font-weight: bold;" />
       <ComboBox fx:id="comboDocteur" GridPane.columnIndex="1" GridPane.rowIndex="0" 
-                maxWidth="Infinity" promptText="Sélectionner un médecin" />
+                maxWidth="Infinity" promptText="SÃ©lectionner un mÃ©decin" />
 
-      <!-- Date de début -->
-      <Label text="Date début :" GridPane.columnIndex="0" GridPane.rowIndex="1" 
+      <!-- Date de dÃ©but -->
+      <Label text="Date dÃ©but :" GridPane.columnIndex="0" GridPane.rowIndex="1" 
              style="-fx-font-weight: bold;" />
       <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="1">
-         <DatePicker fx:id="datePickerDebut" promptText="Date de début" HBox.hgrow="ALWAYS" />
+         <DatePicker fx:id="datePickerDebut" promptText="Date de dÃ©but" HBox.hgrow="ALWAYS" />
          <ComboBox fx:id="comboHeureDebut" promptText="Heure" prefWidth="80" />
       </HBox>
 
@@ -45,9 +45,9 @@
       <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="2">
          <DatePicker fx:id="datePickerFin" promptText="Date de fin" HBox.hgrow="ALWAYS" />
          <ComboBox fx:id="comboHeureFin" promptText="Heure" prefWidth="80" />
-         <Button text="📅" onAction="#copierDateDebut" 
+         <Button text="ðŸ“…" onAction="#copierDateDebut" 
                  style="-fx-background-color: #3498db; -fx-text-fill: white;" 
-                 tooltip="Copier la date de début" />
+                 tooltip="Copier la date de dÃ©but" />
       </HBox>
 
       <!-- Statut -->
@@ -60,7 +60,7 @@
       <Label text="Notes :" GridPane.columnIndex="0" GridPane.rowIndex="4" 
              style="-fx-font-weight: bold;" />
       <TextArea fx:id="textAreaNotes" GridPane.columnIndex="1" GridPane.rowIndex="4" 
-                prefRowCount="4" promptText="Notes sur cette disponibilité (optionnel)..." 
+                prefRowCount="4" promptText="Notes sur cette disponibilitÃ© (optionnel)..." 
                 wrapText="true" />
    </GridPane>
 
@@ -69,10 +69,10 @@
 
    <!-- Boutons -->
    <HBox spacing="10" alignment="CENTER_RIGHT">
-      <Button fx:id="btnAnnuler" text="❌ Annuler" onAction="#annuler" 
+      <Button fx:id="btnAnnuler" text="âŒ Annuler" onAction="#annuler" 
               style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" 
               prefWidth="100" />
-      <Button fx:id="btnSauvegarder" text="💾 Sauvegarder" onAction="#sauvegarder" 
+      <Button fx:id="btnSauvegarder" text="ðŸ’¾ Sauvegarder" onAction="#sauvegarder" 
               style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" 
               prefWidth="120" />
    </HBox>

@@ -3,7 +3,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
@@ -18,23 +18,54 @@
         <padding><Insets top="22" right="32" bottom="18" left="32"/></padding>
         <HBox spacing="10" alignment="CENTER_LEFT">
             <Label text="📰" style="-fx-font-size:16px;"/>
-            <Label text="Forum Médical — Articles" styleClass="hero-title" style="-fx-font-size:18px;"/>
+            <Label text="Forum Médical" styleClass="hero-title" style="-fx-font-size:18px;"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Button fx:id="btnAjouter" text="➕ Nouvel article"
-                    style="-fx-background-color:#1d4ed8; -fx-text-fill:white; -fx-font-size:13px;
-                           -fx-font-weight:bold; -fx-background-radius:8; -fx-border-color:transparent;
+                    style="-fx-background-color:rgba(255,255,255,0.2); -fx-text-fill:white;
+                           -fx-font-size:13px; -fx-font-weight:bold;
+                           -fx-background-radius:8; -fx-border-color:rgba(255,255,255,0.4);
+                           -fx-border-width:1; -fx-border-radius:8;
                            -fx-padding:8 16; -fx-cursor:hand;"
                     onAction="#ajouterArticle"/>
         </HBox>
-        <Label text="Consultez et gérez les articles médicaux" styleClass="hero-subtitle"/>
+        <Label text="Lisez et commentez les articles des médecins" styleClass="hero-subtitle"/>
     </VBox>
 
-    <!-- Cards -->
-    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll">
-        <padding><Insets top="24" right="32" bottom="24" left="32"/></padding>
+    <!-- Fil d'actualité centré -->
+    <ScrollPane fx:id="scrollPane" fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll">
         <content>
-            <FlowPane fx:id="flowArticles" hgap="20" vgap="20" prefWrapLength="900"/>
+            <HBox alignment="TOP_CENTER" style="-fx-background-color:#f0f4f8;">
+                <padding><Insets top="24" right="16" bottom="16" left="16"/></padding>
+                <VBox fx:id="feedContainer" spacing="16" maxWidth="680" style="-fx-fill-width:true;">
+                    <HBox.margin><Insets/></HBox.margin>
+                </VBox>
+            </HBox>
         </content>
     </ScrollPane>
+
+    <!-- Barre de pagination fixe en bas -->
+    <Separator/>
+    <HBox fx:id="paginationBar" alignment="CENTER" spacing="8"
+          style="-fx-background-color:white; -fx-padding:12 24;">
+        <Button fx:id="btnPremiere" text="«" onAction="#allerPremierePage"
+                style="-fx-background-color:#f1f5f9; -fx-text-fill:#475569; -fx-font-size:13px;
+                       -fx-font-weight:bold; -fx-background-radius:8; -fx-border-color:#e2e8f0;
+                       -fx-border-width:1; -fx-padding:7 12; -fx-cursor:hand;"/>
+        <Button fx:id="btnPrecedent" text="‹  Précédent" onAction="#pagePrecedente"
+                style="-fx-background-color:#f1f5f9; -fx-text-fill:#475569; -fx-font-size:13px;
+                       -fx-font-weight:bold; -fx-background-radius:8; -fx-border-color:#e2e8f0;
+                       -fx-border-width:1; -fx-padding:7 14; -fx-cursor:hand;"/>
+        <HBox fx:id="pageNumbersBox" spacing="4" alignment="CENTER"/>
+        <Button fx:id="btnSuivant" text="Suivant  ›" onAction="#pageSuivante"
+                style="-fx-background-color:#f1f5f9; -fx-text-fill:#475569; -fx-font-size:13px;
+                       -fx-font-weight:bold; -fx-background-radius:8; -fx-border-color:#e2e8f0;
+                       -fx-border-width:1; -fx-padding:7 14; -fx-cursor:hand;"/>
+        <Button fx:id="btnDerniere" text="»" onAction="#allerDernierePage"
+                style="-fx-background-color:#f1f5f9; -fx-text-fill:#475569; -fx-font-size:13px;
+                       -fx-font-weight:bold; -fx-background-radius:8; -fx-border-color:#e2e8f0;
+                       -fx-border-width:1; -fx-padding:7 12; -fx-cursor:hand;"/>
+        <Label fx:id="lblPageInfo" text=""
+               style="-fx-font-size:12px; -fx-text-fill:#64748b; -fx-padding:0 0 0 12;"/>
+    </HBox>
 
 </VBox>

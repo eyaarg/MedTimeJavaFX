@@ -179,6 +179,30 @@ public class ArticleController implements Initializable {
         lblContenu.setStyle("-fx-font-size:13px;-fx-text-fill:#334155;-fx-line-spacing:3;");
         lblContenu.setPadding(new Insets(0,16,12,16));
 
+        // ── Image de l'article ────────────────────────────────────────────
+        javafx.scene.image.ImageView imageView = new javafx.scene.image.ImageView();
+        imageView.setVisible(false);
+        imageView.setManaged(false);
+        if (article.getImage() != null && !article.getImage().isBlank()) {
+            try {
+                javafx.scene.image.Image img = new javafx.scene.image.Image(
+                    article.getImage(), 680, 320, true, true, true);
+                img.progressProperty().addListener((obs, ov, nv) -> {
+                    if (nv.doubleValue() == 1.0 && !img.isError()) {
+                        imageView.setImage(img);
+                        imageView.setFitWidth(680);
+                        imageView.setFitHeight(320);
+                        imageView.setPreserveRatio(true);
+                        imageView.setStyle("-fx-background-radius:0;");
+                        imageView.setVisible(true);
+                        imageView.setManaged(true);
+                    }
+                });
+            } catch (Exception ex) {
+                System.err.println("Erreur chargement image: " + ex.getMessage());
+            }
+        }
+
         // Stats bar
         HBox statsBar = new HBox(12);
         statsBar.setAlignment(Pos.CENTER_LEFT);
@@ -302,7 +326,7 @@ public class ArticleController implements Initializable {
         commentSection.getChildren().addAll(listeCommentaires, inputRow);
 
         // Assemblage
-        post.getChildren().addAll(header, lblTitre, lblContenu, statsBar, new Separator(), actionBar, new Separator(), translatePanel, commentSection);
+        post.getChildren().addAll(header, lblTitre, lblContenu, imageView, statsBar, new Separator(), actionBar, new Separator(), translatePanel, commentSection);
         rafraichirCommentaires(article, listeCommentaires, lblNbComments);
         rafraichirReactions(article, lblReactionSummary, btnLike);
         return post;
@@ -310,21 +334,74 @@ public class ArticleController implements Initializable {
 
     // ── Popup emoji ────────────────────────────────────────────────────────
     private HBox buildEmojiPopup(Article article, Button btnLike, Label lblReactionSummary) {
-        HBox popup = new HBox(4);
+        HBox popup = new HBox(2);
         popup.setAlignment(Pos.CENTER_LEFT);
-        popup.setPadding(new Insets(6,10,6,10));
-        popup.setStyle("-fx-background-color:white;-fx-background-radius:30;-fx-border-radius:30;-fx-border-color:#e2e8f0;-fx-border-width:1;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.15),12,0,4,4);");
-        for (String type : ReactionService.TYPES) {
-            Button btn = new Button(ReactionService.toEmoji(type));
-            btn.setTooltip(new Tooltip(ReactionService.toLabel(type)));
-            btn.setStyle("-fx-background-color:transparent;-fx-border-color:transparent;-fx-font-size:22px;-fx-cursor:hand;-fx-padding:2 4;-fx-background-radius:50%;");
-            btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-color:#f1f5f9;-fx-border-color:transparent;-fx-font-size:28px;-fx-cursor:hand;-fx-padding:2 4;-fx-background-radius:50%;"));
-            btn.setOnMouseExited(e -> btn.setStyle("-fx-background-color:transparent;-fx-border-color:transparent;-fx-font-size:22px;-fx-cursor:hand;-fx-padding:2 4;-fx-background-radius:50%;"));
+        popup.setPadding(new Insets(8, 12, 8, 12));
+        popup.setStyle(
+            "-fx-background-color:white;" +
+            "-fx-background-radius:30;" +
+            "-fx-border-radius:30;" +
+            "-fx-border-color:#e2e8f0;" +
+            "-fx-border-width:1;" +
+            "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.15),12,0,4,4);"
+        );
+
+        // type, label affiché, couleur fond, couleur texte
+        String[][] reactions = {
+            {"LIKE",  "J'aime",  "#dbeafe", "#1d4ed8"},
+            {"LOVE",  "J'adore", "#fee2e2", "#dc2626"},
+            {"HAHA",  "Haha",    "#fef9c3", "#ca8a04"},
+            {"WOW",   "Wow",     "#f3e8ff", "#7c3aed"},
+            {"SAD",   "Triste",  "#f1f5f9", "#475569"},
+            {"ANGRY", "Grrr",    "#ffedd5", "#ea580c"}
+        };
+
+        for (String[] r : reactions) {
+            String type   = r[0];
+            String label  = r[1];
+            String bgColor = r[2];
+            String fgColor = r[3];
+
+            Button btn = new Button(label);
+            btn.setTooltip(new Tooltip(label));
+            btn.setStyle(
+                "-fx-background-color:" + bgColor + ";" +
+                "-fx-text-fill:" + fgColor + ";" +
+                "-fx-font-size:11px;" +
+                "-fx-font-weight:bold;" +
+                "-fx-background-radius:20;" +
+                "-fx-border-color:transparent;" +
+                "-fx-padding:6 10;" +
+                "-fx-cursor:hand;"
+            );
+            btn.setOnMouseEntered(e -> btn.setStyle(
+                "-fx-background-color:" + fgColor + ";" +
+                "-fx-text-fill:white;" +
+                "-fx-font-size:11px;" +
+                "-fx-font-weight:bold;" +
+                "-fx-background-radius:20;" +
+                "-fx-border-color:transparent;" +
+                "-fx-padding:6 10;" +
+                "-fx-cursor:hand;"
+            ));
+            btn.setOnMouseExited(e -> btn.setStyle(
+                "-fx-background-color:" + bgColor + ";" +
+                "-fx-text-fill:" + fgColor + ";" +
+                "-fx-font-size:11px;" +
+                "-fx-font-weight:bold;" +
+                "-fx-background-radius:20;" +
+                "-fx-border-color:transparent;" +
+                "-fx-padding:6 10;" +
+                "-fx-cursor:hand;"
+            ));
             btn.setOnAction(e -> {
                 int uid = Session.getCurrentUserId();
                 if (uid == 0) return;
-                try { reactionService.upsertReaction(article.getId(), uid, type); rafraichirReactions(article, lblReactionSummary, btnLike); hidePopup((HBox) btn.getParent()); }
-                catch (SQLException ex) { ex.printStackTrace(); }
+                try {
+                    reactionService.upsertReaction(article.getId(), uid, type);
+                    rafraichirReactions(article, lblReactionSummary, btnLike);
+                    hidePopup((HBox) btn.getParent());
+                } catch (SQLException ex) { ex.printStackTrace(); }
             });
             popup.getChildren().add(btn);
         }
@@ -442,7 +519,7 @@ public class ArticleController implements Initializable {
             if (src == cible) { lblResultTitle.setText("⚠️ Choisissez deux langues différentes"); resultBox.setVisible(true); resultBox.setManaged(true); return; }
             btnGo.setDisable(true); lblLoading.setVisible(true); lblLoading.setManaged(true); resultBox.setVisible(false); resultBox.setManaged(false);
             Thread t = new Thread(() -> {
-                String traduit = translationService.traduire(article.getTitre() + "\n\n" + article.getContenu(), src, cible);
+                String traduit = translationService.traduire(article.getTitre() + " " + article.getContenu(), src, cible);
                 Platform.runLater(() -> { lblLoading.setVisible(false); lblLoading.setManaged(false); btnGo.setDisable(false); lblResultTitle.setText(src.label + "  →  " + cible.label); lblResultText.setText(traduit); resultBox.setVisible(true); resultBox.setManaged(true); });
             }); t.setDaemon(true); t.start();
         });
@@ -468,7 +545,6 @@ public class ArticleController implements Initializable {
     public void ajouterArticle() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AjouterArticle.fxml"));
-            loader.setController(new AjouterArticleController());
             Parent root = loader.load();
             Stage stage = new Stage();
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);

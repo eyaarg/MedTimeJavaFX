@@ -1,11 +1,9 @@
 package esprit.fx.services;
 
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 /**
@@ -41,15 +39,20 @@ public class TranslationService {
         if (texte == null || texte.isBlank()) return "";
         if (source == cible) return texte;
 
-        String texteTronque = texte.length() > 500 ? texte.substring(0, 500) + "…" : texte;
+        // Nettoyer — garder seulement les caractères sûrs, max 400 chars
+        String propre = texte.replace("\n", " ").replace("\r", " ")
+                             .replace("…", "").trim();
+        if (propre.length() > 400) propre = propre.substring(0, 400);
 
         try {
-            String encoded  = URLEncoder.encode(texteTronque, StandardCharsets.UTF_8);
             String langPair = source.code + "|" + cible.code;
-            String url      = API_URL + "?q=" + encoded + "&langpair=" + langPair;
+
+            // Utiliser URI avec constructeur complet pour éviter les caractères illégaux
+            URI uri = new URI("https", "api.mymemory.translated.net",
+                    "/get", "q=" + propre + "&langpair=" + langPair, null);
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
+                    .uri(uri)
                     .timeout(Duration.ofSeconds(15))
                     .GET()
                     .build();

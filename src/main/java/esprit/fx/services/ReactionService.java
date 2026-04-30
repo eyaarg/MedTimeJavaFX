@@ -18,13 +18,13 @@ public class ReactionService {
     public static String toEmoji(String type) {
         if (type == null) return "";
         return switch (type) {
-            case "LIKE"  -> "👍";
-            case "LOVE"  -> "❤️";
-            case "HAHA"  -> "😂";
-            case "WOW"   -> "😮";
-            case "SAD"   -> "😢";
-            case "ANGRY" -> "😡";
-            default      -> "👍";
+            case "LIKE"  -> "👍 J'aime";
+            case "LOVE"  -> "❤ J'adore";
+            case "HAHA"  -> "😄 Haha";
+            case "WOW"   -> "😲 Wow";
+            case "SAD"   -> "😢 Triste";
+            case "ANGRY" -> "😠 Grrr";
+            default      -> "👍 J'aime";
         };
     }
 

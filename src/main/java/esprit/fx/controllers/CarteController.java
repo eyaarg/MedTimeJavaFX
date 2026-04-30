@@ -30,13 +30,7 @@ public class CarteController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         webEngine = webViewCarte.getEngine();
-
-        // Activer JavaScript et désactiver les restrictions pour charger les tuiles OSM
         webEngine.setJavaScriptEnabled(true);
-        com.sun.javafx.webkit.WebConsoleListener.setDefaultListener(
-            (webView, message, lineNumber, sourceId) ->
-                System.out.println("WebView JS: " + message)
-        );
 
         // Charger la page HTML de base
         URL htmlUrl = getClass().getResource("/carte.html");

@@ -31,12 +31,18 @@ public class CarteController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         webEngine = webViewCarte.getEngine();
 
+        // Activer JavaScript et désactiver les restrictions pour charger les tuiles OSM
+        webEngine.setJavaScriptEnabled(true);
+        com.sun.javafx.webkit.WebConsoleListener.setDefaultListener(
+            (webView, message, lineNumber, sourceId) ->
+                System.out.println("WebView JS: " + message)
+        );
+
         // Charger la page HTML de base
         URL htmlUrl = getClass().getResource("/carte.html");
         if (htmlUrl != null) {
             webEngine.load(htmlUrl.toExternalForm());
         } else {
-            // Fallback inline si le fichier n'est pas trouvé
             webEngine.loadContent(buildFallbackHtml());
         }
     }
@@ -107,13 +113,17 @@ public class CarteController implements Initializable {
     }
 
     private void executeMapUpdate(double lat, double lon, String nom, String adresse) {
-        // Échapper les apostrophes pour éviter les erreurs JS
-        String nomSafe     = nom.replace("'", "\\'");
-        String adresseSafe = adresse.replace("'", "\\'");
+        // Forcer le point comme séparateur décimal (pas la virgule française)
+        String latStr = String.format(java.util.Locale.US, "%.6f", lat);
+        String lonStr = String.format(java.util.Locale.US, "%.6f", lon);
 
-        String script = String.format(
-            "updateMap(%f, %f, '%s', '%s');",
-            lat, lon, nomSafe, adresseSafe
+        // Échapper les apostrophes pour éviter les erreurs JS
+        String nomSafe     = nom.replace("'", "\\'").replace("\"", "\\\"");
+        String adresseSafe = adresse.replace("'", "\\'").replace("\"", "\\\"");
+
+        String script = String.format(java.util.Locale.US,
+            "updateMap(%s, %s, '%s', '%s');",
+            latStr, lonStr, nomSafe, adresseSafe
         );
         webEngine.executeScript(script);
     }

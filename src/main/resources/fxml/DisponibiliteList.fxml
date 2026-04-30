@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1"
+<VBox xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="esprit.fx.controllers.DisponibiliteController"
       spacing="20" style="-fx-background-color: #f3f4f6;">
 
@@ -19,13 +19,13 @@
                 -fx-background-radius: 16;
                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 2);">
       <VBox spacing="5">
-         <Label text="ðŸ•’ Gestion des DisponibilitÃ©s"
+         <Label text="🕒 Gestion des Disponibilités"
                 style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;" />
-         <Label text="GÃ©rez les crÃ©neaux de disponibilitÃ© des mÃ©decins"
+         <Label text="Gérez les créneaux de disponibilité des médecins"
                 style="-fx-font-size: 15px; -fx-text-fill: rgba(255,255,255,0.9);" />
       </VBox>
       <Region HBox.hgrow="ALWAYS" />
-      <Button fx:id="btnActualiser" text="ðŸ”„ Actualiser"
+      <Button fx:id="btnActualiser" text="🔄 Actualiser"
               onAction="#actualiserListe"
               style="-fx-background-color: rgba(255,255,255,0.2);
                      -fx-text-fill: white;
@@ -60,9 +60,9 @@
       <VBox spacing="8">
          <Label text="Recherche"
                 style="-fx-font-weight: 600; -fx-font-size: 13px; -fx-text-fill: #6b7280;" />
-         <!-- âœ… CorrigÃ© : plus de "par ID" -->
+         <!-- ✅ Corrigé : plus de "par ID" -->
          <TextField fx:id="searchField"
-                    promptText="ðŸ” Rechercher par mÃ©decin, date, notes..."
+                    promptText="🔍 Rechercher par médecin, date, notes..."
                     prefWidth="300"
                     style="-fx-background-color: #f9fafb;
                            -fx-border-color: #e5e7eb;
@@ -77,7 +77,7 @@
       <VBox spacing="8">
          <Label text="Trier par"
                 style="-fx-font-weight: 600; -fx-font-size: 13px; -fx-text-fill: #6b7280;" />
-         <!-- âœ… CorrigÃ© : tri par Date et MÃ©decin -->
+         <!-- ✅ Corrigé : tri par Date et Médecin -->
          <ComboBox fx:id="sortCombo" prefWidth="200"
                    style="-fx-background-color: #f9fafb;
                           -fx-border-color: #e5e7eb;
@@ -91,7 +91,7 @@
       <VBox spacing="8" alignment="CENTER_RIGHT">
          <Label text="Actions"
                 style="-fx-font-weight: 600; -fx-font-size: 13px; -fx-text-fill: #6b7280;" />
-         <Button fx:id="btnAjouter" text="âž• Nouvelle DisponibilitÃ©"
+         <Button fx:id="btnAjouter" text="➕ Nouvelle Disponibilité"
                  onAction="#ajouterDisponibilite"
                  style="-fx-background-color: #10b981;
                         -fx-text-fill: white;

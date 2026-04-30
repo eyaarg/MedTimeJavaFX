@@ -434,46 +434,34 @@ public class DisponibiliteController implements Initializable {
         try {
             // Récupérer l'adresse du médecin depuis la table doctors
             String adresse = "";
-            String doctorNom = dispo.getDoctorNom() != null ? dispo.getDoctorNom() : "Médecin";
-
             try {
                 Doctor doctor = serviceDoctor.afficherParId(dispo.getDoctorId());
-                if (doctor != null && doctor.getAdresse() != null && !doctor.getAdresse().isEmpty()) {
+                if (doctor != null && doctor.getAdresse() != null) {
                     adresse = doctor.getAdresse();
-                } else {
-                    // Fallback : utiliser le nom du médecin + Tunis
-                    adresse = "Tunis, Tunisie";
                 }
             } catch (SQLException e) {
                 System.err.println("Adresse médecin non trouvée: " + e.getMessage());
-                adresse = "Tunis, Tunisie";
             }
 
-            java.net.URL fxmlUrl = getClass().getResource("/fxml/Carte.fxml");
-            if (fxmlUrl == null) {
-                Stage stage = (Stage) containerDisponibilites.getScene().getWindow();
-                NotificationUtil.showNotification(stage,
-                    "Fichier Carte.fxml introuvable",
-                    NotificationUtil.NotificationType.ERROR);
-                return;
-            }
-
-            FXMLLoader loader = new FXMLLoader(fxmlUrl);
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/Carte.fxml")
+            );
             Parent root = loader.load();
 
             CarteController carteController = loader.getController();
-            carteController.initCarte(doctorNom, adresse);
+            carteController.initCarte(
+                    dispo.getDoctorNom() != null ? dispo.getDoctorNom() : "Médecin",
+                    adresse
+            );
 
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle("Localisation — Cabinet Dr. " + doctorNom);
-            stage.setScene(new Scene(root, 750, 550));
+            stage.setTitle("📍 Localisation — Cabinet Dr. " + dispo.getDoctorNom());
+            stage.setScene(new Scene(root));
             stage.setResizable(true);
             stage.show();
 
         } catch (IOException e) {
-            System.err.println("ouvrirCarte IOException: " + e.getMessage());
-            e.printStackTrace();
             Stage stage = (Stage) containerDisponibilites.getScene().getWindow();
             NotificationUtil.showNotification(
                     stage,

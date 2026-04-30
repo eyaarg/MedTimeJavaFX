@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx/23"
+<VBox xmlns="http://javafx.com/javafx/17.0.2-ea"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="esprit.fx.controllers.ListeAttenteController"
       prefWidth="580" prefHeight="640"
@@ -13,9 +13,9 @@
     <!-- Header -->
     <VBox style="-fx-background-color: linear-gradient(to right, #d97706 0%, #f59e0b 100%);
                  -fx-padding: 24 28;">
-        <Label text="â³ Liste d'Attente"
+        <Label text="⏳ Liste d'Attente"
                style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;"/>
-        <Label text="Inscrivez-vous pour Ãªtre notifiÃ© dÃ¨s qu'un crÃ©neau se libÃ¨re"
+        <Label text="Inscrivez-vous pour être notifié dès qu'un créneau se libère"
                style="-fx-font-size: 12px; -fx-text-fill: rgba(255,255,255,0.9); -fx-padding: 4 0 0 0;"/>
     </VBox>
 
@@ -23,13 +23,13 @@
              style="-fx-background-color: transparent; -fx-tab-min-height: 40px;">
 
         <!-- Onglet 1 : S'inscrire -->
-        <Tab text="âž• S'inscrire" closable="false">
+        <Tab text="➕ S'inscrire" closable="false">
             <VBox spacing="16"
                   style="-fx-background-color: white; -fx-padding: 24;">
 
-                <!-- MÃ©decin -->
+                <!-- Médecin -->
                 <VBox spacing="6">
-                    <Label text="ðŸ‘¨â€âš•ï¸ MÃ©decin souhaitÃ© *"
+                    <Label text="👨‍⚕️ Médecin souhaité *"
                            style="-fx-font-weight: 700; -fx-font-size: 13px; -fx-text-fill: #374151;"/>
                     <ComboBox fx:id="comboDocteur" maxWidth="Infinity"
                               style="-fx-background-color: #f9fafb; -fx-border-color: #e5e7eb;
@@ -37,9 +37,9 @@
                                      -fx-padding: 8; -fx-font-size: 13px;"/>
                 </VBox>
 
-                <!-- Date souhaitÃ©e -->
+                <!-- Date souhaitée -->
                 <VBox spacing="6">
-                    <Label text="ðŸ“… Date souhaitÃ©e"
+                    <Label text="📅 Date souhaitée"
                            style="-fx-font-weight: 700; -fx-font-size: 13px; -fx-text-fill: #374151;"/>
                     <DatePicker fx:id="datePickerSouhaitee" maxWidth="Infinity"
                                 style="-fx-background-color: #f9fafb; -fx-border-color: #e5e7eb;
@@ -48,7 +48,7 @@
 
                 <!-- Plage horaire -->
                 <VBox spacing="6">
-                    <Label text="ðŸ• Plage horaire prÃ©fÃ©rÃ©e"
+                    <Label text="🕐 Plage horaire préférée"
                            style="-fx-font-weight: 700; -fx-font-size: 13px; -fx-text-fill: #374151;"/>
                     <ComboBox fx:id="comboPlage" maxWidth="Infinity"
                               style="-fx-background-color: #f9fafb; -fx-border-color: #e5e7eb;
@@ -61,14 +61,14 @@
                       style="-fx-background-color: #fffbeb; -fx-padding: 12;
                              -fx-background-radius: 8; -fx-border-color: #fde68a;
                              -fx-border-radius: 8; -fx-border-width: 1;">
-                    <Label text="â„¹ï¸" style="-fx-font-size: 16px;"/>
-                    <Label text="Vous serez automatiquement notifiÃ© dÃ¨s qu'un crÃ©neau se libÃ¨re pour ce mÃ©decin."
+                    <Label text="ℹ️" style="-fx-font-size: 16px;"/>
+                    <Label text="Vous serez automatiquement notifié dès qu'un créneau se libère pour ce médecin."
                            wrapText="true" HBox.hgrow="ALWAYS"
                            style="-fx-font-size: 12px; -fx-text-fill: #92400e;"/>
                 </HBox>
 
                 <!-- Bouton -->
-                <Button fx:id="btnInscrire" text="â³ S'inscrire en liste d'attente"
+                <Button fx:id="btnInscrire" text="⏳ S'inscrire en liste d'attente"
                         onAction="#inscrire" maxWidth="Infinity"
                         style="-fx-background-color: #d97706; -fx-text-fill: white;
                                -fx-font-weight: 700; -fx-padding: 14;
@@ -82,7 +82,7 @@
         </Tab>
 
         <!-- Onglet 2 : Voir la liste -->
-        <Tab text="ðŸ“‹ Liste d'attente" closable="false">
+        <Tab text="📋 Liste d'attente" closable="false">
             <VBox spacing="0" style="-fx-background-color: #f3f4f6;">
 
                 <!-- Compteur -->
@@ -107,7 +107,7 @@
     <HBox alignment="CENTER_RIGHT"
           style="-fx-background-color: white; -fx-padding: 14 20;
                  -fx-border-color: #e5e7eb; -fx-border-width: 1 0 0 0;">
-        <Button fx:id="btnFermer" text="âœ– Fermer" onAction="#fermer"
+        <Button fx:id="btnFermer" text="✖ Fermer" onAction="#fermer"
                 style="-fx-background-color: #6b7280; -fx-text-fill: white;
                        -fx-font-weight: 600; -fx-padding: 10 24;
                        -fx-background-radius: 8; -fx-cursor: hand;"/>

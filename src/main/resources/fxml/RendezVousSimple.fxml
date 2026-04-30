@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" 
+<VBox xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" 
       fx:controller="esprit.fx.controllers.RendezVousSimpleController"
       spacing="20" style="-fx-background-color: #f8f9fa;">
    
@@ -15,19 +15,19 @@
    <!-- Header -->
    <HBox alignment="CENTER_LEFT" spacing="20">
       <VBox>
-         <Label text="ðŸ“… Gestion des Rendez-vous" 
+         <Label text="📅 Gestion des Rendez-vous" 
                 style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
-         <Label text="Interface simplifiÃ©e pour les rendez-vous mÃ©dicaux" 
+         <Label text="Interface simplifiée pour les rendez-vous médicaux" 
                 style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;" />
       </VBox>
       <Region HBox.hgrow="ALWAYS" />
-      <Button fx:id="btnActualiser" text="ðŸ”„ Actualiser" 
+      <Button fx:id="btnActualiser" text="🔄 Actualiser" 
               style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" />
    </HBox>
 
    <!-- Action Buttons -->
    <HBox spacing="10">
-      <Button fx:id="btnAjouter" text="âž• Nouveau RDV" 
+      <Button fx:id="btnAjouter" text="➕ Nouveau RDV" 
               style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" />
    </HBox>
 
@@ -37,12 +37,12 @@
       <columns>
          <TableColumn text="ID" prefWidth="60" />
          <TableColumn text="Patient" prefWidth="150" />
-         <TableColumn text="MÃ©decin" prefWidth="150" />
+         <TableColumn text="Médecin" prefWidth="150" />
          <TableColumn text="Date & Heure" prefWidth="140" />
          <TableColumn text="Statut" prefWidth="100" />
       </columns>
       <placeholder>
-         <Label text="Aucun rendez-vous trouvÃ©" style="-fx-text-fill: #7f8c8d;" />
+         <Label text="Aucun rendez-vous trouvé" style="-fx-text-fill: #7f8c8d;" />
       </placeholder>
    </TableView>
 

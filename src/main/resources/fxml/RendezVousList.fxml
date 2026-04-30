@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1"
+<VBox xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="esprit.fx.controllers.RendezVousController"
       spacing="0" style="-fx-background-color: #f3f4f6;">
 
@@ -13,28 +13,28 @@
                 -fx-padding: 24 28;">
       <HBox alignment="CENTER_LEFT" spacing="20">
          <VBox spacing="5">
-            <Label text="ðŸ“… Gestion des Rendez-vous"
+            <Label text="📅 Gestion des Rendez-vous"
                    style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;" />
-            <Label text="GÃ©rez vos rendez-vous mÃ©dicaux"
+            <Label text="Gérez vos rendez-vous médicaux"
                    style="-fx-font-size: 13px; -fx-text-fill: rgba(255,255,255,0.9);" />
          </VBox>
          <Region HBox.hgrow="ALWAYS" />
-         <Button fx:id="btnAjouter" text="âž• Nouveau RDV"
+         <Button fx:id="btnAjouter" text="➕ Nouveau RDV"
                  onAction="#ajouterRendezVous"
                  style="-fx-background-color: #27ae60; -fx-text-fill: white;
                         -fx-font-weight: bold; -fx-padding: 10 20;
                         -fx-background-radius: 8; -fx-cursor: hand;" />
-         <Button fx:id="btnSuggestion" text="ðŸ’¡ SuggÃ©rer"
+         <Button fx:id="btnSuggestion" text="💡 Suggérer"
                  onAction="#ouvrirSuggestion"
                  style="-fx-background-color: #7c3aed; -fx-text-fill: white;
                         -fx-font-weight: bold; -fx-padding: 10 20;
                         -fx-background-radius: 8; -fx-cursor: hand;" />
-         <Button fx:id="btnListeAttente" text="â³ Liste d'attente"
+         <Button fx:id="btnListeAttente" text="⏳ Liste d'attente"
                  onAction="#ouvrirListeAttente"
                  style="-fx-background-color: #d97706; -fx-text-fill: white;
                         -fx-font-weight: bold; -fx-padding: 10 20;
                         -fx-background-radius: 8; -fx-cursor: hand;" />
-         <Button fx:id="btnActualiser" text="ðŸ”„"
+         <Button fx:id="btnActualiser" text="🔄"
                  onAction="#actualiserListe"
                  style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white;
                         -fx-font-weight: bold; -fx-padding: 10 16;
@@ -51,9 +51,9 @@
                 style="-fx-background-color: #f9fafb; -fx-border-color: #e5e7eb;
                        -fx-border-radius: 8; -fx-background-radius: 8;" />
       <Separator orientation="VERTICAL" />
-      <Label text="ðŸ”" style="-fx-font-size: 14px;" />
+      <Label text="🔍" style="-fx-font-size: 14px;" />
       <TextField fx:id="searchField"
-                 promptText="Rechercher par patient, mÃ©decin, motif..."
+                 promptText="Rechercher par patient, médecin, motif..."
                  prefWidth="300"
                  style="-fx-background-color: #f9fafb; -fx-border-color: #e5e7eb;
                         -fx-border-radius: 8; -fx-background-radius: 8;

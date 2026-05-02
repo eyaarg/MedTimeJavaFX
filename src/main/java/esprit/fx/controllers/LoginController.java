@@ -1,4 +1,4 @@
-package esprit.fx.controllers;
+﻿package esprit.fx.controllers;
 
 import esprit.fx.entities.Role;
 import esprit.fx.entities.User;
@@ -17,7 +17,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -41,7 +40,7 @@ public class LoginController {
     private void initialize() {
         signInButton.setOnAction(event -> handleLogin());
 
-        Hyperlink forgotPasswordLink = new Hyperlink("Mot de passe oublié ?");
+        Hyperlink forgotPasswordLink = new Hyperlink("Mot de passe oubli├® ?");
         forgotPasswordLink.setOnAction(event -> new ForgotPasswordController().showAsStage());
 
         ((VBox) signInButton.getParent()).getChildren().add(forgotPasswordLink);
@@ -60,65 +59,46 @@ public class LoginController {
         try {
             User user = serviceUser.login(username, password);
 
-            // Identifiant ou mot de passe incorrect — check if account is now locked
+            // Identifiant ou mot de passe incorrect
             if (user == null) {
-                if (serviceUser.isAccountLocked(username)) {
-                    showAlert(Alert.AlertType.ERROR, "Compte bloqué",
-                            "Votre compte a été bloqué après plusieurs tentatives. " +
-                            "Contactez l'administrateur.");
-                } else {
-                    showAlert(Alert.AlertType.ERROR, "Connexion échouée",
-                            "Identifiant ou mot de passe incorrect.");
-                }
+                showAlert(Alert.AlertType.ERROR, "Connexion ├®chou├®e", "Identifiant ou mot de passe incorrect.");
                 return;
             }
 
             String role = extractPrimaryRole(user);
-            boolean isDoctor = role.contains("DOCTOR") || role.contains("MEDECIN") || role.contains("PHYSICIAN");
+            boolean isDoctor = role.contains("DOCTOR") || role.contains("MEDECIN");
 
-            // CAS 1 — Email non vérifié
+            // CAS 1 ÔÇö Email non v├®rifi├®
             if (!user.isVerified()) {
-                showAlert(Alert.AlertType.WARNING, "Compte non activé",
-                        "Votre compte n'est pas encore activé. Un email de vérification a été envoyé à votre adresse. " +
-                        "Veuillez vérifier votre boîte mail et saisir le code de confirmation.");
+                showAlert(Alert.AlertType.WARNING, "Compte non activ├®",
+                        "Votre compte n'est pas encore activ├®. Un email de v├®rification a ├®t├® envoy├® ├á votre adresse. " +
+                        "Veuillez v├®rifier votre bo├«te mail et saisir le code de confirmation.");
                 EmailVerificationController.showAsStage(user.getEmail());
                 return;
             }
 
-            // CAS 2 — Médecin en attente de validation admin
+            // CAS 2 ÔÇö M├®decin en attente de validation admin
             if (!user.isActive() && isDoctor) {
-                showAlert(Alert.AlertType.WARNING, "Compte en attente d'approbation",
-                        "Your account is pending admin approval.\n\n" +
-                        "An administrator must review your file and validate your diploma " +
-                        "before you can access the platform. " +
-                        "You will receive an email once your account is approved.");
+                showAlert(Alert.AlertType.WARNING, "Compte en cours de v├®rification",
+                        "Votre compte m├®decin est en cours de v├®rification. Un administrateur doit examiner votre dossier " +
+                        "et valider votre dipl├┤me avant que vous puissiez acc├®der ├á la plateforme. " +
+                        "Vous recevrez un email d├¿s que votre compte sera approuv├®.");
                 return;
             }
 
-            // CAS 3 — Compte bloqué (non médecin)
+            // CAS 3 ÔÇö Compte bloqu├® (non m├®decin)
             if (!user.isActive()) {
                 showAlert(Alert.AlertType.ERROR, "Compte suspendu",
-                        "Votre compte a été suspendu suite à plusieurs tentatives de connexion échouées. " +
-                        "Veuillez contacter l'administrateur pour débloquer votre accès.");
+                        "Votre compte a ├®t├® suspendu suite ├á plusieurs tentatives de connexion ├®chou├®es. " +
+                        "Veuillez contacter l'administrateur pour d├®bloquer votre acc├¿s.");
                 return;
             }
 
-            // CAS 4 — Login réussi
+            // CAS 4 ÔÇö Login r├®ussi
             UserSession.setCurrentUser(user);
             UserSession.setCurrentRole(role);
             openMainView();
 
-        } catch (SQLException e) {
-            if (e.getMessage() != null && e.getMessage().startsWith("PENDING_APPROVAL:")) {
-                showAlert(Alert.AlertType.WARNING, "Compte en attente d'approbation",
-                        "Your account is pending admin approval.\n\n" +
-                        "An administrator must review your file and validate your diploma " +
-                        "before you can access the platform. " +
-                        "You will receive an email once your account is approved.");
-            } else {
-                LOGGER.log(Level.SEVERE, "Erreur inattendue lors du login", e);
-                showAlert(Alert.AlertType.ERROR, "Erreur", "Une erreur inattendue est survenue : " + e.getMessage());
-            }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Erreur inattendue lors du login", e);
             showAlert(Alert.AlertType.ERROR, "Erreur", "Une erreur inattendue est survenue : " + e.getMessage());
@@ -167,7 +147,7 @@ public class LoginController {
                     LoginController.class.getResource("/Register.fxml")));
             Stage stage = (Stage) signInButton.getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.setTitle("MedTimeFX — Register");
+            stage.setTitle("MedTimeFX ÔÇö Register");
             stage.setMaximized(false);
             stage.setMinWidth(560);
             stage.setMinHeight(760);

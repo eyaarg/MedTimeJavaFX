@@ -1,4 +1,4 @@
-package esprit.fx.controllers;
+﻿package esprit.fx.controllers;
 
 import esprit.fx.entities.Doctor;
 import esprit.fx.entities.Doctor_documents;
@@ -31,7 +31,7 @@ public class AdminDoctorValidationController {
     public static void showAsStage() {
         AdminDoctorValidationController controller = new AdminDoctorValidationController();
         Stage stage = new Stage();
-        stage.setTitle("Validation des Médecins");
+        stage.setTitle("Validation des M├®decins");
         controller.initialize(stage);
         stage.show();
     }
@@ -40,12 +40,12 @@ public class AdminDoctorValidationController {
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(15));
 
-        // Label Médecins en attente
+        // Label M├®decins en attente
         pendingDoctorsLabel = new Label();
         updatePendingDoctorsLabel();
 
-        // Bouton Rafraîchir
-        Button refreshButton = new Button("Rafraîchir");
+        // Bouton Rafra├«chir
+        Button refreshButton = new Button("Rafra├«chir");
         refreshButton.setOnAction(e -> refreshTable());
 
         HBox topBox = new HBox(10, pendingDoctorsLabel, refreshButton);
@@ -117,16 +117,16 @@ public class AdminDoctorValidationController {
             doctorTable.setItems(doctorList);
             updatePendingDoctorsLabel();
         } catch (SQLException e) {
-            showAlert("Erreur", "Impossible de rafraîchir la table : " + e.getMessage());
+            showAlert("Erreur", "Impossible de rafra├«chir la table : " + e.getMessage());
         }
     }
 
     private void updatePendingDoctorsLabel() {
         try {
             int count = serviceDoctor.getPendingDoctorsCount();
-            pendingDoctorsLabel.setText("Médecins en attente : " + count);
+            pendingDoctorsLabel.setText("M├®decins en attente : " + count);
         } catch (SQLException e) {
-            showAlert("Erreur", "Impossible de mettre à jour le label : " + e.getMessage());
+            showAlert("Erreur", "Impossible de mettre ├á jour le label : " + e.getMessage());
         }
     }
 
@@ -136,23 +136,23 @@ public class AdminDoctorValidationController {
         try {
             doc = serviceDoctorDocument.getLatestDocumentByDoctorId(doctor.getId());
         } catch (SQLException e) {
-            showAlert("Erreur", "Erreur lors de la récupération du document : " + e.getMessage());
+            showAlert("Erreur", "Erreur lors de la r├®cup├®ration du document : " + e.getMessage());
             return;
         }
 
         if (doc == null) {
-            showAlert("Fichier PDF introuvable", "Le médecin n'a pas encore uploadé son document.");
+            showAlert("Fichier PDF introuvable", "Le m├®decin n'a pas encore upload├® son document.");
             return;
         }
 
         File pdfFile = new File(doc.getFolder_name() + "/" + doc.getStored_name());
         if (!pdfFile.exists()) {
-            showAlert("Fichier PDF introuvable", "Le médecin n'a pas encore uploadé son document.");
+            showAlert("Fichier PDF introuvable", "Le m├®decin n'a pas encore upload├® son document.");
             return;
         }
 
         if (!Desktop.isDesktopSupported()) {
-            showAlert("Erreur", "Impossible d'ouvrir le PDF sur ce système.");
+            showAlert("Erreur", "Impossible d'ouvrir le PDF sur ce syst├¿me.");
             return;
         }
 
@@ -167,22 +167,22 @@ public class AdminDoctorValidationController {
         Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION);
         confirmationAlert.setTitle("Confirmation");
         confirmationAlert.setHeaderText(null);
-        confirmationAlert.setContentText("Êtes-vous sûr de vouloir approuver ce médecin ?");
+        confirmationAlert.setContentText("├ètes-vous s├╗r de vouloir approuver ce m├®decin ?");
 
         if (confirmationAlert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             try {
                 serviceDoctor.approveDoctorCertification(doctor.getUserId());
                 refreshTable();
-                showInfo("Succès", "Médecin approuvé. Un email de confirmation a été envoyé.");
+                showInfo("Succ├¿s", "M├®decin approuv├®. Un email de confirmation a ├®t├® envoy├®.");
             } catch (SQLException e) {
-                showAlert("Erreur", "Impossible d'approuver le médecin : " + e.getMessage());
+                showAlert("Erreur", "Impossible d'approuver le m├®decin : " + e.getMessage());
             }
         }
     }
 
     private void rejectDoctor(Doctor doctor) {
         Dialog<String> dialog = new Dialog<>();
-        dialog.setTitle("Refuser le médecin");
+        dialog.setTitle("Refuser le m├®decin");
         dialog.setHeaderText("Veuillez fournir un motif de refus.");
 
         TextArea reasonField = new TextArea();
@@ -203,9 +203,9 @@ public class AdminDoctorValidationController {
             try {
                 serviceDoctor.rejectDoctorCertification(doctor.getUserId(), reason.trim());
                 refreshTable();
-                showInfo("Refus enregistré", "Le médecin a été notifié par email.");
+                showInfo("Refus enregistr├®", "Le m├®decin a ├®t├® notifi├® par email.");
             } catch (SQLException e) {
-                showAlert("Erreur", "Impossible de refuser le médecin : " + e.getMessage());
+                showAlert("Erreur", "Impossible de refuser le m├®decin : " + e.getMessage());
             }
         } else if (reason != null) {
             showAlert("Erreur", "Le motif de refus est obligatoire.");

@@ -1,4 +1,4 @@
-package esprit.fx.controllers;
+﻿package esprit.fx.controllers;
 
 import esprit.fx.entities.User;
 import esprit.fx.services.ServiceProfilePhoto;
@@ -28,46 +28,46 @@ public class ProfileController {
     private final ServiceUser         serviceUser   = new ServiceUser();
     private final ServiceProfilePhoto photoService  = new ServiceProfilePhoto();
 
-    // ── Widgets partagés ──────────────────────────────────────────────────────
+    // ÔöÇÔöÇ Widgets partag├®s ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     private StackPane avatarPane;
     private Label     avatarInitialLabel;
     private ImageView avatarImageView;
-    private Label     headerNameLabel;   // nom dans l'en-tête bleu
-    private Stage     profileStage;      // référence à la fenêtre pour maj titre
+    private Label     headerNameLabel;   // nom dans l'en-t├¬te bleu
+    private Stage     profileStage;      // r├®f├®rence ├á la fen├¬tre pour maj titre
 
-    // ── Ouvrir l'écran ────────────────────────────────────────────────────────
+    // ÔöÇÔöÇ Ouvrir l'├®cran ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     public static void showAsStage() {
         User user = UserSession.getCurrentUser();
         if (user == null) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Aucun utilisateur connecté.");
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Aucun utilisateur connect├®.");
             return;
         }
         ProfileController ctrl = new ProfileController();
         Stage stage = new Stage();
         stage.initModality(Modality.APPLICATION_MODAL);
-        stage.setTitle("Mon Profil — " + user.getUsername());
+        stage.setTitle("Mon Profil ÔÇö " + user.getUsername());
         stage.setResizable(false);
         ctrl.profileStage = stage;
         ctrl.build(stage, user);
         stage.show();
     }
 
-    // ── Construction de l'UI ──────────────────────────────────────────────────
+    // ÔöÇÔöÇ Construction de l'UI ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     private void build(Stage stage, User user) {
         VBox root = new VBox(0);
         root.setStyle("-fx-background-color: #F5F7FA;");
 
-        // ── En-tête avec avatar ───────────────────────────────────────────────
+        // ÔöÇÔöÇ En-t├¬te avec avatar ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
         VBox header = buildHeader(user);
 
-        // ── Onglets ───────────────────────────────────────────────────────────
+        // ÔöÇÔöÇ Onglets ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
         TabPane tabs = new TabPane();
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         tabs.setStyle("-fx-background-color: white;");
 
-        Tab tabInfo     = new Tab("✏  Mes informations", buildInfoSection(user, stage));
-        Tab tabPhoto    = new Tab("📷  Photo de profil",  buildPhotoSection(user));
-        Tab tabPassword = new Tab("🔒  Mot de passe",     buildPasswordSection(user));
+        Tab tabInfo     = new Tab("Ô£Å  Mes informations", buildInfoSection(user, stage));
+        Tab tabPhoto    = new Tab("­ƒôÀ  Photo de profil",  buildPhotoSection(user));
+        Tab tabPassword = new Tab("­ƒöÆ  Mot de passe",     buildPasswordSection(user));
 
         tabs.getTabs().addAll(tabInfo, tabPhoto, tabPassword);
         VBox.setVgrow(tabs, Priority.ALWAYS);
@@ -78,7 +78,7 @@ public class ProfileController {
         stage.setScene(scene);
     }
 
-    // ── En-tête ───────────────────────────────────────────────────────────────
+    // ÔöÇÔöÇ En-t├¬te ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     private VBox buildHeader(User user) {
         VBox header = new VBox(8);
         header.setAlignment(Pos.CENTER);
@@ -98,12 +98,12 @@ public class ProfileController {
         return header;
     }
 
-    // ── Section 1 : Informations ──────────────────────────────────────────────
+    // ÔöÇÔöÇ Section 1 : Informations ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     private VBox buildInfoSection(User user, Stage stage) {
         VBox box = new VBox(14);
         box.setPadding(new Insets(24));
 
-        Label title = sectionTitle("Modifier mes coordonnées");
+        Label title = sectionTitle("Modifier mes coordonn├®es");
 
         Label lUser  = fieldLabel("Nom d'utilisateur");
         TextField tfUser  = styledField(safe(user.getUsername()));
@@ -111,7 +111,7 @@ public class ProfileController {
         Label lEmail = fieldLabel("Email");
         TextField tfEmail = styledField(safe(user.getEmail()));
 
-        Label lPhone = fieldLabel("Téléphone");
+        Label lPhone = fieldLabel("T├®l├®phone");
         TextField tfPhone = styledField(safe(user.getPhoneNumber()));
 
         Label statusLabel = new Label("");
@@ -126,26 +126,26 @@ public class ProfileController {
             try {
                 serviceUser.updateProfile(user.getId(), username, email, phone);
 
-                // 1. Mettre à jour l'objet user et la session
+                // 1. Mettre ├á jour l'objet user et la session
                 user.setUsername(username);
                 user.setEmail(email);
                 user.setPhoneNumber(phone);
                 UserSession.setCurrentUser(user);
 
-                // 2. Rafraîchir l'en-tête du profil (nom + titre fenêtre)
+                // 2. Rafra├«chir l'en-t├¬te du profil (nom + titre fen├¬tre)
                 headerNameLabel.setText(username);
                 if (profileStage != null) {
-                    profileStage.setTitle("Mon Profil — " + username);
+                    profileStage.setTitle("Mon Profil ÔÇö " + username);
                 }
 
-                // 3. Rafraîchir le footer de MainControllerArij
+                // 3. Rafra├«chir le footer de MainControllerArij
                 refreshMainFooter(username);
 
                 statusLabel.setStyle("-fx-text-fill: #2E7D32;");
-                statusLabel.setText("✔ Informations mises à jour avec succès.");
+                statusLabel.setText("Ô£ö Informations mises ├á jour avec succ├¿s.");
             } catch (SQLException ex) {
                 statusLabel.setStyle("-fx-text-fill: #C62828;");
-                statusLabel.setText("✘ " + ex.getMessage());
+                statusLabel.setText("Ô£ÿ " + ex.getMessage());
             }
         });
 
@@ -154,7 +154,7 @@ public class ProfileController {
         return box;
     }
 
-    // ── Section 2 : Photo de profil ───────────────────────────────────────────
+    // ÔöÇÔöÇ Section 2 : Photo de profil ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     private VBox buildPhotoSection(User user) {
         VBox box = new VBox(16);
         box.setPadding(new Insets(24));
@@ -162,14 +162,14 @@ public class ProfileController {
 
         Label title = sectionTitle("Photo de profil");
 
-        // Aperçu grande taille
+        // Aper├ºu grande taille
         StackPane preview = buildAvatarPane(user, 70);
         preview.setAlignment(Pos.CENTER);
         VBox previewBox = new VBox(preview);
         previewBox.setAlignment(Pos.CENTER);
         previewBox.setPadding(new Insets(10, 0, 10, 0));
 
-        Label hint = new Label("Formats acceptés : JPG, PNG — Max 5 Mo");
+        Label hint = new Label("Formats accept├®s : JPG, PNG ÔÇö Max 5 Mo");
         hint.setStyle("-fx-text-fill: #9E9E9E; -fx-font-size: 11px;");
 
         Label statusLabel = new Label("");
@@ -178,27 +178,27 @@ public class ProfileController {
         Button btnChoose = primaryBtn("Choisir une photo");
         btnChoose.setOnAction(e -> {
             FileChooser fc = new FileChooser();
-            fc.setTitle("Sélectionner une photo de profil");
+            fc.setTitle("S├®lectionner une photo de profil");
             fc.getExtensionFilters().add(
                     new FileChooser.ExtensionFilter("Images (JPG, PNG)", "*.jpg", "*.jpeg", "*.png"));
             File selected = fc.showOpenDialog(null);
             if (selected == null) return;
 
-            // Vérifier taille max 5 Mo
+            // V├®rifier taille max 5 Mo
             if (selected.length() > 5 * 1024 * 1024) {
                 statusLabel.setStyle("-fx-text-fill: #C62828;");
-                statusLabel.setText("✘ Fichier trop volumineux (max 5 Mo).");
+                statusLabel.setText("Ô£ÿ Fichier trop volumineux (max 5 Mo).");
                 return;
             }
 
             try {
                 String path = photoService.uploadProfilePhoto(user.getId(), selected);
 
-                // Mettre à jour l'aperçu dans cet écran
+                // Mettre ├á jour l'aper├ºu dans cet ├®cran
                 updateAvatarWithImage(preview, selected);
-                // Mettre à jour l'avatar dans l'en-tête
+                // Mettre ├á jour l'avatar dans l'en-t├¬te
                 updateAvatarWithImage(avatarPane, selected);
-                // Mettre à jour le sidebar de la fenêtre principale
+                // Mettre ├á jour le sidebar de la fen├¬tre principale
                 refreshSidebarPhoto(user.getId());
 
                 // Stocker le chemin dans la session
@@ -206,10 +206,10 @@ public class ProfileController {
                 UserSession.setCurrentUser(user);
 
                 statusLabel.setStyle("-fx-text-fill: #2E7D32;");
-                statusLabel.setText("✔ Photo mise à jour avec succès.");
+                statusLabel.setText("Ô£ö Photo mise ├á jour avec succ├¿s.");
             } catch (Exception ex) {
                 statusLabel.setStyle("-fx-text-fill: #C62828;");
-                statusLabel.setText("✘ Erreur : " + ex.getMessage());
+                statusLabel.setText("Ô£ÿ Erreur : " + ex.getMessage());
             }
         });
 
@@ -217,7 +217,7 @@ public class ProfileController {
         return box;
     }
 
-    // ── Section 3 : Changement de mot de passe ────────────────────────────────
+    // ÔöÇÔöÇ Section 3 : Changement de mot de passe ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     private VBox buildPasswordSection(User user) {
         VBox box = new VBox(14);
         box.setPadding(new Insets(24));
@@ -244,12 +244,12 @@ public class ProfileController {
 
             if (oldPw.isBlank() || newPw.isBlank() || confirm.isBlank()) {
                 statusLabel.setStyle("-fx-text-fill: #C62828;");
-                statusLabel.setText("✘ Tous les champs sont obligatoires.");
+                statusLabel.setText("Ô£ÿ Tous les champs sont obligatoires.");
                 return;
             }
             if (!newPw.equals(confirm)) {
                 statusLabel.setStyle("-fx-text-fill: #C62828;");
-                statusLabel.setText("✘ Le nouveau mot de passe et la confirmation ne correspondent pas.");
+                statusLabel.setText("Ô£ÿ Le nouveau mot de passe et la confirmation ne correspondent pas.");
                 return;
             }
 
@@ -257,15 +257,15 @@ public class ProfileController {
                 boolean ok = serviceUser.changePassword(user.getId(), oldPw, newPw);
                 if (ok) {
                     statusLabel.setStyle("-fx-text-fill: #2E7D32;");
-                    statusLabel.setText("✔ Mot de passe changé avec succès.");
+                    statusLabel.setText("Ô£ö Mot de passe chang├® avec succ├¿s.");
                     pfOld.clear(); pfNew.clear(); pfConfirm.clear();
                 } else {
                     statusLabel.setStyle("-fx-text-fill: #C62828;");
-                    statusLabel.setText("✘ Ancien mot de passe incorrect.");
+                    statusLabel.setText("Ô£ÿ Ancien mot de passe incorrect.");
                 }
             } catch (SQLException ex) {
                 statusLabel.setStyle("-fx-text-fill: #C62828;");
-                statusLabel.setText("✘ " + ex.getMessage());
+                statusLabel.setText("Ô£ÿ " + ex.getMessage());
             }
         });
 
@@ -274,7 +274,7 @@ public class ProfileController {
         return box;
     }
 
-    // ── Avatar (cercle avec initiale ou image) ────────────────────────────────
+    // ÔöÇÔöÇ Avatar (cercle avec initiale ou image) ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     private StackPane buildAvatarPane(User user, double radius) {
         Circle circle = new Circle(radius);
         circle.setFill(Color.web("#1565C0"));
@@ -336,7 +336,7 @@ public class ProfileController {
         }
     }
 
-    // ── Helpers UI ────────────────────────────────────────────────────────────
+    // ÔöÇÔöÇ Helpers UI ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     private Label sectionTitle(String text) {
         Label l = new Label(text);
         l.setFont(Font.font("Arial", FontWeight.BOLD, 15));
@@ -391,7 +391,7 @@ public class ProfileController {
         String name = user.getRoles().get(0).getName();
         if (name == null) return "Utilisateur";
         String n = name.toUpperCase();
-        if (n.contains("DOCTOR") || n.contains("MEDECIN")) return "Médecin";
+        if (n.contains("DOCTOR") || n.contains("MEDECIN")) return "M├®decin";
         if (n.contains("ADMIN")) return "Administrateur";
         return "Patient";
     }
@@ -403,7 +403,7 @@ public class ProfileController {
     }
 
     /**
-     * Rafraîchit le nom, le rôle et la photo dans le footer de la fenêtre principale.
+     * Rafra├«chit le nom, le r├┤le et la photo dans le footer de la fen├¬tre principale.
      */
     private void refreshMainFooter(String newUsername) {
         try {
@@ -424,7 +424,7 @@ public class ProfileController {
     }
 
     /**
-     * Rafraîchit la photo dans le sidebar de la fenêtre principale.
+     * Rafra├«chit la photo dans le sidebar de la fen├¬tre principale.
      */
     public static void refreshSidebarPhoto(int userId) {
         try {

@@ -24,7 +24,7 @@ public class ServiceConsultationsArij {
         return MyDB.getInstance().getConnection();
     }
 
-    // Acc├¿s centralis├® au service de notification
+    // Accès centralisé au service de notification
     private final NotificationServiceArij notifService = NotificationServiceArij.getInstance();
 
     private static final DateTimeFormatter NOTIF_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -220,9 +220,11 @@ public class ServiceConsultationsArij {
         updateConsultation(c);
         notifyPatientApproved(c);
 
-        // Marquer automatiquement le créneau de disponibilité comme occupé
-        // TODO: méthode marquerCreneauOccupe à implémenter
-        // marquerCreneauOccupe(c);
+        // ── Marquer automatiquement le créneau de disponibilité comme occupé ──
+        // Quand le médecin accepte une consultation, le créneau correspondant
+        // dans disponibilite_medecin est marqué est_occupee = true.
+        // Cela empêche d'autres patients de réserver le même créneau.
+        marquerCreneauOccupe(c);
     }
 
     public void rejectConsultation(int id, String reason) {
@@ -390,8 +392,8 @@ public class ServiceConsultationsArij {
     }
 
     /**
-     * M├®decin accepte une consultation ÔåÆ notifier le patient.
-     * Message : "Consultation accept├®e ! Lien Meet : {lien}"
+     * Médecin accepte une consultation → notifier le patient.
+     * Message : "Consultation acceptée ! Lien Meet : {lien}"
      * Type    : "success"
      * Lien    : lien Google Meet (nullable)
      */
@@ -406,7 +408,7 @@ public class ServiceConsultationsArij {
             ? c.getConsultationDate().format(NOTIF_FMT) : "";
         String lien       = c.getLienMeet();
 
-        String msg = "Consultation accept├®e ! Dr. " + doctorName
+        String msg = "Consultation acceptée ! Dr. " + doctorName
             + " vous attend le " + when + "."
             + (lien != null && !lien.isBlank() ? " Lien Meet : " + lien : "");
 
@@ -414,7 +416,7 @@ public class ServiceConsultationsArij {
     }
 
     /**
-     * M├®decin refuse une consultation ÔåÆ notifier le patient.
+     * Médecin refuse une consultation → notifier le patient.
      * Type : "warning"
      */
     private void notifyPatientRejected(ConsultationsArij c) {
@@ -426,14 +428,14 @@ public class ServiceConsultationsArij {
         String doctorName = lookupDoctorUsername(c.getDoctorId());
         String reason     = c.getRejectionReason();
 
-        String msg = "Consultation refus├®e par Dr. " + doctorName + ". "
+        String msg = "Consultation refusée par Dr. " + doctorName + ". "
             + (reason == null || reason.isBlank() ? "Aucune raison fournie." : reason.trim());
 
         notifService.notifier(patientUserId, msg, NotificationArij.TYPE_WARNING, null);
     }
 
     /**
-     * Consultation termin├®e ÔåÆ notifier le patient.
+     * Consultation terminée → notifier le patient.
      * Type : "info"
      */
     private void notifyPatientCompleted(ConsultationsArij c) {
@@ -447,7 +449,7 @@ public class ServiceConsultationsArij {
             ? c.getConsultationDate().format(NOTIF_FMT) : "";
 
         String msg = "Votre consultation avec Dr. " + doctorName
-            + " du " + when + " est marqu├®e comme termin├®e.";
+            + " du " + when + " est marquée comme terminée.";
 
         notifService.notifier(patientUserId, msg, NotificationArij.TYPE_INFO, null);
     }
@@ -535,7 +537,7 @@ public class ServiceConsultationsArij {
 
         c.setLienMeet(rs.getString("lien_meet"));
 
-        // Lire le champ sms_suivi_envoye (peut ├¬tre absent sur ancienne BDD)
+        // Lire le champ sms_suivi_envoye (peut être absent sur ancienne BDD)
         try { c.setSmsSuiviEnvoye(rs.getBoolean("sms_suivi_envoye")); }
         catch (SQLException ignored) { c.setSmsSuiviEnvoye(false); }
 
@@ -596,5 +598,23 @@ public class ServiceConsultationsArij {
             case "cabinet", "in_person", "inperson" -> "IN_PERSON";
             default -> t.toUpperCase();
         };
+    }
+
+    /**
+     * Marque le créneau de disponibilité correspondant à la consultation comme occupé.
+     * Appelé automatiquement quand un médecin accepte une consultation.
+     */
+    private void marquerCreneauOccupe(ConsultationsArij c) {
+        if (c == null || c.getDoctorId() <= 0 || c.getConsultationDate() == null) return;
+        try {
+            String sql = "UPDATE disponibilite_medecin SET est_occupee = 1 " +
+                    "WHERE medecin_id = ? AND date_disponibilite = ? AND est_occupee = 0 LIMIT 1";
+            java.sql.PreparedStatement ps = esprit.fx.utils.MyDB.getInstance().getConnection().prepareStatement(sql);
+            ps.setInt(1, c.getDoctorId());
+            ps.setTimestamp(2, java.sql.Timestamp.valueOf(c.getConsultationDate()));
+            ps.executeUpdate();
+        } catch (java.sql.SQLException e) {
+            System.err.println("marquerCreneauOccupe: " + e.getMessage());
+        }
     }
 }

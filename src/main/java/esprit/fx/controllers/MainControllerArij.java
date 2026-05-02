@@ -45,22 +45,22 @@ public class MainControllerArij {
     @FXML private Label     footerRoleLabel;
     @FXML private Label     avatarLabel;
 
-    // Ã”Ã¶Ã‡Ã”Ã¶Ã‡ Badge notification Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡Ã”Ã¶Ã‡
-    /** Label rouge affichâ”œÂ® par-dessus la cloche, contenant le compteur. */
+    // â”€â”€ Badge notification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    /** Label rouge affichÃ© par-dessus la cloche, contenant le compteur. */
     @FXML private Label notifBadge;
 
     // ------------------------------------------------------------------ //
-    //  Services & â”œÂ®tat                                                    //
+    //  Services & Ã©tat                                                    //
     // ------------------------------------------------------------------ //
     private final NotificationDAOArij notifDAO = new NotificationDAOArij();
 
     /**
-     * Timeline JavaFX : rafraâ”œÂ«chit le badge toutes les 30 secondes.
+     * Timeline JavaFX : rafraÃ®chit le badge toutes les 30 secondes.
      *
      * On utilise Timeline (et non un Thread classique) car :
-     * - ses KeyFrame s'exâ”œÂ®cutent sur le JavaFX Application Thread
-     * - pas besoin de Platform.runLater() pour mettre â”œÃ¡ jour le Label
-     * - INDEFINITE = boucle infinie jusqu'â”œÃ¡ stop() explicite
+     * - ses KeyFrame s'exÃ©cutent sur le JavaFX Application Thread
+     * - pas besoin de Platform.runLater() pour mettre Ã  jour le Label
+     * - INDEFINITE = boucle infinie jusqu'Ã  stop() explicite
      */
     private Timeline notifTimeline;
 
@@ -91,30 +91,30 @@ public class MainControllerArij {
             btnUsers.setManaged(isAdmin);
         }
 
-        // Dâ”œÂ®marrer le rafraâ”œÂ«chissement du badge notification
+        // DÃ©marrer le rafraÃ®chissement du badge notification
         demarrerTimeline();
 
         showDashboardView();
     }
 
     // ------------------------------------------------------------------ //
-    //  Timeline Ã”Ã‡Ã¶ badge notification                                      //
+    //  Timeline â€” badge notification                                      //
     // ------------------------------------------------------------------ //
 
     /**
-     * Dâ”œÂ®marre la Timeline qui rafraâ”œÂ«chit le badge toutes les 30 secondes.
+     * DÃ©marre la Timeline qui rafraÃ®chit le badge toutes les 30 secondes.
      *
      * Fonctionnement :
-     *  - KeyFrame(Duration.ZERO)      Ã”Ã¥Ã† mise â”œÃ¡ jour immâ”œÂ®diate au dâ”œÂ®marrage
-     *  - KeyFrame(Duration.seconds(30)) Ã”Ã¥Ã† puis toutes les 30 secondes
-     *  - setCycleCount(INDEFINITE)    Ã”Ã¥Ã† boucle infinie
+     *  - KeyFrame(Duration.ZERO)      â†’ mise Ã  jour immÃ©diate au dÃ©marrage
+     *  - KeyFrame(Duration.seconds(30)) â†’ puis toutes les 30 secondes
+     *  - setCycleCount(INDEFINITE)    â†’ boucle infinie
      *
-     * La Timeline s'exâ”œÂ®cute sur le JavaFX Application Thread Ã”Ã¥Ã† on peut
+     * La Timeline s'exÃ©cute sur le JavaFX Application Thread â†’ on peut
      * modifier notifBadge directement sans Platform.runLater().
      */
     private void demarrerTimeline() {
         notifTimeline = new Timeline(
-            // Tick immâ”œÂ®diat au dâ”œÂ®marrage
+            // Tick immÃ©diat au dÃ©marrage
             new KeyFrame(Duration.ZERO,        e -> rafraichirBadge()),
             // Tick toutes les 30 secondes
             new KeyFrame(Duration.seconds(30), e -> rafraichirBadge())
@@ -125,10 +125,10 @@ public class MainControllerArij {
 
     /**
      * Interroge la BDD pour compter les notifications non lues
-     * et met â”œÃ¡ jour le badge rouge sur la cloche.
+     * et met Ã  jour le badge rouge sur la cloche.
      *
-     * Appelâ”œÂ® par la Timeline Ã”Ã¥Ã† dâ”œÂ®jâ”œÃ¡ sur le JavaFX Thread.
-     * Le comptage BDD est rapide (COUNT(*)) donc pas besoin de thread sâ”œÂ®parâ”œÂ®.
+     * AppelÃ© par la Timeline â†’ dÃ©jÃ  sur le JavaFX Thread.
+     * Le comptage BDD est rapide (COUNT(*)) donc pas besoin de thread sÃ©parÃ©.
      * Si la BDD est lente, on pourrait l'envelopper dans un Task.
      */
     private void rafraichirBadge() {
@@ -137,7 +137,7 @@ public class MainControllerArij {
         long count = notifDAO.countNonLues((long) userId);
 
         if (count > 0) {
-            // Afficher le badge avec le compteur (max "99+" pour â”œÂ®viter dâ”œÂ®bordement)
+            // Afficher le badge avec le compteur (max "99+" pour Ã©viter dÃ©bordement)
             notifBadge.setText(count > 99 ? "99+" : String.valueOf(count));
             notifBadge.setVisible(true);
             notifBadge.setManaged(true);
@@ -149,8 +149,8 @@ public class MainControllerArij {
     }
 
     /**
-     * Arrâ”œÂ¬te la Timeline proprement (appelâ”œÂ® â”œÃ¡ la dâ”œÂ®connexion).
-     * â”œÃ«vite les fuites mâ”œÂ®moire et les appels BDD aprâ”œÂ¿s logout.
+     * ArrÃªte la Timeline proprement (appelÃ© Ã  la dÃ©connexion).
+     * Ã‰vite les fuites mÃ©moire et les appels BDD aprÃ¨s logout.
      */
     private void arreterTimeline() {
         if (notifTimeline != null) {
@@ -188,15 +188,9 @@ public class MainControllerArij {
     private void showPrendreRdvView() {
         setModuleActive(btnModulePrendreRdv);
         try {
-            loadView("/fxml/RendezVousList.fxml");
+            loadView("/fxml/PrendreRendezVous.fxml");
         } catch (Exception e) {
-            System.err.println("Erreur chargement RendezVousList: " + e.getMessage());
-            // Fallback sur l'ancienne vue
-            try {
-                loadView("/fxml/PrendreRendezVous.fxml");
-            } catch (Exception ex) {
-                System.err.println("Erreur fallback: " + ex.getMessage());
-            }
+            System.err.println("Erreur chargement PrendreRendezVous: " + e.getMessage());
         }
     }
 
@@ -218,17 +212,22 @@ public class MainControllerArij {
         showHubsView("Forum Medical", "Selectionnez une fonctionnalite", buildForumHubs());
     }
 
+    @FXML
+    private void showProfile() {
+        ProfileController.showAsStage();
+    }
+
     /**
      * Ouvre le panneau de notifications ET marque toutes comme lues.
-     * Le badge disparaâ”œÂ«t immâ”œÂ®diatement aprâ”œÂ¿s l'ouverture.
+     * Le badge disparaÃ®t immÃ©diatement aprÃ¨s l'ouverture.
      */
     @FXML
     private void showNotifications() {
-        // Marquer toutes les notifs comme lues dâ”œÂ¿s l'ouverture
+        // Marquer toutes les notifs comme lues dÃ¨s l'ouverture
         if (userId > 0) {
             notifDAO.marquerToutesLues((long) userId);
         }
-        // Rafraâ”œÂ«chir le badge immâ”œÂ®diatement (doit afficher 0 Ã”Ã¥Ã† badge cachâ”œÂ®)
+        // RafraÃ®chir le badge immÃ©diatement (doit afficher 0 â†’ badge cachÃ©)
         rafraichirBadge();
         loadView("/fxml/NotificationListArij.fxml");
     }
@@ -245,7 +244,7 @@ public class MainControllerArij {
 
     @FXML
     private void handleLogout() {
-        // Arrâ”œÂ¬ter la Timeline avant de quitter pour â”œÂ®viter les fuites
+        // ArrÃªter la Timeline avant de quitter pour Ã©viter les fuites
         arreterTimeline();
         try {
             UserSession.clear();
@@ -263,7 +262,7 @@ public class MainControllerArij {
     }
 
     // ------------------------------------------------------------------ //
-    //  Identitâ”œÂ® utilisateur                                               //
+    //  IdentitÃ© utilisateur                                               //
     // ------------------------------------------------------------------ //
 
     private void applySessionIdentity() {
@@ -312,37 +311,37 @@ public class MainControllerArij {
     private List<HubCard> buildConsultationHubs() {
         if (isDoctor()) {
             return Arrays.asList(
-                new HubCard("Â­Æ’Ã¹Ã´", "Consultations",  "Gerez les demandes patients",  () -> loadView("/fxml/ConsultationManagementArij.fxml")),
-                new HubCard("Â­Æ’Ã´Ã¯", "Ordonnances",    "Prescriptions medicales",      () -> loadView("/fxml/OrdonnanceListArij.fxml")),
-                new HubCard("Â­Æ’Ã´Ã¨", "Statistiques",   "Analytiques et graphiques",    () -> loadView("/fxml/DashboardStatsArij.fxml")),
-                new HubCard("Â­Æ’Ã¶Ã¬", "Recherche",      "Filtrage avance consultations",() -> loadView("/fxml/ConsultationFiltreArij.fxml"))
+                new HubCard("ðŸ—“", "Consultations",  "Gerez les demandes patients",  () -> loadView("/fxml/ConsultationManagementArij.fxml")),
+                new HubCard("ðŸ“‹", "Ordonnances",    "Prescriptions medicales",      () -> loadView("/fxml/OrdonnanceListArij.fxml")),
+                new HubCard("ðŸ“Š", "Statistiques",   "Analytiques et graphiques",    () -> loadView("/fxml/DashboardStatsArij.fxml")),
+                new HubCard("ðŸ”", "Recherche",      "Filtrage avance consultations",() -> loadView("/fxml/ConsultationFiltreArij.fxml"))
             );
         }
         return Arrays.asList(
-            new HubCard("Â­Æ’Ã´Ã ", "Calendrier",        "Disponibilites et creneaux",       () -> loadView("/fxml/CalendrierArij.fxml")),
-            new HubCard("Â­Æ’Ã¹Ã´", "Mes consultations", "Suivez vos rendez-vous medicaux",  () -> loadView("/fxml/ConsultationListArij.fxml")),
-            new HubCard("Â­Æ’Ã¶Ã¬", "Recherche avancee", "Filtrage multi-criteres",          () -> loadView("/fxml/ConsultationFiltreArij.fxml")),
-            new HubCard("Â­Æ’Ã´Ã¯", "Mes ordonnances",   "Vos prescriptions medicales",      () -> loadView("/fxml/OrdonnanceListArij.fxml")),
-            new HubCard("Â­Æ’ÂºÂ¥", "Mes factures",      "Historique de vos paiements",      () -> loadView("/fxml/FactureListArij.fxml")),
-            new HubCard("Â­Æ’Ã±Ã»", "Assistante IA",     "Posez vos questions medicales",    () -> loadView("/fxml/ChatViewArij.fxml"))
+            new HubCard("ðŸ“…", "Calendrier",        "Disponibilites et creneaux",       () -> loadView("/fxml/CalendrierArij.fxml")),
+            new HubCard("ðŸ—“", "Mes consultations", "Suivez vos rendez-vous medicaux",  () -> loadView("/fxml/ConsultationListArij.fxml")),
+            new HubCard("ðŸ”", "Recherche avancee", "Filtrage multi-criteres",          () -> loadView("/fxml/ConsultationFiltreArij.fxml")),
+            new HubCard("ðŸ“‹", "Mes ordonnances",   "Vos prescriptions medicales",      () -> loadView("/fxml/OrdonnanceListArij.fxml")),
+            new HubCard("ðŸ§¾", "Mes factures",      "Historique de vos paiements",      () -> loadView("/fxml/FactureListArij.fxml")),
+            new HubCard("ðŸ¤–", "Assistante IA",     "Posez vos questions medicales",    () -> loadView("/fxml/ChatViewArij.fxml"))
         );
     }
 
     private List<HubCard> buildMarketHubs() {
         return Arrays.asList(
-            new HubCard("Â­Æ’Ã†Ã¨", "Liste des produits", "Parcourez le catalogue medical",  () -> loadView("/fxml/ListProd.fxml")),
-            new HubCard("Ã”Ã—Ã²", "Ajouter un produit", "Enregistrer un nouveau produit",  () -> loadView("/fxml/AjoutProd.fxml"))
+            new HubCard("ðŸ’Š", "Liste des produits", "Parcourez le catalogue medical",  () -> loadView("/fxml/ListProd.fxml")),
+            new HubCard("âž•", "Ajouter un produit", "Enregistrer un nouveau produit",  () -> loadView("/fxml/AjoutProd.fxml"))
         );
     }
 
     private List<HubCard> buildForumHubs() {
         if (isDoctor()) {
             return Arrays.asList(
-                new HubCard("Â­Æ’Ã´â–‘", "Articles medicaux", "Consultez et gerez les articles", () -> loadView("/fxml/ListerArticles.fxml")),
-                new HubCard("Â­Æ’Ã†Â¼", "Commentaires",      "Gerez tous les commentaires",     () -> loadView("/fxml/ListerCommentaires.fxml"))
+                new HubCard("ðŸ“°", "Articles medicaux", "Consultez et gerez les articles", () -> loadView("/fxml/ListerArticles.fxml")),
+                new HubCard("ðŸ’¬", "Commentaires",      "Gerez tous les commentaires",     () -> loadView("/fxml/ListerCommentaires.fxml"))
             );
         }
-        return List.of(new HubCard("Â­Æ’Ã´â–‘", "Articles medicaux", "Lisez et commentez les articles", () -> loadView("/fxml/ListerArticles.fxml")));
+        return List.of(new HubCard("ðŸ“°", "Articles medicaux", "Lisez et commentez les articles", () -> loadView("/fxml/ListerArticles.fxml")));
     }
 
     private void showHubsView(String title, String subtitle, List<HubCard> hubs) {

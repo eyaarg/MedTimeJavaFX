@@ -3,12 +3,16 @@ package esprit.fx.entities;
 import java.time.LocalDateTime;
 
 public class Doctor extends User {
-        private int id;
-        private int userId;
-        private String licenseCode;
-        private boolean isCertified;
-        private LocalDateTime createdAt;
-        private LocalDateTime updatedAt;
+    private int id;
+    private int userId;
+    private String licenseCode;
+    private boolean isCertified;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    // Issue #8 — location fields (city/lat/lng only, no country)
+    private String city;
+    private Double latitude;
+    private Double longitude;
 
     public Doctor() {
     }
@@ -29,52 +33,30 @@ public class Doctor extends User {
         this.updatedAt = updatedAt;
     }
 
-    public int getId() {
-            return id;
-        }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-        public void setId(int id) {
-            this.id = id;
-        }
+    public int getUserId() { return userId; }
+    public void setUserId(int userId) { this.userId = userId; }
 
-        public int getUserId() {
-            return userId;
-        }
+    public String getLicenseCode() { return licenseCode; }
+    public void setLicenseCode(String licenseCode) { this.licenseCode = licenseCode; }
 
-        public void setUserId(int userId) {
-            this.userId = userId;
-        }
+    public boolean isCertified() { return isCertified; }
+    public void setCertified(boolean certified) { isCertified = certified; }
 
-        public String getLicenseCode() {
-            return licenseCode;
-        }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-        public void setLicenseCode(String licenseCode) {
-            this.licenseCode = licenseCode;
-        }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
-        public boolean isCertified() {
-            return isCertified;
-        }
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
 
-        public void setCertified(boolean certified) {
-            isCertified = certified;
-        }
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
 
-        public LocalDateTime getCreatedAt() {
-            return createdAt;
-        }
-
-        public void setCreatedAt(LocalDateTime createdAt) {
-            this.createdAt = createdAt;
-        }
-
-        public LocalDateTime getUpdatedAt() {
-            return updatedAt;
-        }
-
-        public void setUpdatedAt(LocalDateTime updatedAt) {
-            this.updatedAt = updatedAt;
-        }
-
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
 }

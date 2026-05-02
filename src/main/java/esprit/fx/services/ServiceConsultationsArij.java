@@ -370,6 +370,7 @@ public class ServiceConsultationsArij {
     // ================================================================== //
     //  Notifications — délèguent à NotificationServiceArij               //
     // ================================================================== //
+    /**
      * Message : "Nouvelle consultation de {patient} pour le {date}"
      * Type    : "info"
      */
@@ -597,5 +598,23 @@ public class ServiceConsultationsArij {
             case "cabinet", "in_person", "inperson" -> "IN_PERSON";
             default -> t.toUpperCase();
         };
+    }
+
+    /**
+     * Marque le créneau de disponibilité correspondant à la consultation comme occupé.
+     * Appelé automatiquement quand un médecin accepte une consultation.
+     */
+    private void marquerCreneauOccupe(ConsultationsArij c) {
+        if (c == null || c.getDoctorId() <= 0 || c.getConsultationDate() == null) return;
+        try {
+            String sql = "UPDATE disponibilite_medecin SET est_occupee = 1 " +
+                    "WHERE medecin_id = ? AND date_disponibilite = ? AND est_occupee = 0 LIMIT 1";
+            java.sql.PreparedStatement ps = esprit.fx.utils.MyDB.getInstance().getConnection().prepareStatement(sql);
+            ps.setInt(1, c.getDoctorId());
+            ps.setTimestamp(2, java.sql.Timestamp.valueOf(c.getConsultationDate()));
+            ps.executeUpdate();
+        } catch (java.sql.SQLException e) {
+            System.err.println("marquerCreneauOccupe: " + e.getMessage());
+        }
     }
 }

@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -27,7 +28,7 @@ public class UserServiceTest {
         modifiedEmail = "modified." + suffix + "@gmail.com";
     }
 
-    // 🔹 1. TEST AJOUT
+
     @Test
     @Order(1)
     void testAjouterUser() throws SQLException {
@@ -35,7 +36,7 @@ public class UserServiceTest {
         User user = new User();
         user.setEmail(testEmail);
         user.setUsername("testuser");
-        user.setPassword("test123"); // ⚠️ doit contenir lettre + chiffre
+        user.setPassword("test123");
         user.setCreatedAt(LocalDateTime.now());
         user.setActive(true);
         user.setPhoneNumber("12345678");
@@ -61,7 +62,7 @@ public class UserServiceTest {
         System.out.println("User ID: " + userIdTest);
     }
 
-    // 🔹 2. TEST MODIFIER
+
     @Test
     @Order(2)
     void testModifierUser() throws SQLException {
@@ -70,7 +71,7 @@ public class UserServiceTest {
         user.setId(userIdTest);
         user.setEmail(modifiedEmail);
         user.setUsername("modifiedUser");
-        user.setPassword(""); // ⚠️ ne modifie pas le password
+        user.setPassword("");
         user.setCreatedAt(LocalDateTime.now());
         user.setActive(true);
         user.setPhoneNumber("87654321");
@@ -87,7 +88,7 @@ public class UserServiceTest {
         assertTrue(updated);
     }
 
-    // 🔹 3. TEST LOGIN 🔥
+
     @Test
     @Order(3)
     void testLoginUser() throws SQLException {
@@ -98,7 +99,7 @@ public class UserServiceTest {
         assertEquals("modifiedUser", user.getUsername());
     }
 
-    // 🔹 4. TEST SUPPRIMER
+
     @Test
     @Order(4)
     void testSupprimerUser() throws SQLException {
@@ -113,7 +114,7 @@ public class UserServiceTest {
         assertFalse(exists);
     }
 
-    // 🔹 CLEANUP (sécurité)
+
     @AfterAll
     static void cleanUp() throws SQLException {
         if (userIdTest > 0) {

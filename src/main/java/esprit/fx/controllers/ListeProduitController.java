@@ -1,7 +1,6 @@
 package esprit.fx.controllers;
 
 import esprit.fx.entities.Produit;
-import esprit.fx.entities.CategorieEnum;
 import esprit.fx.services.ServiceProduit;
 import esprit.fx.utils.MyDB;
 import javafx.fxml.FXML;
@@ -76,7 +75,7 @@ public class ListeProduitController implements Initializable {
         card.setPadding(new Insets(12));
 
         // Icône selon catégorie
-        Label iconLabel = new Label(getIconForCategorie(p.getCategorie()));
+        Label iconLabel = new Label(getIconForCategorie(p.getCategorieName()));
         iconLabel.setStyle("-fx-font-size: 40px;");
         iconLabel.setMaxWidth(Double.MAX_VALUE);
         iconLabel.setAlignment(javafx.geometry.Pos.CENTER);
@@ -132,14 +131,14 @@ public class ListeProduitController implements Initializable {
         return card;
     }
 
-    private String getIconForCategorie(CategorieEnum categorie) {
+    private String getIconForCategorie(String categorie) {
         if (categorie == null) return "📦";
-        switch (categorie) {
-            case MEDICAMENT: return "💊";
-            case MATERIEL_MEDICAL: return "🩺";
-            case PARAPHARMACIE: return "🧴";
-            case HYGIENE: return "🧼";
-            case COMPLEMENT_ALIMENTAIRE: return "🥗";
+        switch (categorie.toUpperCase()) {
+            case "MEDICAMENT": return "💊";
+            case "MATERIEL_MEDICAL": return "🩺";
+            case "PARAPHARMACIE": return "🧴";
+            case "HYGIENE": return "🧼";
+            case "COMPLEMENT_ALIMENTAIRE": return "🥗";
             default: return "📦";
         }
     }
@@ -221,7 +220,7 @@ public class ListeProduitController implements Initializable {
         info.setTitle("Détails produit");
         info.setHeaderText(produit.getNom());
         info.setContentText(
-                "Catégorie: " + (produit.getCategorie() != null ? produit.getCategorie().name() : "N/A") + "\n" +
+                "Catégorie: " + (produit.getCategorieName() != null ? produit.getCategorieName() : "N/A") + "\n" +
                 "Prix: " + produit.getPrix() + "\n" +
                 "Stock: " + produit.getStock() + "\n" +
                 "Marque: " + (produit.getMarque() != null ? produit.getMarque() : "-") + "\n" +

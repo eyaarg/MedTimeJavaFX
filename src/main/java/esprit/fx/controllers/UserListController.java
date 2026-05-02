@@ -30,7 +30,7 @@ public class UserListController {
 
     // ── Patterns ──────────────────────────────────────────────────────────────
     private static final Pattern EMAIL_PATTERN    = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
-    private static final Pattern PHONE_PATTERN    = Pattern.compile("^\\d{8}$");
+    private static final Pattern PHONE_PATTERN    = Pattern.compile("^(\\d{8}|\\+[1-9]\\d{6,14})$");
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).+$");
 
     // ── FXML bindings (barre du haut — définis dans UserList.fxml) ────────────
@@ -567,10 +567,11 @@ public class UserListController {
             String em = emailField.getText().trim();
             String ph = phoneField.getText().trim();
             String pw = pwField.getText().trim();
-            if (u.length() < 3)                                          { showError("Validation", "Username ≥ 3 caractères."); ev.consume(); return; }
+            if (u.length() < 3 || u.length() > 80 || !u.matches("^[\\p{L}0-9_.\\-]+$")) { showError("Validation", "Username : 3-80 caractères (lettres, chiffres, point, tiret, underscore)."); ev.consume(); return; }
             if (!EMAIL_PATTERN.matcher(em).matches())                    { showError("Validation", "Email invalide."); ev.consume(); return; }
-            if (!PHONE_PATTERN.matcher(ph).matches())                    { showError("Validation", "Téléphone : 8 chiffres."); ev.consume(); return; }
+            if (!PHONE_PATTERN.matcher(ph).matches())                    { showError("Validation", "Téléphone : 8 chiffres locaux ou format international (ex: +21629110800)."); ev.consume(); return; }
             if (existing == null && pw.isEmpty())                        { showError("Validation", "Mot de passe obligatoire."); ev.consume(); return; }
+            if (!pw.isEmpty() && pw.length() < 8)                        { showError("Validation", "Mot de passe : 8 caractères minimum."); ev.consume(); return; }
             if (!pw.isEmpty() && !PASSWORD_PATTERN.matcher(pw).matches()){ showError("Validation", "Mot de passe : lettres + chiffres."); ev.consume(); return; }
             if (roleBox.getValue() == null || roleBox.getValue().isBlank()){ showError("Validation", "Sélectionnez un rôle."); ev.consume(); }
         });

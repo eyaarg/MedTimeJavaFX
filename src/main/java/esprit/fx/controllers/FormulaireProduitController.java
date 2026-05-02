@@ -1,7 +1,6 @@
 package esprit.fx.controllers;
 
 import esprit.fx.entities.Produit;
-import esprit.fx.entities.CategorieEnum;
 import esprit.fx.services.ServiceProduit;
 import esprit.fx.utils.MyDB;
 import javafx.fxml.FXML;
@@ -12,13 +11,14 @@ import javafx.stage.Stage;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class FormulaireProduitController implements Initializable {
 
     @FXML private TextField txtNom;
     @FXML private TextArea txtDescription;
-    @FXML private ComboBox<CategorieEnum> cmbCategorie;  // ← Type Enum
+    @FXML private ComboBox<String> cmbCategorie;  // category names from DB
     @FXML private TextField txtPrix;
     @FXML private TextField txtStock;
     @FXML private TextField txtImage;
@@ -36,38 +36,24 @@ public class FormulaireProduitController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Charger les catégories Enum dans le ComboBox
-        cmbCategorie.getItems().setAll(CategorieEnum.values());
         chkDisponible.setSelected(true);
+        ensureServiceProduit();
+        loadCategories();
+    }
 
-        // Personnaliser l'affichage du ComboBox
-        cmbCategorie.setCellFactory(param -> new ListCell<CategorieEnum>() {
-            @Override
-            protected void updateItem(CategorieEnum item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item.getNom());
-                }
-            }
-        });
-
-        cmbCategorie.setButtonCell(new ListCell<CategorieEnum>() {
-            @Override
-            protected void updateItem(CategorieEnum item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText("Sélectionner une catégorie");
-                } else {
-                    setText(item.getNom());
-                }
-            }
-        });
+    /** Populate the ComboBox with category names fetched from product_category. */
+    private void loadCategories() {
+        try {
+            List<String> names = serviceProduit.getAllCategoryNames();
+            cmbCategorie.getItems().setAll(names);
+        } catch (SQLException e) {
+            System.err.println("[FormulaireProduit] Erreur chargement catégories: " + e.getMessage());
+        }
     }
 
     public void setServiceProduit(ServiceProduit serviceProduit) {
         this.serviceProduit = serviceProduit;
+        loadCategories(); // reload with the injected service
     }
 
     public void setListeController(ListeProduitController listeController) {
@@ -93,13 +79,14 @@ public class FormulaireProduitController implements Initializable {
     private void remplirFormulaire(Produit p) {
         txtNom.setText(p.getNom());
         txtDescription.setText(p.getDescription());
-        cmbCategorie.setValue(p.getCategorie());  // ← L'Enum s'affiche bien
+        // Select by category name (loaded from DB via JOIN in getAll/afficherParId)
+        cmbCategorie.setValue(p.getCategorieName());
         txtPrix.setText(String.valueOf(p.getPrix()));
         txtStock.setText(String.valueOf(p.getStock()));
         txtImage.setText(p.getImage());
-        chkDisponible.setSelected(p.getDisponible());
-        chkPrescription.setSelected(p.getPrescriptionRequise());
-        txtMarque.setText(p.getMarque());
+        chkDisponible.setSelected(Boolean.TRUE.equals(p.getDisponible()));
+        chkPrescription.setSelected(Boolean.TRUE.equals(p.getPrescriptionRequise()));
+        txtMarque.setText(p.getMarque() != null ? p.getMarque() : "");
         dpDateExpiration.setValue(p.getDateExpiration());
     }
 
@@ -126,10 +113,19 @@ public class FormulaireProduitController implements Initializable {
         ensureServiceProduit();
         if (!validateInputs()) return;
 
+        // Resolve category name → id
+        String selectedName = cmbCategorie.getValue();
+        Integer categoryId = serviceProduit.resolveCategoryId(selectedName);
+        if (categoryId == null) {
+            showAlert("Catégorie introuvable en base : " + selectedName);
+            return;
+        }
+
         Produit produit = new Produit();
         produit.setNom(txtNom.getText());
         produit.setDescription(txtDescription.getText());
-        produit.setCategorie(cmbCategorie.getValue());  // ← L'Enum
+        produit.setCategoryId(categoryId);
+        produit.setCategorieName(selectedName);
         produit.setPrix(Double.parseDouble(txtPrix.getText()));
         produit.setStock(Integer.parseInt(txtStock.getText()));
         produit.setImage(txtImage.getText());
@@ -142,7 +138,7 @@ public class FormulaireProduitController implements Initializable {
             try {
                 serviceProduit.ajouter(produit);
             } catch (SQLException e) {
-                    throw new RuntimeException(e);
+                throw new RuntimeException(e);
             }
             showAlert("Produit ajouté avec succès !");
         } else {

@@ -12,8 +12,9 @@ import java.util.regex.Pattern;
 
 public class ServiceUser implements IService<User> {
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^\\d{8}$");
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^(\\d{8}|\\+[1-9]\\d{6,14})$");
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).+$");
+    private static final Pattern USERNAME_PATTERN = Pattern.compile("^[\\p{L}0-9_.\\-]{3,80}$");
 
     private Connection conn() {
         return MyDB.getInstance().getConnection();
@@ -81,7 +82,7 @@ public class ServiceUser implements IService<User> {
     public User registerUser(User user, String roleName) throws SQLException {
         validateUserForCreate(user);
         String normalizedRole = normalizeRoleInput(roleName);
-        boolean isDoctor = "DOCTOR".equals(normalizedRole);
+        boolean isDoctor = "ROLE_PHYSICIAN".equals(normalizedRole);
 
         // Pour les patients : générer token de vérification, is_active=false, is_verified=false
         // Pour les médecins : is_active=false (en attente admin), is_verified=true (pas besoin email verif)
@@ -366,12 +367,12 @@ public class ServiceUser implements IService<User> {
      */
     public void updateProfile(int userId, String username, String email, String phone) throws SQLException {
         // Validations
-        if (username == null || username.trim().length() < 3)
-            throw new SQLException("Le username doit contenir au moins 3 caractères.");
+        if (username == null || !USERNAME_PATTERN.matcher(username.trim()).matches())
+            throw new SQLException("Le username doit contenir entre 3 et 80 caractères (lettres, chiffres, point, tiret, underscore).");
         if (!EMAIL_PATTERN.matcher(email.trim()).matches())
             throw new SQLException("Email invalide.");
         if (!PHONE_PATTERN.matcher(phone.trim()).matches())
-            throw new SQLException("Le numéro de téléphone doit contenir exactement 8 chiffres.");
+            throw new SQLException("Le numéro de téléphone doit contenir 8 chiffres ou être au format international (ex: +21629110800).");
 
         PreparedStatement ps = conn().prepareStatement(
                 "UPDATE users SET username=?, email=?, phone_number=? WHERE id=?");
@@ -387,6 +388,8 @@ public class ServiceUser implements IService<User> {
      * Retourne true si succès, false si ancien mot de passe incorrect.
      */
     public boolean changePassword(int userId, String oldPassword, String newPassword) throws SQLException {
+        if (newPassword == null || newPassword.trim().length() < 8)
+            throw new SQLException("Le nouveau mot de passe doit contenir au moins 8 caractères.");
         if (!PASSWORD_PATTERN.matcher(newPassword).matches())
             throw new SQLException("Le nouveau mot de passe doit contenir des lettres et des chiffres.");
 
@@ -517,6 +520,8 @@ public class ServiceUser implements IService<User> {
     private void validateUserForCreate(User user) throws SQLException {
         validateCommonFields(user);
         if (!hasText(user.getPassword())) throw new SQLException("Le mot de passe est obligatoire.");
+        if (user.getPassword().trim().length() < 8)
+            throw new SQLException("Le mot de passe doit contenir au moins 8 caractères.");
         if (!PASSWORD_PATTERN.matcher(user.getPassword().trim()).matches())
             throw new SQLException("Le mot de passe doit contenir des lettres et des chiffres.");
     }
@@ -524,8 +529,12 @@ public class ServiceUser implements IService<User> {
     private void validateUserForUpdate(User user) throws SQLException {
         validateCommonFields(user);
         if (user.getId() <= 0) throw new SQLException("Identifiant utilisateur invalide.");
-        if (hasText(user.getPassword()) && !PASSWORD_PATTERN.matcher(user.getPassword().trim()).matches())
-            throw new SQLException("Le mot de passe doit contenir des lettres et des chiffres.");
+        if (hasText(user.getPassword())) {
+            if (user.getPassword().trim().length() < 8)
+                throw new SQLException("Le mot de passe doit contenir au moins 8 caractères.");
+            if (!PASSWORD_PATTERN.matcher(user.getPassword().trim()).matches())
+                throw new SQLException("Le mot de passe doit contenir des lettres et des chiffres.");
+        }
     }
 
     private void validateCommonFields(User user) throws SQLException {
@@ -533,9 +542,10 @@ public class ServiceUser implements IService<User> {
         String username = user.getUsername() == null ? "" : user.getUsername().trim();
         String email = user.getEmail() == null ? "" : user.getEmail().trim();
         String phone = user.getPhoneNumber() == null ? "" : user.getPhoneNumber().trim();
-        if (username.length() < 3) throw new SQLException("Le username doit contenir au moins 3 caracteres.");
+        if (!USERNAME_PATTERN.matcher(username).matches())
+            throw new SQLException("Le username doit contenir entre 3 et 80 caractères (lettres, chiffres, point, tiret, underscore).");
         if (!EMAIL_PATTERN.matcher(email).matches()) throw new SQLException("Email invalide.");
-        if (!PHONE_PATTERN.matcher(phone).matches()) throw new SQLException("Le numero de telephone doit contenir exactement 8 chiffres.");
+        if (!PHONE_PATTERN.matcher(phone).matches()) throw new SQLException("Le numéro de téléphone doit contenir 8 chiffres ou être au format international (ex: +21629110800).");
     }
 
     private boolean hasText(String value) {
@@ -548,24 +558,25 @@ public class ServiceUser implements IService<User> {
             Integer roleId = findRoleId(alias);
             if (roleId != null) return roleId;
         }
-        String roleToCreate = "PATIENT".equals(normalized) ? "PATIENT" : "DOCTOR";
+        String roleToCreate = "ROLE_PATIENT".equals(normalized) ? "ROLE_PATIENT" : "ROLE_PHYSICIAN";
         return createRoleAndReturnId(roleToCreate);
     }
 
     private String normalizeRoleInput(String roleName) {
-        if (roleName == null || roleName.isBlank()) return "PATIENT";
+        if (roleName == null || roleName.isBlank()) return "ROLE_PATIENT";
         String value = roleName.trim().toUpperCase();
-        if ("MEDECIN".equals(value) || "DOCTOR".equals(value) || "ROLE_DOCTOR".equals(value)) return "DOCTOR";
-        if ("PATIENT".equals(value) || "ROLE_PATIENT".equals(value)) return "PATIENT";
+        if ("MEDECIN".equals(value) || "DOCTOR".equals(value) || "PHYSICIAN".equals(value)
+                || "ROLE_DOCTOR".equals(value) || "ROLE_PHYSICIAN".equals(value)) return "ROLE_PHYSICIAN";
+        if ("PATIENT".equals(value) || "ROLE_PATIENT".equals(value)) return "ROLE_PATIENT";
         return value;
     }
 
     private List<String> roleAliases(String normalizedRole) {
         List<String> aliases = new ArrayList<>();
-        if ("DOCTOR".equals(normalizedRole)) {
-            aliases.add("DOCTOR"); aliases.add("ROLE_DOCTOR"); aliases.add("MEDECIN");
+        if ("ROLE_PHYSICIAN".equals(normalizedRole)) {
+            aliases.add("ROLE_PHYSICIAN"); aliases.add("PHYSICIAN"); aliases.add("DOCTOR"); aliases.add("ROLE_DOCTOR"); aliases.add("MEDECIN");
         } else {
-            aliases.add("PATIENT"); aliases.add("ROLE_PATIENT");
+            aliases.add("ROLE_PATIENT"); aliases.add("PATIENT");
         }
         return aliases;
     }
@@ -603,6 +614,4 @@ public class ServiceUser implements IService<User> {
                 if (rs.next()) return rs.getString("name");
             }
         }
-        return "PATIENT";
-    }
-}
+        return "ROLE_PATIENT";

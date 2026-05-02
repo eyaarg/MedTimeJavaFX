@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 public class RegisterController {
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^\\d{8}$");
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^(\\d{8}|\\+[1-9]\\d{6,14})$");
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).+$");
 
     @FXML
@@ -92,7 +92,7 @@ public class RegisterController {
         }
 
         if (!PHONE_PATTERN.matcher(phone.trim()).matches()) {
-            showAlert("Erreur", "Le numero de telephone doit contenir exactement 8 chiffres.");
+            showAlert("Erreur", "Le numéro de téléphone doit contenir 8 chiffres ou être au format international (ex: +21629110800).");
             return;
         }
 
@@ -101,13 +101,19 @@ public class RegisterController {
             return;
         }
 
+        if (password.length() < 8) {
+            showAlert("Erreur", "Le mot de passe doit contenir au moins 8 caractères.");
+            return;
+        }
+
         if (!PASSWORD_PATTERN.matcher(password).matches()) {
             showAlert("Erreur", "Le mot de passe doit contenir des lettres et des chiffres.");
             return;
         }
 
-        if (username.trim().length() < 3) {
-            showAlert("Erreur", "Le username doit contenir au moins 3 caracteres.");
+        if (username.trim().length() < 3 || username.trim().length() > 80
+                || !username.trim().matches("^[\\p{L}0-9_.\\-]+$")) {
+            showAlert("Erreur", "Le username doit contenir entre 3 et 80 caractères (lettres, chiffres, point, tiret, underscore).");
             return;
         }
 

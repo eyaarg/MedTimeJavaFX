@@ -30,6 +30,12 @@
             <version>${javafx.version}</version>
         </dependency>
 
+        <!-- javafx.swing requis pour SwingFXUtils.toFXImage() (QR Code → ImageView) -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.mysql</groupId>
@@ -82,6 +88,11 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M9</version>
+            </plugin>
 
         </plugins>
     </build>

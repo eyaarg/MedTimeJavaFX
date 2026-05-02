@@ -7,6 +7,8 @@ public class Commentaire {
     private String contenu;
     private Date dateCommentaire;
     private int nbLikes;
+    private int utilisateurId;
+    private String username;
 
     private Article article;
 
@@ -40,6 +42,12 @@ public class Commentaire {
 
     public int getNbLikes() { return nbLikes; }
     public void setNbLikes(int nbLikes) { this.nbLikes = nbLikes; }
+
+    public int getUtilisateurId() { return utilisateurId; }
+    public void setUtilisateurId(int utilisateurId) { this.utilisateurId = utilisateurId; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 
     public Article getArticle() { return article; }
     public void setArticle(Article article) { this.article = article; }

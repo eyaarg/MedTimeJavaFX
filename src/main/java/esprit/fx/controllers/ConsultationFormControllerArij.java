@@ -1,8 +1,11 @@
 package esprit.fx.controllers;
 
 import esprit.fx.entities.ConsultationsArij;
+import esprit.fx.entities.Patient;
 import esprit.fx.services.ServiceConsultationsArij;
+import esprit.fx.services.ServicePatient;
 import esprit.fx.utils.MyDB;
+import esprit.fx.utils.UserSession;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -72,10 +75,12 @@ public class ConsultationFormControllerArij {
     @FXML private Label suggestionsLabel;
 
     private final ServiceConsultationsArij service = new ServiceConsultationsArij();
+    private final ServicePatient patientService = new ServicePatient();
     private ConsultationsArij consultation;
 
     private int patientId = 0; // patients.id (provided by MainControllerArij)
 
+    @SuppressWarnings("unused")
     private List<File> selectedFiles = new ArrayList<>();
 
     @FXML
@@ -83,6 +88,7 @@ public class ConsultationFormControllerArij {
         initStaticFields();
         initTimeSlots();
         loadDoctors();
+        resolvePatientIdFromSession();
     }
 
     public void setConsultation(ConsultationsArij consultation) {
@@ -109,6 +115,7 @@ public class ConsultationFormControllerArij {
     @FXML
     private void handleSave() {
         hideErrors();
+        resolvePatientIdFromSession();
 
         if (patientId <= 0) {
             new Alert(Alert.AlertType.ERROR, "Veuillez vous connecter en tant que patient.").showAndWait();
@@ -447,5 +454,67 @@ public class ConsultationFormControllerArij {
 
     public void setPatientId(int patientId) {
         this.patientId = patientId;
+        resolvePatientIdFromSession();
+    }
+
+    /**
+     * Pré-remplit la date et l'heure depuis le calendrier.
+     * Appelé par CalendrierControllerArij quand le patient clique sur un créneau.
+     */
+    public void preFillDateTime(LocalDateTime dateTime) {
+        if (dateTime == null) return;
+        consultationDatePicker.setValue(dateTime.toLocalDate());
+        String timeStr = dateTime.toLocalTime().format(TIME_FMT);
+        // Sélectionner le créneau le plus proche dans la ComboBox
+        if (timeComboBox.getItems().contains(timeStr)) {
+            timeComboBox.setValue(timeStr);
+        } else {
+            timeComboBox.getSelectionModel().select(nearestSlot(dateTime.toLocalTime(),
+                timeComboBox.getItems()));
+        }
+    }
+
+    /**
+     * Pré-sélectionne le médecin dans la ComboBox depuis le calendrier.
+     * Appelé par CalendrierControllerArij quand le patient clique sur un créneau.
+     */
+    public void preFillDoctor(int doctorId) {
+        if (doctorId <= 0 || doctorComboBox.getItems() == null) return;
+        for (DoctorChoice d : doctorComboBox.getItems()) {
+            if (d != null && d.getId() == doctorId) {
+                doctorComboBox.setValue(d);
+                return;
+            }
+        }
+    }
+
+    private void resolvePatientIdFromSession() {
+        if (patientId > 0) {
+            return;
+        }
+        if (!isPatientRole()) {
+            return;
+        }
+        if (UserSession.getCurrentUser() == null) {
+            return;
+        }
+
+        try {
+            Patient patient = patientService.afficherParId(UserSession.getCurrentUser().getId());
+            if (patient != null && patient.getId() > 0) {
+                patientId = patient.getId();
+            }
+        } catch (SQLException e) {
+            System.err.println("resolvePatientIdFromSession(form): " + e.getMessage());
+        }
+    }
+
+    private boolean isPatientRole() {
+        String role = UserSession.getCurrentRole();
+        if (role == null) {
+            return false;
+        }
+        String normalized = role.trim().toUpperCase();
+        return "PATIENT".equals(normalized) || "ROLE_PATIENT".equals(normalized);
     }
 }

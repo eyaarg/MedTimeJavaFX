@@ -1,8 +1,12 @@
 package esprit.fx.controllers;
 
 import esprit.fx.entities.ConsultationsArij;
+import esprit.fx.entities.Patient;
+import esprit.fx.services.FacturePdfServiceArij;
 import esprit.fx.services.ServiceConsultationsArij;
+import esprit.fx.services.ServicePatient;
 import esprit.fx.utils.MyDB;
+import esprit.fx.utils.UserSession;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -37,6 +41,7 @@ public class ConsultationListControllerArij {
     @FXML private Label searchErrorLabel;
 
     private final ServiceConsultationsArij service = new ServiceConsultationsArij();
+    private final ServicePatient patientService = new ServicePatient();
 
     // doctorId → [username, phone]
     private Map<Integer, String[]> doctorInfoById = new HashMap<>();
@@ -48,19 +53,22 @@ public class ConsultationListControllerArij {
     private void initialize() {
         doctorInfoById = loadDoctorInfo();
         setupSearchBar();
+        resolvePatientIdFromSession();
         applyRoleUi();
         refreshFromDb();
     }
 
     public void setPatientId(int patientId) {
         this.patientId = patientId;
+        resolvePatientIdFromSession();
         applyRoleUi();
         refreshFromDb();
     }
 
     private void applyRoleUi() {
+        resolvePatientIdFromSession();
         if (newConsultationButton != null) {
-            boolean ready = patientId > 0;
+            boolean ready = isPatientRole();
             newConsultationButton.setVisible(ready);
             newConsultationButton.setManaged(ready);
         }
@@ -68,14 +76,53 @@ public class ConsultationListControllerArij {
 
     @FXML
     private void openNewConsultation() {
+        resolvePatientIdFromSession();
+        if (patientId <= 0) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Patient introuvable");
+            alert.setHeaderText(null);
+            alert.setContentText("Impossible de creer une consultation sans profil patient.");
+            alert.showAndWait();
+            return;
+        }
         openFormModal(null);
+    }
+
+    private void resolvePatientIdFromSession() {
+        if (patientId > 0) {
+            return;
+        }
+        if (!isPatientRole()) {
+            return;
+        }
+        if (UserSession.getCurrentUser() == null) {
+            return;
+        }
+
+        try {
+            Patient patient = patientService.afficherParId(UserSession.getCurrentUser().getId());
+            if (patient != null && patient.getId() > 0) {
+                patientId = patient.getId();
+            }
+        } catch (SQLException e) {
+            System.err.println("resolvePatientIdFromSession: " + e.getMessage());
+        }
+    }
+
+    private boolean isPatientRole() {
+        String role = UserSession.getCurrentRole();
+        if (role == null) {
+            return false;
+        }
+        String normalized = role.trim().toUpperCase();
+        return "PATIENT".equals(normalized) || "ROLE_PATIENT".equals(normalized);
     }
 
     // ─── Search bar ───────────────────────────────────────────────────────────
 
     private void setupSearchBar() {
         if (filterStatusCombo != null) {
-            filterStatusCombo.getItems().addAll("Tous", "EN_ATTENTE", "CONFIRMEE", "REFUSEE", "TERMINEE");
+            filterStatusCombo.getItems().addAll("Tous", "EN_ATTENTE", "CONFIRMEE", "REFUSEE", "TERMINEE", "PAYEE");
             filterStatusCombo.setValue("Tous");
             filterStatusCombo.setOnAction(e -> applyFilters());
         }
@@ -222,7 +269,49 @@ public class ConsultationListControllerArij {
         });
 
         box.getChildren().addAll(btnView, btnEdit, btnDelete);
+
+        // ── Bouton "Télécharger la facture" — visible uniquement si statut = "payee" ──
+        // Le statut est vérifié en BDD (Symfony webhook Stripe met à jour ce champ)
+        if (FacturePdfServiceArij.estPayee(c.getId())) {
+            Button btnFacture = iconBtn("🧾", "#f0fdf4", "#15803d", "#bbf7d0",
+                "Télécharger la facture PDF");
+            btnFacture.setOnAction(e -> telechargerFacture(c));
+            box.getChildren().add(btnFacture);
+        }
+
         return box;
+    }
+
+    /**
+     * Génère et ouvre la facture PDF pour une consultation payée.
+     * Exécuté dans un thread background pour ne pas bloquer l'UI.
+     */
+    private void telechargerFacture(ConsultationsArij c) {
+        // Vérification BDD fraîche avant génération
+        if (!FacturePdfServiceArij.estPayee(c.getId())) {
+            showErrorModal("Facture indisponible",
+                "La facture n'est disponible qu'après paiement confirmé.");
+            return;
+        }
+
+        String numeroFacture = "FAC-" + String.format("%05d", c.getId());
+        String cheminPdf = System.getProperty("user.home")
+            + "/MedTime/factures/" + numeroFacture + ".pdf";
+
+        javafx.concurrent.Task<Void> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected Void call() {
+                new FacturePdfServiceArij().genererFacture(c, cheminPdf);
+                return null;
+            }
+        };
+        task.setOnFailed(e ->
+            javafx.application.Platform.runLater(() ->
+                showErrorModal("Erreur PDF",
+                    "Impossible de générer la facture : "
+                    + task.getException().getMessage()))
+        );
+        new Thread(task, "facture-pdf").start();
     }
 
     // ─── Modal : Voir détails ─────────────────────────────────────────────────
@@ -407,6 +496,7 @@ public class ConsultationListControllerArij {
             case "CONFIRMEE"  -> { text = "Confirmée";  bg = "#f0fdf4"; fg = "#166534"; }
             case "REFUSEE"    -> { text = "Refusée";    bg = "#fff1f2"; fg = "#be123c"; }
             case "TERMINEE"   -> { text = "Terminée";   bg = "#eff6ff"; fg = "#1d4ed8"; }
+            case "PAYEE"      -> { text = "💳 Payée";   bg = "#f0fdf4"; fg = "#15803d"; }
             default           -> { text = s.isBlank() ? "-" : s; bg = "#f1f5f9"; fg = "#475569"; }
         }
         Label l = new Label(text);
@@ -461,6 +551,7 @@ public class ConsultationListControllerArij {
             case "CONFIRMEE"  -> "✅ Confirmée";
             case "REFUSEE"    -> "❌ Refusée";
             case "TERMINEE"   -> "✔ Terminée";
+            case "PAYEE"      -> "💳 Payée";
             default -> s.isBlank() ? "-" : s;
         };
     }

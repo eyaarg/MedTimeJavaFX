@@ -27,6 +27,21 @@
         <dependency><groupId>com.google.zxing</groupId><artifactId>javase</artifactId><version>3.5.2</version></dependency>
         <dependency><groupId>com.calendarfx</groupId><artifactId>view</artifactId><version>11.12.7</version></dependency>
         <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><version>5.10.1</version><scope>test</scope></dependency>
+
+        <!-- jakarta.mail pour l'envoi d'emails -->
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+
+        <!-- jBCrypt pour le hashage de mots de passe -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>

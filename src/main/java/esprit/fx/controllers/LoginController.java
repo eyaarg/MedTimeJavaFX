@@ -1,4 +1,4 @@
-﻿package esprit.fx.controllers;
+package esprit.fx.controllers;
 
 import esprit.fx.entities.Role;
 import esprit.fx.entities.User;

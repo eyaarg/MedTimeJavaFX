@@ -2,12 +2,14 @@ module MedTimeFX {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.swing;
+    requires javafx.web;
     requires java.sql;
     requires java.net.http;
     requires jakarta.mail;
     requires java.desktop;
     requires org.apache.pdfbox;
     requires jbcrypt;
+    requires bcrypt;
 
     // Third-party libraries used by teammates' modules
     requires org.json;

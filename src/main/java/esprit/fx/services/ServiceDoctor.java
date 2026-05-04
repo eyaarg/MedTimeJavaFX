@@ -273,4 +273,22 @@ public class ServiceDoctor implements IService<Doctor> {
         try { d.setAdresse(rs.getString("adresse")); } catch (Exception ignored) {}
         return d;
     }
+
+    /**
+     * Récupère un médecin par son user_id.
+     * Implémentation de IService.afficherParId()
+     */
+    @Override
+    public Doctor afficherParId(int userId) throws SQLException {
+        String sql = "SELECT u.*, d.id as doctor_id, d.license_code, d.is_certified, d.updated_at, " +
+                "d.city, d.latitude, d.longitude, d.adresse " +
+                "FROM users u JOIN doctors d ON u.id = d.user_id WHERE u.id=?";
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return mapDoctor(rs);
+            }
+        }
+        return null;
+    }
 }

@@ -188,9 +188,9 @@ public class MainControllerArij {
     private void showPrendreRdvView() {
         setModuleActive(btnModulePrendreRdv);
         try {
-            loadView("/fxml/PrendreRendezVous.fxml");
+            loadView("/fxml/RendezVousList.fxml");
         } catch (Exception e) {
-            System.err.println("Erreur chargement PrendreRendezVous: " + e.getMessage());
+            System.err.println("Erreur chargement RendezVousList: " + e.getMessage());
         }
     }
 

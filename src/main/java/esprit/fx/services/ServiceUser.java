@@ -615,3 +615,5 @@ public class ServiceUser implements IService<User> {
             }
         }
         return "ROLE_PATIENT";
+    }
+}

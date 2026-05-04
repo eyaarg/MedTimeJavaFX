@@ -547,7 +547,7 @@ public class DisponibiliteController implements Initializable {
         doctorBox.getChildren().addAll(doctorLabel, doctorCombo, doctorError);
 
         try {
-            List<User> doctors = serviceUser.getAllDoctors();
+            List<User> doctors = serviceDisponibilite.getAllDoctors();
             if (!doctors.isEmpty()) {
                 for (User doctor : doctors) {
                     doctorCombo.getItems().add(

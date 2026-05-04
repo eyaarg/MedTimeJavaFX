@@ -84,14 +84,14 @@ public class ServiceUser implements IService<User> {
         String normalizedRole = normalizeRoleInput(roleName);
         boolean isDoctor = "ROLE_PHYSICIAN".equals(normalizedRole);
 
-        // Pour les patients : gâ”œÂ®nâ”œÂ®rer token de vâ”œÂ®rification, is_active=false, is_verified=false
-        // Pour les mâ”œÂ®decins : is_active=false (en attente admin), is_verified=true (pas besoin email verif)
+        // Pour les patients : générer token de vérification, is_active=false, is_verified=false
+        // Pour les médecins : is_active=false (en attente admin), is_verified=true (pas besoin email verif)
         String verificationToken = null;
         Timestamp tokenExpiry = null;
         boolean isActive = false;
         boolean isVerified;
         if (isDoctor) {
-            isVerified = true; // mâ”œÂ®decin : pas de vâ”œÂ®rif email, bloquâ”œÂ® par is_active=false
+            isVerified = true; // médecin : pas de vérif email, bloqué par is_active=false
         } else {
             isVerified = false;
             verificationToken = java.util.UUID.randomUUID().toString();
@@ -134,18 +134,18 @@ public class ServiceUser implements IService<User> {
         roles.add(new Role(roleId, resolvedRoleName));
         user.setRoles(roles);
 
-        // Envoyer email de vâ”œÂ®rification pour les patients
+        // Envoyer email de vérification pour les patients
         if (!isDoctor && verificationToken != null) {
             final String tokenFinal    = verificationToken;
             final String emailFinal    = user.getEmail();
             final String usernameFinal = user.getUsername();
             new Thread(() -> {
-                System.out.println("Envoi email â”œÃ¡ : " + emailFinal);
+                System.out.println("Envoi email à : " + emailFinal);
                 try {
                     EmailService.sendVerificationEmail(emailFinal, usernameFinal, tokenFinal);
-                    System.out.println("[ServiceUser] Email vâ”œÂ®rification envoyâ”œÂ® â”œÃ¡ : " + emailFinal);
+                    System.out.println("[ServiceUser] Email vérification envoyé à : " + emailFinal);
                 } catch (Exception e) {
-                    System.err.println("[ServiceUser] ERREUR envoi email vâ”œÂ®rification : " + e.getMessage());
+                    System.err.println("[ServiceUser] ERREUR envoi email vérification : " + e.getMessage());
                     e.printStackTrace();
                 }
             }, "email-verification-thread").start();
@@ -215,12 +215,12 @@ public class ServiceUser implements IService<User> {
 
         user.setRoles(roles);
 
-        // Râ”œÂ®initialiser les tentatives seulement si le compte est actif et vâ”œÂ®rifiâ”œÂ®
+        // Réinitialiser les tentatives seulement si le compte est actif et vérifié
         if (user.isActive() && user.isVerified()) {
             resetFailedAttempts(identifier);
         }
 
-        return user; // retourner le user dans tous les cas (controller gâ”œÂ¿re les cas)
+        return user; // retourner le user dans tous les cas (controller gère les cas)
     }
 
     private void incrementFailedAttempts(String identifier) throws SQLException {
@@ -260,11 +260,11 @@ public class ServiceUser implements IService<User> {
         try {
             String username = getUsernameByEmail(identifier);
             String email    = getEmailByIdentifier(identifier);
-            System.out.println("Envoi email â”œÃ¡ : " + email);
+            System.out.println("Envoi email à : " + email);
             EmailService.sendAccountLockedEmail(email, username);
-            System.out.println("[ServiceUser] Email compte bloquâ”œÂ® envoyâ”œÂ® â”œÃ¡ : " + email);
+            System.out.println("[ServiceUser] Email compte bloqué envoyé à : " + email);
         } catch (Exception e) {
-            System.err.println("[ServiceUser] ERREUR envoi email compte bloquâ”œÂ® : " + e.getMessage());
+            System.err.println("[ServiceUser] ERREUR envoi email compte bloqué : " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -302,11 +302,11 @@ public class ServiceUser implements IService<User> {
     private void sendVerificationEmail(String email, String token) {
         try {
             String username = getUsernameByEmail(email);
-            System.out.println("[ServiceUser] Envoi email vâ”œÂ®rification â”œÃ¡ : " + email);
+            System.out.println("[ServiceUser] Envoi email vérification à : " + email);
             EmailService.sendVerificationEmail(email, username, token);
-            System.out.println("[ServiceUser] Email vâ”œÂ®rification envoyâ”œÂ® â”œÃ¡ : " + email);
+            System.out.println("[ServiceUser] Email vérification envoyé à : " + email);
         } catch (Exception e) {
-            System.err.println("[ServiceUser] ERREUR envoi email vâ”œÂ®rification : " + e.getMessage());
+            System.err.println("[ServiceUser] ERREUR envoi email vérification : " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -326,9 +326,9 @@ public class ServiceUser implements IService<User> {
     private void sendPasswordResetEmail(String email, String token) {
         try {
             String username = getUsernameByEmail(email);
-            System.out.println("Envoi email â”œÃ¡ : " + email);
+            System.out.println("Envoi email à : " + email);
             EmailService.sendPasswordResetEmail(email, username, token);
-            System.out.println("[ServiceUser] Email reset password envoyâ”œÂ® â”œÃ¡ : " + email);
+            System.out.println("[ServiceUser] Email reset password envoyé à : " + email);
         } catch (Exception e) {
             System.err.println("[ServiceUser] ERREUR envoi email reset password : " + e.getMessage());
             e.printStackTrace();
@@ -363,16 +363,16 @@ public class ServiceUser implements IService<User> {
     }
 
     /**
-     * Met â”œÃ¡ jour username, email, tâ”œÂ®lâ”œÂ®phone d'un utilisateur connectâ”œÂ®.
+     * Met à jour username, email, téléphone d'un utilisateur connecté.
      */
     public void updateProfile(int userId, String username, String email, String phone) throws SQLException {
         // Validations
         if (username == null || !USERNAME_PATTERN.matcher(username.trim()).matches())
-            throw new SQLException("Le username doit contenir entre 3 et 80 caractâ”œÂ¿res (lettres, chiffres, point, tiret, underscore).");
+            throw new SQLException("Le username doit contenir entre 3 et 80 caractères (lettres, chiffres, point, tiret, underscore).");
         if (!EMAIL_PATTERN.matcher(email.trim()).matches())
             throw new SQLException("Email invalide.");
         if (!PHONE_PATTERN.matcher(phone.trim()).matches())
-            throw new SQLException("Le numâ”œÂ®ro de tâ”œÂ®lâ”œÂ®phone doit contenir 8 chiffres ou â”œÂ¬tre au format international (ex: +21629110800).");
+            throw new SQLException("Le numéro de téléphone doit contenir 8 chiffres ou être au format international (ex: +21629110800).");
 
         PreparedStatement ps = conn().prepareStatement(
                 "UPDATE users SET username=?, email=?, phone_number=? WHERE id=?");
@@ -384,16 +384,16 @@ public class ServiceUser implements IService<User> {
     }
 
     /**
-     * Change le mot de passe aprâ”œÂ¿s vâ”œÂ®rification de l'ancien.
-     * Retourne true si succâ”œÂ¿s, false si ancien mot de passe incorrect.
+     * Change le mot de passe après vérification de l'ancien.
+     * Retourne true si succès, false si ancien mot de passe incorrect.
      */
     public boolean changePassword(int userId, String oldPassword, String newPassword) throws SQLException {
         if (newPassword == null || newPassword.trim().length() < 8)
-            throw new SQLException("Le nouveau mot de passe doit contenir au moins 8 caractâ”œÂ¿res.");
+            throw new SQLException("Le nouveau mot de passe doit contenir au moins 8 caractères.");
         if (!PASSWORD_PATTERN.matcher(newPassword).matches())
             throw new SQLException("Le nouveau mot de passe doit contenir des lettres et des chiffres.");
 
-        // Râ”œÂ®cupâ”œÂ®rer le hash actuel
+        // Récupérer le hash actuel
         PreparedStatement ps = conn().prepareStatement(
                 "SELECT password FROM users WHERE id=?");
         ps.setInt(1, userId);
@@ -405,7 +405,7 @@ public class ServiceUser implements IService<User> {
             return false; // ancien mot de passe incorrect
         }
 
-        // Mettre â”œÃ¡ jour avec le nouveau hash
+        // Mettre à jour avec le nouveau hash
         String newHash = BCrypt.hashpw(newPassword, BCrypt.gensalt());
         PreparedStatement updatePs = conn().prepareStatement(
                 "UPDATE users SET password=? WHERE id=?");
@@ -423,7 +423,7 @@ public class ServiceUser implements IService<User> {
                 "ORDER BY u.id";
         Statement statement = conn().createStatement();
         ResultSet rs = statement.executeQuery(req);
-        // Dâ”œÂ®dupliquer : un user peut avoir plusieurs râ”œâ”¤les Ã”Ã¥Ã† plusieurs lignes
+        // Dédupliquer : un user peut avoir plusieurs rôles → plusieurs lignes
         java.util.LinkedHashMap<Integer, User> userMap = new java.util.LinkedHashMap<>();
         while (rs.next()) {
             int uid = rs.getInt("id");
@@ -521,7 +521,7 @@ public class ServiceUser implements IService<User> {
         validateCommonFields(user);
         if (!hasText(user.getPassword())) throw new SQLException("Le mot de passe est obligatoire.");
         if (user.getPassword().trim().length() < 8)
-            throw new SQLException("Le mot de passe doit contenir au moins 8 caractâ”œÂ¿res.");
+            throw new SQLException("Le mot de passe doit contenir au moins 8 caractères.");
         if (!PASSWORD_PATTERN.matcher(user.getPassword().trim()).matches())
             throw new SQLException("Le mot de passe doit contenir des lettres et des chiffres.");
     }
@@ -531,7 +531,7 @@ public class ServiceUser implements IService<User> {
         if (user.getId() <= 0) throw new SQLException("Identifiant utilisateur invalide.");
         if (hasText(user.getPassword())) {
             if (user.getPassword().trim().length() < 8)
-                throw new SQLException("Le mot de passe doit contenir au moins 8 caractâ”œÂ¿res.");
+                throw new SQLException("Le mot de passe doit contenir au moins 8 caractères.");
             if (!PASSWORD_PATTERN.matcher(user.getPassword().trim()).matches())
                 throw new SQLException("Le mot de passe doit contenir des lettres et des chiffres.");
         }
@@ -543,9 +543,9 @@ public class ServiceUser implements IService<User> {
         String email = user.getEmail() == null ? "" : user.getEmail().trim();
         String phone = user.getPhoneNumber() == null ? "" : user.getPhoneNumber().trim();
         if (!USERNAME_PATTERN.matcher(username).matches())
-            throw new SQLException("Le username doit contenir entre 3 et 80 caractâ”œÂ¿res (lettres, chiffres, point, tiret, underscore).");
+            throw new SQLException("Le username doit contenir entre 3 et 80 caractères (lettres, chiffres, point, tiret, underscore).");
         if (!EMAIL_PATTERN.matcher(email).matches()) throw new SQLException("Email invalide.");
-        if (!PHONE_PATTERN.matcher(phone).matches()) throw new SQLException("Le numâ”œÂ®ro de tâ”œÂ®lâ”œÂ®phone doit contenir 8 chiffres ou â”œÂ¬tre au format international (ex: +21629110800).");
+        if (!PHONE_PATTERN.matcher(phone).matches()) throw new SQLException("Le numéro de téléphone doit contenir 8 chiffres ou être au format international (ex: +21629110800).");
     }
 
     private boolean hasText(String value) {
@@ -615,5 +615,3 @@ public class ServiceUser implements IService<User> {
             }
         }
         return "ROLE_PATIENT";
-    }
-}

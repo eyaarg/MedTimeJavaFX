@@ -2,9 +2,9 @@ package esprit.fx.controllers;
 
 import esprit.fx.entities.ListeAttente;
 import esprit.fx.services.ListeAttenteService;
+import esprit.fx.services.ServiceRendezVous;
 import esprit.fx.utils.UserSession;
 import esprit.fx.entities.User;
-import esprit.fx.services.ServiceUser;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -38,7 +38,7 @@ public class ListeAttenteController implements Initializable {
     @FXML private TabPane          tabPane;
 
     private ListeAttenteService listeAttenteService;
-    private ServiceUser         serviceUser;
+    private ServiceRendezVous   serviceRendezVous;
     private List<User>          doctorsList;
     private String              currentRole;
     private int                 currentUserId;
@@ -49,7 +49,7 @@ public class ListeAttenteController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         listeAttenteService = new ListeAttenteService();
-        serviceUser         = new ServiceUser();
+        serviceRendezVous   = new ServiceRendezVous();
 
         User currentUser = UserSession.getCurrentUser();
         currentRole      = UserSession.getCurrentRole();
@@ -65,7 +65,7 @@ public class ListeAttenteController implements Initializable {
 
     private void chargerMedecins() {
         try {
-            doctorsList = serviceUser.getAllDoctors();
+            doctorsList = serviceRendezVous.getAllDoctors();
             for (User d : doctorsList) {
                 comboDocteur.getItems().add(d.getId() + " — Dr. " + d.getUsername());
             }

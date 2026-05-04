@@ -563,6 +563,34 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
         }
     }
 
+    /**
+     * Récupère tous les médecins pour les ComboBox.
+     * Dans ServiceDisponibilite pour ne pas modifier ServiceUser (module Eya).
+     */
+    public List<esprit.fx.entities.User> getAllDoctors() throws SQLException {
+        List<esprit.fx.entities.User> doctors = new ArrayList<>();
+        String sql = """
+            SELECT DISTINCT u.id, u.username, u.email
+            FROM users u
+            INNER JOIN user_roles ur ON u.id = ur.user_id
+            INNER JOIN roles r ON ur.role_id = r.id
+            WHERE r.name IN ('DOCTOR', 'ROLE_DOCTOR', 'Medecin', 'MEDECIN')
+            AND u.is_active = 1
+            ORDER BY u.username
+            """;
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                esprit.fx.entities.User doctor = new esprit.fx.entities.User();
+                doctor.setId(rs.getInt("id"));
+                doctor.setUsername(rs.getString("username"));
+                doctor.setEmail(rs.getString("email"));
+                doctors.add(doctor);
+            }
+        }
+        return doctors;
+    }
+
     private Disponibilite mapResultSetToDisponibilite(ResultSet rs) throws SQLException {
         Disponibilite d = new Disponibilite();
         d.setId(rs.getInt("id"));

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.OrdonnanceDetailControllerArij"
+      spacing="0" stylesheets="@../css/arij-styles.css"
+      style="-fx-background-color:#f0f4f8;" prefWidth="900" prefHeight="700">
+
+    <!-- En-tête avec badge sécurité -->
+    <VBox styleClass="modal-header">
+        <padding><Insets top="22" right="28" bottom="18" left="28"/></padding>
+        <HBox spacing="15" alignment="CENTER_LEFT">
+            <Label text="📋  Détails de l'Ordonnance" styleClass="modal-title" HBox.hgrow="ALWAYS"/>
+            <Label text="✅ Copie Conforme" style="-fx-text-fill: #059669; -fx-font-weight: bold; -fx-font-size: 12;"/>
+        </HBox>
+        <Label text="Voici la copie conforme de l'ordonnance émise par votre médecin" styleClass="modal-subtitle"/>
+    </VBox>
+
+    <!-- Badge Sécurité -->
+    <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 10 28 10 28; -fx-background-color: #E8F5E9; -fx-border-color: #4CAF50; -fx-border-width: 0 0 1 0;">
+        <Label text="🔒" style="-fx-font-size: 14;"/>
+        <Label text="Données médicales chiffrées (AES)" style="-fx-font-weight: bold; -fx-text-fill: #2E7D32; -fx-font-size: 11;"/>
+        <Tooltip text="Cette ordonnance est protégée par chiffrement AES. Les données sont stockées de manière sécurisée en base de données."/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll">
+        <content>
+            <VBox spacing="20" style="-fx-background-color:white;">
+                <padding><Insets top="22" right="28" bottom="28" left="28"/></padding>
+
+                <!-- Section: Informations Générales -->
+                <TitledPane text="📌 Informations Générales" expanded="true" collapsible="false">
+                    <VBox spacing="12" style="-fx-padding: 12;">
+                        <HBox spacing="40">
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Numéro d'Ordonnance" style="-fx-font-weight: bold; -fx-font-size: 11; -fx-text-fill: #666;"/>
+                                <Label fx:id="numeroOrdonnanceLabel" text="ORD-2026-001" style="-fx-font-size: 13;"/>
+                            </VBox>
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Date d'Émission" style="-fx-font-weight: bold; -fx-font-size: 11; -fx-text-fill: #666;"/>
+                                <Label fx:id="dateEmissionLabel" text="30 Avril 2026" style="-fx-font-size: 13;"/>
+                            </VBox>
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Date de Validité" style="-fx-font-weight: bold; -fx-font-size: 11; -fx-text-fill: #666;"/>
+                                <Label fx:id="dateValiditeLabel" text="30 Juillet 2026" style="-fx-font-size: 13;"/>
+                            </VBox>
+                        </HBox>
+                        <Separator/>
+                        <HBox spacing="40">
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Médecin Prescripteur" style="-fx-font-weight: bold; -fx-font-size: 11; -fx-text-fill: #666;"/>
+                                <Label fx:id="medecinLabel" text="Dr. Ahmed Ben Ali" style="-fx-font-size: 13;"/>
+                            </VBox>
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Spécialité" style="-fx-font-weight: bold; -fx-font-size: 11; -fx-text-fill: #666;"/>
+                                <Label fx:id="specialiteLabel" text="Cardiologie" style="-fx-font-size: 13;"/>
+                            </VBox>
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Prix de la Consultation" style="-fx-font-weight: bold; -fx-font-size: 11; -fx-text-fill: #666;"/>
+                                <Label fx:id="prixLabel" text="50.00 TND" style="-fx-font-size: 13; -fx-text-fill: #059669;"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </TitledPane>
+
+                <!-- Section: Diagnostic -->
+                <TitledPane text="🩺 Diagnostic" expanded="true" collapsible="false">
+                    <VBox spacing="8" style="-fx-padding: 12;">
+                        <TextArea fx:id="diagnosisArea" wrapText="true" editable="false" prefRowCount="3"
+                                  style="-fx-control-inner-background: #f9fafb; -fx-font-size: 12; -fx-padding: 10;"/>
+                    </VBox>
+                </TitledPane>
+
+                <!-- Section: Contenu de l'Ordonnance -->
+                <TitledPane text="📋 Contenu de l'Ordonnance" expanded="true" collapsible="false">
+                    <VBox spacing="8" style="-fx-padding: 12;">
+                        <TextArea fx:id="contentArea" wrapText="true" editable="false" prefRowCount="4"
+                                  style="-fx-control-inner-background: #f9fafb; -fx-font-size: 12; -fx-padding: 10;"/>
+                    </VBox>
+                </TitledPane>
+
+                <!-- Section: Médicaments -->
+                <TitledPane text="💊 Médicaments Prescrits" expanded="true" collapsible="false">
+                    <VBox spacing="12" style="-fx-padding: 12;">
+                        <TableView fx:id="medicationsTable" prefHeight="200" editable="false">
+                            <columns>
+                                <TableColumn text="Médicament" prefWidth="150"/>
+                                <TableColumn text="Dosage" prefWidth="100"/>
+                                <TableColumn text="Quantité" prefWidth="80"/>
+                                <TableColumn text="Durée" prefWidth="100"/>
+                                <TableColumn text="Instructions" prefWidth="200"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </TitledPane>
+
+                <!-- Section: Instructions -->
+                <TitledPane text="📝 Instructions Supplémentaires" expanded="true" collapsible="false">
+                    <VBox spacing="8" style="-fx-padding: 12;">
+                        <TextArea fx:id="instructionsArea" wrapText="true" editable="false" prefRowCount="3"
+                                  style="-fx-control-inner-background: #f9fafb; -fx-font-size: 12; -fx-padding: 10;"/>
+                    </VBox>
+                </TitledPane>
+
+                <!-- Section: QR Code -->
+                <TitledPane text="📱 Code QR de Vérification" expanded="false" collapsible="true">
+                    <VBox spacing="12" alignment="CENTER" style="-fx-padding: 12;">
+                        <Label text="Scannez ce code pour vérifier l'authenticité de l'ordonnance" style="-fx-font-size: 11; -fx-text-fill: #666;"/>
+                        <ImageView fx:id="qrCodeImageView" fitWidth="200" fitHeight="200" preserveRatio="true"/>
+                    </VBox>
+                </TitledPane>
+
+                <!-- Section: Statut -->
+                <TitledPane text="✅ Statut et Validation" expanded="true" collapsible="false">
+                    <VBox spacing="12" style="-fx-padding: 12;">
+                        <HBox spacing="20">
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Statut" style="-fx-font-weight: bold; -fx-font-size: 11; -fx-text-fill: #666;"/>
+                                <Label fx:id="statutLabel" text="✅ Validée" style="-fx-font-size: 13; -fx-text-fill: #059669;"/>
+                            </VBox>
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Jours Restants" style="-fx-font-weight: bold; -fx-font-size: 11; -fx-text-fill: #666;"/>
+                                <Label fx:id="joursRestantsLabel" text="91 jours" style="-fx-font-size: 13;"/>
+                            </VBox>
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Accès Token" style="-fx-font-weight: bold; -fx-font-size: 11; -fx-text-fill: #666;"/>
+                                <Label fx:id="accessTokenLabel" text="••••••••••" style="-fx-font-size: 11; -fx-font-family: monospace;"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </TitledPane>
+
+                <!-- Actions -->
+                <HBox spacing="12" alignment="CENTER_RIGHT">
+                    <padding><Insets top="8"/></padding>
+                    <Button text="🖨️  Imprimer" styleClass="btn-outline" onAction="#handlePrint"/>
+                    <Button text="📥  Télécharger PDF" styleClass="btn-outline" onAction="#handleDownloadPDF"/>
+                    <Button text="Fermer" styleClass="btn-secondary" onAction="#handleClose"/>
+                </HBox>
+            </VBox>
+        </content>
+    </ScrollPane>
+</VBox>

@@ -30,7 +30,7 @@ public class MyDB {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
             if (input != null) {
                 props.load(input);
-                this.url = props.getProperty("db.url", "jdbc:mysql://localhost:3306/mediplatform_test_test");
+                this.url = props.getProperty("db.url", "jdbc:mysql://localhost:3306/mediplatform");
                 this.user = props.getProperty("db.user", "root");
                 this.password = props.getProperty("db.password", "");
             } else {

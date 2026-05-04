@@ -1,7 +1,6 @@
 package esprit.fx.services;
 
 import esprit.fx.entities.LigneOrdonnanceArij;
-import esprit.fx.entities.NotificationArij;
 import esprit.fx.entities.OrdonnanceArij;
 import esprit.fx.utils.MyDB;
 
@@ -11,7 +10,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -23,9 +21,6 @@ public class ServiceOrdonnanceArij {
     private Connection conn() {
         return MyDB.getInstance().getConnection();
     }
-
-    // Accès centralisé au service de notification
-    private final NotificationServiceArij notifService = NotificationServiceArij.getInstance();
 
     public OrdonnanceArij getByConsultationId(int consultationId) {
         try (PreparedStatement ps = conn().prepareStatement(
@@ -61,9 +56,12 @@ public class ServiceOrdonnanceArij {
         o.setTokenVerification(randomHex(16));
         o.setDateEmission(now);
         o.setCreatedAt(now);
+        if (o.getAccessToken() == null || o.getAccessToken().isBlank()) {
+            o.setAccessToken(UUID.randomUUID().toString());
+        }
 
-        String sql = "INSERT INTO ordonnances (consultation_id, doctor_id, content, diagnosis, numero_ordonnance, date_emission, date_validite, signature_path, instructions, created_at, updated_at, token_verification, document_nom, document_size, document_mime_type, document_original_name) " +
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO ordonnances (consultation_id, doctor_id, content, diagnosis, numero_ordonnance, date_emission, date_validite, signature_path, instructions, created_at, updated_at, token_verification, access_token, document_nom, document_size, document_mime_type, document_original_name) " +
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         try (PreparedStatement ps = conn().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, o.getConsultationId());
@@ -78,10 +76,11 @@ public class ServiceOrdonnanceArij {
             ps.setTimestamp(10, ts(o.getCreatedAt()));
             ps.setTimestamp(11, ts(o.getUpdatedAt()));
             ps.setString(12, o.getTokenVerification());
-            ps.setString(13, o.getDocumentNom());
-            ps.setObject(14, o.getDocumentSize() == 0 ? null : o.getDocumentSize());
-            ps.setString(15, o.getDocumentMimeType());
-            ps.setString(16, o.getDocumentOriginalName());
+            ps.setString(13, o.getAccessToken());
+            ps.setString(14, o.getDocumentNom());
+            ps.setObject(15, o.getDocumentSize() == 0 ? null : o.getDocumentSize());
+            ps.setString(16, o.getDocumentMimeType());
+            ps.setString(17, o.getDocumentOriginalName());
             ps.executeUpdate();
 
             ResultSet keys = ps.getGeneratedKeys();
@@ -204,46 +203,22 @@ public class ServiceOrdonnanceArij {
         }
     }
 
-    /**
-     * Médecin envoie une ordonnance → notifier le patient.
-     * Message : "Ordonnance disponible. Prix : {prix} TND"
-     * Type    : "success"
-     *
-     * Le prix est lu depuis consultation_fee de la consultation liée.
-     * Visible immédiatement côté Symfony (table partagée).
-     */
     private void notifyPatient(int consultationId, int ordonnanceId) {
-        int patientUserId = findPatientUserIdByConsultationId(consultationId);
-        if (patientUserId <= 0) return;
-
-        // Récupérer le prix de la consultation
-        double prix = findConsultationFee(consultationId);
-        String prixStr = prix > 0
-            ? String.format("%.2f", prix)
-            : "à définir";
-
-        String msg = "Ordonnance disponible (réf. #" + ordonnanceId + "). "
-            + "Prix : " + prixStr + " TND.";
-
-        notifService.notifier(patientUserId, msg, NotificationArij.TYPE_SUCCESS, null);
-    }
-
-    /**
-     * Récupère le prix (consultation_fee) d'une consultation.
-     */
-    private double findConsultationFee(int consultationId) {
-        String sql = "SELECT consultation_fee FROM consultations WHERE id = ?";
+        String sql = "INSERT INTO notifications (user_id, title, message, type, is_read, created_at) VALUES (?,?,?,?,0,?)";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
-            ps.setInt(1, consultationId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                BigDecimal fee = rs.getBigDecimal("consultation_fee");
-                return fee != null ? fee.doubleValue() : 0.0;
+            int patientUserId = findPatientUserIdByConsultationId(consultationId);
+            if (patientUserId <= 0) {
+                return;
             }
+            ps.setInt(1, patientUserId);
+            ps.setString(2, "Nouvelle ordonnance");
+            ps.setString(3, "Une ordonnance #" + ordonnanceId + " a ete ajoutee pour votre consultation #" + consultationId);
+            ps.setString(4, "ORDONNANCE");
+            ps.setTimestamp(5, ts(LocalDateTime.now()));
+            ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println("[ServiceOrdonnanceArij] findConsultationFee: " + e.getMessage());
+            System.err.println("notifyPatient: " + e.getMessage());
         }
-        return 0.0;
     }
 
     private int findPatientUserIdByConsultationId(int consultationId) {
@@ -285,6 +260,7 @@ public class ServiceOrdonnanceArij {
         o.setUpdatedAt(ua != null ? ua.toLocalDateTime() : null);
 
         o.setTokenVerification(rs.getString("token_verification"));
+        o.setAccessToken(rs.getString("access_token"));
         o.setDocumentNom(rs.getString("document_nom"));
 
         Object sizeObj = rs.getObject("document_size");
@@ -317,5 +293,23 @@ public class ServiceOrdonnanceArij {
 
     private String randomHex(int n) {
         return UUID.randomUUID().toString().replace("-", "").substring(0, n);
+    }
+
+    /**
+     * Récupère toutes les ordonnances d'un médecin - utilisé par ExcelExportServiceArij.
+     */
+    public List<OrdonnanceArij> findByDoctor(int doctorId) {
+        List<OrdonnanceArij> list = new ArrayList<>();
+        String sql = "SELECT * FROM ordonnances WHERE doctor_id = ? ORDER BY date_emission DESC";
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
+            ps.setInt(1, doctorId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("findByDoctor: " + e.getMessage());
+        }
+        return list;
     }
 }

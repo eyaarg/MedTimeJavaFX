@@ -57,6 +57,15 @@ public class Produit {
         this.dateExpiration = dateExpiration;
     }
 
+    // Constructeur de compatibilite utilise par ProduitRepository
+    public Produit(int id, String nom, double prix, int stock) {
+        this.id = (long) id;
+        this.nom = nom;
+        this.prix = prix;
+        this.stock = stock;
+        this.disponible = true;
+    }
+
     // Getters et Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -73,6 +82,18 @@ public class Produit {
     /** Display name loaded from product_category — not a DB column on this table. */
     public String getCategorieName() { return categorieName; }
     public void setCategorieName(String categorieName) { this.categorieName = categorieName; }
+
+    // Alias de compatibilite utilise par ListeFavorisController
+    public CategorieEnum getCategorie() {
+        if (categorieName == null || categorieName.isBlank()) {
+            return null;
+        }
+        try {
+            return CategorieEnum.valueOf(categorieName.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
 
     public Double getPrix() { return prix; }
     public void setPrix(Double prix) { this.prix = prix; }

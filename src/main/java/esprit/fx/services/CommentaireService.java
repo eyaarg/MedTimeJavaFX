@@ -102,10 +102,7 @@ public class CommentaireService implements IService<Commentaire> {
 
     public List<Commentaire> getByArticle(int idArticle) throws SQLException {
         List<Commentaire> commentaires = new ArrayList<>();
-        String sql = "SELECT c.id, c.contenu, c.date_creation, c.utilisateur_id, " +
-                     "u.username FROM comment c " +
-                     "LEFT JOIN users u ON c.utilisateur_id = u.id " +
-                     "WHERE c.article_id = ? ORDER BY c.date_creation ASC";
+        String sql = "SELECT * FROM comment WHERE article_id=?";
         PreparedStatement ps = con.prepareStatement(sql);
         ps.setInt(1, idArticle);
         ResultSet rs = ps.executeQuery();
@@ -115,9 +112,6 @@ public class CommentaireService implements IService<Commentaire> {
             commentaire.setContenu(rs.getString("contenu"));
             commentaire.setDateCommentaire(rs.getTimestamp("date_creation"));
             commentaire.setNbLikes(0);
-            commentaire.setUtilisateurId(rs.getInt("utilisateur_id"));
-            String username = rs.getString("username");
-            commentaire.setUsername(username != null ? username : "Utilisateur");
             commentaires.add(commentaire);
         }
         return commentaires;

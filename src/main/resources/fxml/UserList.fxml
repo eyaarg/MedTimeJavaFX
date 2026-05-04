@@ -1,61 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
-<?import java.net.URL?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="esprit.fx.controllers.UserListController"
-      spacing="0"
-      style="-fx-background-color: #F5F7FA;">
-    <stylesheets>
-        <URL value="@../css/arij-styles.css"/>
-    </stylesheets>
+      spacing="0" stylesheets="@/css/arij-styles.css"
+      style="-fx-background-color: #f0f4f8;">
 
-    <!-- HEADER -->
-    <HBox alignment="CENTER_LEFT" spacing="12"
-          style="-fx-background-color: white; -fx-border-color: #EEEEEE; -fx-border-width: 0 0 1 0;">
-        <padding><Insets top="20" right="28" bottom="16" left="28"/></padding>
-        <VBox spacing="2" HBox.hgrow="ALWAYS">
-            <Label text="Gestion des utilisateurs"
-                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1A1A2E;"/>
-            <Label text="Gérez les comptes, validez les médecins, débloquez les accès"
-                   style="-fx-font-size: 12px; -fx-text-fill: #9E9E9E;"/>
+    <HBox alignment="CENTER_LEFT" styleClass="page-header" spacing="12">
+        <padding><Insets top="28" right="32" bottom="20" left="32"/></padding>
+        <VBox spacing="3" HBox.hgrow="ALWAYS">
+            <Label text="Users" styleClass="page-title"/>
+            <Label text="Liste des utilisateurs de la plateforme" styleClass="page-subtitle"/>
         </VBox>
-        <Button text="＋" onAction="#openAddUserDialog"
-                style="-fx-background-color: #1565C0; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 18px; -fx-background-radius: 8; -fx-padding: 4 16 6 16; -fx-cursor: hand;"/>
+        <Button text="Ajouter" styleClass="btn-primary" onAction="#openAddUserDialog"/>
+        <Button text="Actualiser" styleClass="btn-secondary" onAction="#refreshUsers"/>
     </HBox>
 
-    <!-- BARRE DE FILTRES -->
-    <HBox alignment="CENTER_LEFT" spacing="10"
-          style="-fx-background-color: white; -fx-border-color: #EEEEEE; -fx-border-width: 0 0 1 0;">
-        <padding><Insets top="12" right="28" bottom="12" left="28"/></padding>
-        <TextField fx:id="searchField" promptText="🔍  Rechercher par nom ou email..."
-                   style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #E0E0E0; -fx-padding: 7 12 7 12;"
-                   prefWidth="260" HBox.hgrow="ALWAYS"/>
-        <ComboBox fx:id="roleFilterComboBox" prefWidth="140"
-                  style="-fx-background-radius: 8;"/>
-        <ComboBox fx:id="statusFilterComboBox" prefWidth="150"
-                  style="-fx-background-radius: 8;"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Label fx:id="resultCountLabel" text="0 utilisateur(s)"
-               style="-fx-text-fill: #757575; -fx-font-size: 12px;"/>
-    </HBox>
-
-    <!-- LISTE DE CARTES -->
-    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
-                style="-fx-background-color: transparent; -fx-background: transparent;">
-        <padding><Insets top="16" right="28" bottom="24" left="28"/></padding>
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll">
+        <padding><Insets top="18" right="32" bottom="24" left="32"/></padding>
         <content>
-            <VBox fx:id="cardsContainer" spacing="10"
-                  style="-fx-background-color: transparent;"/>
+            <VBox spacing="12">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="Rechercher" styleClass="filter-label"/>
+                    <TextField fx:id="searchField" promptText="Username, email, role..." styleClass="search-field" HBox.hgrow="ALWAYS"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="resultCountLabel" text="0 user(s)" styleClass="muted"/>
+                </HBox>
+
+                <TableView fx:id="usersTable" prefHeight="520">
+                    <columns>
+                        <TableColumn fx:id="usernameColumn" text="Username" prefWidth="170"/>
+                        <TableColumn fx:id="emailColumn" text="Email" prefWidth="230"/>
+                        <TableColumn fx:id="phoneColumn" text="Telephone" prefWidth="130"/>
+                        <TableColumn fx:id="roleColumn" text="Role" prefWidth="140"/>
+                        <TableColumn fx:id="activeColumn" text="Actif" prefWidth="90"/>
+                        <TableColumn fx:id="verifiedColumn" text="Verifie" prefWidth="90"/>
+                        <TableColumn fx:id="createdAtColumn" text="Cree le" prefWidth="160"/>
+                        <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="120"/>
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY"/>
+                    </columnResizePolicy>
+                </TableView>
+            </VBox>
         </content>
     </ScrollPane>
-
 </VBox>
+

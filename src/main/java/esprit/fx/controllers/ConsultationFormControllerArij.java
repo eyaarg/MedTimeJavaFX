@@ -457,37 +457,6 @@ public class ConsultationFormControllerArij {
         resolvePatientIdFromSession();
     }
 
-    /**
-     * Pré-remplit la date et l'heure depuis le calendrier.
-     * Appelé par CalendrierControllerArij quand le patient clique sur un créneau.
-     */
-    public void preFillDateTime(LocalDateTime dateTime) {
-        if (dateTime == null) return;
-        consultationDatePicker.setValue(dateTime.toLocalDate());
-        String timeStr = dateTime.toLocalTime().format(TIME_FMT);
-        // Sélectionner le créneau le plus proche dans la ComboBox
-        if (timeComboBox.getItems().contains(timeStr)) {
-            timeComboBox.setValue(timeStr);
-        } else {
-            timeComboBox.getSelectionModel().select(nearestSlot(dateTime.toLocalTime(),
-                timeComboBox.getItems()));
-        }
-    }
-
-    /**
-     * Pré-sélectionne le médecin dans la ComboBox depuis le calendrier.
-     * Appelé par CalendrierControllerArij quand le patient clique sur un créneau.
-     */
-    public void preFillDoctor(int doctorId) {
-        if (doctorId <= 0 || doctorComboBox.getItems() == null) return;
-        for (DoctorChoice d : doctorComboBox.getItems()) {
-            if (d != null && d.getId() == doctorId) {
-                doctorComboBox.setValue(d);
-                return;
-            }
-        }
-    }
-
     private void resolvePatientIdFromSession() {
         if (patientId > 0) {
             return;

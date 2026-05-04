@@ -23,6 +23,10 @@
                    style="-fx-padding: 10; -fx-background-radius: 20; -fx-border-radius: 20;"/>
         <Button text="➕" onAction="#handleAjouter"
                 style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 8 20;"/>
+        <Button text="Analyse IA" onAction="#onSmartSearch"
+                style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 8 20;"/>
+        <Button text="❤️ Mes Favoris" onAction="#handleMesFavoris"
+                style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 8 20;"/>
     </HBox>
 
     <!-- ScrollPane pour les cartes -->

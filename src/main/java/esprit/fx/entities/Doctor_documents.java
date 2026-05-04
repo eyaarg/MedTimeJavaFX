@@ -4,14 +4,14 @@ import java.time.LocalDateTime;
 
 public class Doctor_documents {
     private int id;
-    private int doctor_id;
-    private String original_name;
-    private String stored_name;
-    private String folder_name;
-    private String mime_type;
+    private int doctorId;
+    private String originalName;
+    private String storedName;
+    private String folderName;
+    private String mimeType;
     private int size;
     private String status; // pending, approved, rejected
-    private LocalDateTime uploaded_at;
+    private LocalDateTime uploadedAt;
 
     public int getId() {
         return id;
@@ -21,44 +21,44 @@ public class Doctor_documents {
         this.id = id;
     }
 
-    public int getDoctor_id() {
-        return doctor_id;
+    public int getDoctorId() {
+        return doctorId;
     }
 
-    public void setDoctor_id(int doctor_id) {
-        this.doctor_id = doctor_id;
+    public void setDoctorId(int doctorId) {
+        this.doctorId = doctorId;
     }
 
-    public String getOriginal_name() {
-        return original_name;
+    public String getOriginalName() {
+        return originalName;
     }
 
-    public void setOriginal_name(String original_name) {
-        this.original_name = original_name;
+    public void setOriginalName(String originalName) {
+        this.originalName = originalName;
     }
 
-    public String getStored_name() {
-        return stored_name;
+    public String getStoredName() {
+        return storedName;
     }
 
-    public void setStored_name(String stored_name) {
-        this.stored_name = stored_name;
+    public void setStoredName(String storedName) {
+        this.storedName = storedName;
     }
 
-    public String getFolder_name() {
-        return folder_name;
+    public String getFolderName() {
+        return folderName;
     }
 
-    public void setFolder_name(String folder_name) {
-        this.folder_name = folder_name;
+    public void setFolderName(String folderName) {
+        this.folderName = folderName;
     }
 
-    public String getMime_type() {
-        return mime_type;
+    public String getMimeType() {
+        return mimeType;
     }
 
-    public void setMime_type(String mime_type) {
-        this.mime_type = mime_type;
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
     }
 
     public int getSize() {
@@ -77,12 +77,12 @@ public class Doctor_documents {
         this.status = status;
     }
 
-    public LocalDateTime getUploaded_at() {
-        return uploaded_at;
+    public LocalDateTime getUploadedAt() {
+        return uploadedAt;
     }
 
-    public void setUploaded_at(LocalDateTime uploaded_at) {
-        this.uploaded_at = uploaded_at;
+    public void setUploadedAt(LocalDateTime uploadedAt) {
+        this.uploadedAt = uploadedAt;
     }
 
 }

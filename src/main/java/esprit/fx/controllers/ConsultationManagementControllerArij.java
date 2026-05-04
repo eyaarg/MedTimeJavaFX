@@ -194,7 +194,7 @@ public class ConsultationManagementControllerArij {
             box.getChildren().addAll(approve, reject);
         } else if ("CONFIRMEE".equals(status)) {
             Button complete = iconBtn("✔", "#eff6ff", "#1d4ed8", "#bfdbfe", "Terminer");
-            complete.setOnAction(e -> ouvrirFormulaireCloturer(c));
+            complete.setOnAction(e -> { service.completeConsultation(c.getId()); refresh(); showDetailModal(service.findById(c.getId())); });
             box.getChildren().add(complete);
         } else if ("TERMINEE".equals(status)) {
             boolean hasRx = ordonnanceService.getByConsultationId(c.getId()) != null;
@@ -412,32 +412,7 @@ public class ConsultationManagementControllerArij {
         }
     }
 
-    /**
-     * Ouvre le formulaire de clôture de consultation.
-     * Remplace le simple bouton "Terminer" par un formulaire complet :
-     * médicaments, posologie, recommandations, prix, lien Meet.
-     */
-    private void ouvrirFormulaireCloturer(ConsultationsArij c) {
-        if (c == null) return;
-        try {
-            FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(
-                getClass().getResource("/fxml/CloturerConsultationArij.fxml")));
-            Parent view = loader.load();
-
-            CloturerConsultationControllerArij ctrl = loader.getController();
-            ctrl.setContext(c, doctorId, this::refresh);
-
-            Stage modal = new Stage();
-            modal.initModality(Modality.APPLICATION_MODAL);
-            modal.setTitle("Clôturer la consultation #" + c.getId());
-            modal.setScene(new Scene(view));
-            modal.setResizable(false);
-            modal.show();
-        } catch (IOException e) {
-            System.err.println("ouvrirFormulaireCloturer: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
+    // ─── Modal builder ────────────────────────────────────────────────────────
 
     private Stage buildModal(String title, VBox content) {
         ScrollPane scroll = new ScrollPane(content);

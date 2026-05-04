@@ -3,6 +3,7 @@ module MedTimeFX {
     requires javafx.fxml;
     requires javafx.swing;
     requires javafx.web;
+    requires javafx.media;
     requires java.sql;
     requires java.net.http;
     requires jakarta.mail;
@@ -20,6 +21,8 @@ module MedTimeFX {
     requires layout;
     requires io;
     requires commons;
+    requires org.apache.poi.poi;
+    requires org.apache.poi.ooxml;
 
     opens esprit.fx.controllers to javafx.fxml;
     opens esprit.fx.entities to javafx.base;

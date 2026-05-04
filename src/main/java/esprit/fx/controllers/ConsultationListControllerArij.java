@@ -2,7 +2,6 @@ package esprit.fx.controllers;
 
 import esprit.fx.entities.ConsultationsArij;
 import esprit.fx.entities.Patient;
-import esprit.fx.services.FacturePdfServiceArij;
 import esprit.fx.services.ServiceConsultationsArij;
 import esprit.fx.services.ServicePatient;
 import esprit.fx.utils.MyDB;
@@ -122,7 +121,7 @@ public class ConsultationListControllerArij {
 
     private void setupSearchBar() {
         if (filterStatusCombo != null) {
-            filterStatusCombo.getItems().addAll("Tous", "EN_ATTENTE", "CONFIRMEE", "REFUSEE", "TERMINEE", "PAYEE");
+            filterStatusCombo.getItems().addAll("Tous", "EN_ATTENTE", "CONFIRMEE", "REFUSEE", "TERMINEE");
             filterStatusCombo.setValue("Tous");
             filterStatusCombo.setOnAction(e -> applyFilters());
         }
@@ -269,49 +268,7 @@ public class ConsultationListControllerArij {
         });
 
         box.getChildren().addAll(btnView, btnEdit, btnDelete);
-
-        // ── Bouton "Télécharger la facture" — visible uniquement si statut = "payee" ──
-        // Le statut est vérifié en BDD (Symfony webhook Stripe met à jour ce champ)
-        if (FacturePdfServiceArij.estPayee(c.getId())) {
-            Button btnFacture = iconBtn("🧾", "#f0fdf4", "#15803d", "#bbf7d0",
-                "Télécharger la facture PDF");
-            btnFacture.setOnAction(e -> telechargerFacture(c));
-            box.getChildren().add(btnFacture);
-        }
-
         return box;
-    }
-
-    /**
-     * Génère et ouvre la facture PDF pour une consultation payée.
-     * Exécuté dans un thread background pour ne pas bloquer l'UI.
-     */
-    private void telechargerFacture(ConsultationsArij c) {
-        // Vérification BDD fraîche avant génération
-        if (!FacturePdfServiceArij.estPayee(c.getId())) {
-            showErrorModal("Facture indisponible",
-                "La facture n'est disponible qu'après paiement confirmé.");
-            return;
-        }
-
-        String numeroFacture = "FAC-" + String.format("%05d", c.getId());
-        String cheminPdf = System.getProperty("user.home")
-            + "/MedTime/factures/" + numeroFacture + ".pdf";
-
-        javafx.concurrent.Task<Void> task = new javafx.concurrent.Task<>() {
-            @Override
-            protected Void call() {
-                new FacturePdfServiceArij().genererFacture(c, cheminPdf);
-                return null;
-            }
-        };
-        task.setOnFailed(e ->
-            javafx.application.Platform.runLater(() ->
-                showErrorModal("Erreur PDF",
-                    "Impossible de générer la facture : "
-                    + task.getException().getMessage()))
-        );
-        new Thread(task, "facture-pdf").start();
     }
 
     // ─── Modal : Voir détails ─────────────────────────────────────────────────
@@ -496,7 +453,6 @@ public class ConsultationListControllerArij {
             case "CONFIRMEE"  -> { text = "Confirmée";  bg = "#f0fdf4"; fg = "#166534"; }
             case "REFUSEE"    -> { text = "Refusée";    bg = "#fff1f2"; fg = "#be123c"; }
             case "TERMINEE"   -> { text = "Terminée";   bg = "#eff6ff"; fg = "#1d4ed8"; }
-            case "PAYEE"      -> { text = "💳 Payée";   bg = "#f0fdf4"; fg = "#15803d"; }
             default           -> { text = s.isBlank() ? "-" : s; bg = "#f1f5f9"; fg = "#475569"; }
         }
         Label l = new Label(text);
@@ -551,7 +507,6 @@ public class ConsultationListControllerArij {
             case "CONFIRMEE"  -> "✅ Confirmée";
             case "REFUSEE"    -> "❌ Refusée";
             case "TERMINEE"   -> "✔ Terminée";
-            case "PAYEE"      -> "💳 Payée";
             default -> s.isBlank() ? "-" : s;
         };
     }

@@ -164,7 +164,7 @@ public class DisponibiliteDAOArij {
      * @return true si l'insertion a réussi
      */
     public boolean save(DisponibiliteMedecinArij dispo) {
-        if (dispo == null || dispo.getMedecinId() == null
+        if (dispo == null || dispo.getMedecinId() <= 0
                 || dispo.getDateDebut() == null || dispo.getDateFin() == null) {
             System.err.println("[DisponibiliteDAOArij] save: paramètres invalides.");
             return false;
@@ -191,7 +191,7 @@ public class DisponibiliteDAOArij {
             ps.executeUpdate();
 
             ResultSet keys = ps.getGeneratedKeys();
-            if (keys.next()) dispo.setId(keys.getLong(1));
+            if (keys.next()) dispo.setId(keys.getInt(1));
 
             System.out.println("[DisponibiliteDAOArij] ✓ Créneau créé id=" + dispo.getId());
             return true;
@@ -273,8 +273,8 @@ public class DisponibiliteDAOArij {
 
     private DisponibiliteMedecinArij mapRow(ResultSet rs) throws SQLException {
         DisponibiliteMedecinArij d = new DisponibiliteMedecinArij();
-        d.setId(rs.getLong("id"));
-        d.setMedecinId(rs.getLong("medecin_id"));
+        d.setId(rs.getInt("id"));
+        d.setMedecinId(rs.getInt("medecin_id"));
 
         Timestamp debut = rs.getTimestamp("date_debut");
         d.setDateDebut(debut != null ? debut.toLocalDateTime() : null);

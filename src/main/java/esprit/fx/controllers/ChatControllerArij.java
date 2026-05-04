@@ -1,6 +1,5 @@
 package esprit.fx.controllers;
 
-import esprit.fx.services.GroqApiServiceArij;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -9,179 +8,115 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
+import java.io.*;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 
 public class ChatControllerArij {
 
-    // ------------------------------------------------------------------ //
-    //  Prompt système MediAssist                                          //
-    // ------------------------------------------------------------------ //
     private static final String SYSTEM_PROMPT =
-        "Tu es MediAssist, un assistant médical intelligent et bienveillant.\n\n" +
-        "RÈGLE ABSOLUE : détecte la langue du patient dans son premier message et réponds " +
-        "TOUJOURS dans cette même langue (français, arabe, anglais, etc.).\n\n" +
-        "Ton rôle :\n" +
-        "1. Écouter les symptômes avec empathie\n" +
-        "2. Poser 1-2 questions ciblées pour mieux comprendre\n" +
-        "3. Donner des conseils de santé généraux adaptés\n" +
-        "4. Recommander le spécialiste exact (cardiologue, dermatologue, neurologue, " +
-        "généraliste, etc.)\n" +
-        "5. Si urgence : recommander immédiatement les urgences\n\n" +
-        "Tu ne poses PAS de diagnostic définitif.\n" +
-        "Ton ton : rassurant, professionnel, empathique.";
+        "You are MedTime AI, a professional medical assistant. " +
+        "Help with ALL medical questions: symptoms, diagnoses, treatments, medications, " +
+        "drug interactions, dosages, procedures, specialist recommendations, preventive care, " +
+        "nutrition, mental health, chronic diseases, emergency first aid, lab results. " +
+        "Always respond in the SAME LANGUAGE the user writes in. " +
+        "Be thorough, accurate, compassionate. Always recommend consulting a qualified doctor. " +
+        "Decline non-medical questions politely.";
 
-    // ------------------------------------------------------------------ //
-    //  FXML bindings                                                      //
-    // ------------------------------------------------------------------ //
-    @FXML private VBox      messagesBox;
-    @FXML private TextField messageInput;
-    @FXML private TextArea  questionInput;
-    @FXML private TextArea  aiResponse;
-    @FXML private Label     loadingLabel;
+    // ── Chat en direct ────────────────────────────────────────────────
+    @FXML private VBox       messagesBox;
+    @FXML private TextField  messageInput;
     @FXML private ScrollPane chatScrollPane;
 
-    // ------------------------------------------------------------------ //
-    //  État interne                                                       //
-    // ------------------------------------------------------------------ //
-    /** Historique complet de la conversation (sans le message système). */
-    private final List<Map<String, String>> conversationHistory = new ArrayList<>();
+    // ── Historique IA ─────────────────────────────────────────────────
+    @FXML private VBox       aiMessagesBox;
+    @FXML private TextField  aiInput;
+    @FXML private ScrollPane aiScrollPane;
+    @FXML private Label      aiLoadingLabel;
 
-    private final GroqApiServiceArij groqService = new GroqApiServiceArij();
+    private String apiKey, model, apiUrl;
 
-    // ------------------------------------------------------------------ //
-    //  Initialisation                                                     //
-    // ------------------------------------------------------------------ //
     @FXML
     private void initialize() {
-        addSystemMessage(
-            "👋 Bonjour ! Je suis MediAssist, votre assistant médical.\n" +
-            "Décrivez vos symptômes ou posez votre question — je vous réponds dans votre langue."
-        );
+        loadConfig();
+        addSystemMessage("👋 Bonjour ! Je suis MedTime IA, votre assistant médical. Posez-moi toutes vos questions sur la santé — dans n'importe quelle langue !");
+        addAiWelcome();
     }
 
-    // ------------------------------------------------------------------ //
-    //  Handlers FXML — Chat multi-tour                                   //
-    // ------------------------------------------------------------------ //
+    private void loadConfig() {
+        Properties props = new Properties();
+        try (InputStream is = getClass().getResourceAsStream("/config.properties")) {
+            if (is != null) props.load(is);
+        } catch (IOException e) { System.err.println("Config: " + e.getMessage()); }
+        apiKey = props.getProperty("groq.api.key", "");
+        model  = props.getProperty("groq.model", "llama-3.3-70b-versatile");
+        apiUrl = props.getProperty("groq.api.url", "https://api.groq.com/openai/v1/chat/completions");
+    }
+
+    // ── Chat en direct ────────────────────────────────────────────────
+
     @FXML
     private void handleSend() {
         String text = messageInput.getText();
         if (text == null || text.trim().isEmpty()) return;
-        String userMsg = text.trim();
+        String q = text.trim();
         messageInput.clear();
-
-        // Afficher la bulle utilisateur
-        addUserBubble(userMsg);
-
-        // Ajouter au contexte de conversation
-        conversationHistory.add(Map.of("role", "user", "content", userMsg));
-
-        // Appel API en arrière-plan
-        Task<String> task = new Task<>() {
-            @Override
-            protected String call() throws Exception {
-                return groqService.chat(buildMessages());
-            }
+        addUserBubble(q);
+        Task<String> task = new Task<String>() {
+            @Override protected String call() { return callGroq(q); }
         };
-        task.setOnSucceeded(e -> {
-            String reply = task.getValue();
-            // Mémoriser la réponse de l'assistant pour le contexte multi-tour
-            conversationHistory.add(Map.of("role", "assistant", "content", reply));
-            addAiBubble(reply);
-        });
-        task.setOnFailed(e ->
-            addAiBubble("⚠️ Erreur : " + task.getException().getMessage())
-        );
-        new Thread(task, "mediassist-chat").start();
+        task.setOnSucceeded(e -> addAiBubble(task.getValue()));
+        task.setOnFailed(e -> addAiBubble("⚠️ Erreur : " + task.getException().getMessage()));
+        new Thread(task, "groq-chat").start();
     }
 
-    // ------------------------------------------------------------------ //
-    //  Handlers FXML — Panneau IA (question ponctuelle)                  //
-    // ------------------------------------------------------------------ //
-    @FXML private void presetExplain()     { questionInput.setText("Expliquez mon diagnostic en termes simples."); }
-    @FXML private void presetSideEffects() { questionInput.setText("Quels sont les effets secondaires courants de mes médicaments ?"); }
-    @FXML private void presetNextSteps()   { questionInput.setText("Quelles sont les prochaines étapes après ma consultation ?"); }
+    // ── Historique IA ─────────────────────────────────────────────────
+
+    /** Chips de suggestion — remplissent le champ IA */
+    @FXML private void presetExplain()     { aiInput.setText("Expliquez mon diagnostic en termes simples."); aiInput.requestFocus(); }
+    @FXML private void presetSideEffects() { aiInput.setText("Quels sont les effets secondaires courants de mes médicaments ?"); aiInput.requestFocus(); }
+    @FXML private void presetNextSteps()   { aiInput.setText("Quelles sont les prochaines étapes après ma consultation ?"); aiInput.requestFocus(); }
 
     @FXML
     private void handleAskAi() {
-        String q = questionInput.getText();
+        String q = aiInput.getText();
         if (q == null || q.trim().isEmpty()) return;
-        loadingLabel.setVisible(true);
-        loadingLabel.setManaged(true);
-        aiResponse.clear();
+        String question = q.trim();
+        aiInput.clear();
 
-        // Question ponctuelle : pas d'historique, juste system + user
-        List<Map<String, String>> msgs = List.of(
-            Map.of("role", "user", "content", q.trim())
-        );
+        // Bulle utilisateur côté IA
+        addAiUserBubble(question);
 
-        Task<String> task = new Task<>() {
-            @Override
-            protected String call() throws Exception {
-                return groqService.chat(buildMessagesFor(msgs));
-            }
+        // Indicateur de chargement
+        aiLoadingLabel.setVisible(true);
+        aiLoadingLabel.setManaged(true);
+
+        Task<String> task = new Task<String>() {
+            @Override protected String call() { return callGroq(question); }
         };
         task.setOnSucceeded(e -> {
-            loadingLabel.setVisible(false);
-            loadingLabel.setManaged(false);
-            aiResponse.setText(stripMarkdown(task.getValue()));
+            aiLoadingLabel.setVisible(false);
+            aiLoadingLabel.setManaged(false);
+            addAiResponseBubble(task.getValue());
         });
         task.setOnFailed(e -> {
-            loadingLabel.setVisible(false);
-            loadingLabel.setManaged(false);
-            aiResponse.setText("⚠️ Erreur : " + task.getException().getMessage());
+            aiLoadingLabel.setVisible(false);
+            aiLoadingLabel.setManaged(false);
+            addAiResponseBubble("⚠️ Erreur : " + task.getException().getMessage());
         });
-        new Thread(task, "mediassist-ai").start();
+        new Thread(task, "groq-ai").start();
     }
 
-    // ------------------------------------------------------------------ //
-    //  Construction des messages envoyés à l'API                         //
-    // ------------------------------------------------------------------ //
+    // ── Bulles Chat en direct ─────────────────────────────────────────
 
-    /**
-     * Construit la liste complète : [system] + historique de conversation.
-     */
-    private List<Map<String, String>> buildMessages() {
-        List<Map<String, String>> messages = new ArrayList<>();
-        // Message système en tête
-        Map<String, String> system = new HashMap<>();
-        system.put("role",    "system");
-        system.put("content", SYSTEM_PROMPT);
-        messages.add(system);
-        // Historique complet
-        messages.addAll(conversationHistory);
-        return messages;
-    }
-
-    /**
-     * Construit la liste pour une question ponctuelle (panneau IA).
-     */
-    private List<Map<String, String>> buildMessagesFor(List<Map<String, String>> userMsgs) {
-        List<Map<String, String>> messages = new ArrayList<>();
-        Map<String, String> system = new HashMap<>();
-        system.put("role",    "system");
-        system.put("content", SYSTEM_PROMPT);
-        messages.add(system);
-        messages.addAll(userMsgs);
-        return messages;
-    }
-
-    // ------------------------------------------------------------------ //
-    //  Rendu des bulles                                                   //
-    // ------------------------------------------------------------------ //
     private void addSystemMessage(String text) {
         Platform.runLater(() -> {
             Label lbl = new Label(text);
             lbl.setWrapText(true);
-            lbl.setStyle(
-                "-fx-background-color:#eff6ff;-fx-text-fill:#1d4ed8;" +
-                "-fx-padding:10 14 10 14;-fx-background-radius:10;" +
-                "-fx-font-size:12px;-fx-font-style:italic;"
-            );
+            lbl.setStyle("-fx-background-color:#eff6ff;-fx-text-fill:#1d4ed8;-fx-padding:10 14;-fx-background-radius:10;-fx-font-size:12px;-fx-font-style:italic;");
             lbl.setMaxWidth(Double.MAX_VALUE);
             messagesBox.getChildren().add(lbl);
         });
@@ -192,11 +127,8 @@ public class ChatControllerArij {
             String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
             Label msg = new Label(text);
             msg.setWrapText(true);
-            msg.setMaxWidth(380);
-            msg.setStyle(
-                "-fx-background-color:#2563eb;-fx-text-fill:white;" +
-                "-fx-padding:10 14 10 14;-fx-background-radius:14 14 4 14;-fx-font-size:13px;"
-            );
+            msg.setMaxWidth(360);
+            msg.setStyle("-fx-background-color:#2563eb;-fx-text-fill:white;-fx-padding:10 14;-fx-background-radius:14 14 4 14;-fx-font-size:13px;");
             Label ts = new Label(time);
             ts.setStyle("-fx-text-fill:#94a3b8;-fx-font-size:10px;");
             VBox bubble = new VBox(3, msg, ts);
@@ -205,7 +137,7 @@ public class ChatControllerArij {
             row.setAlignment(Pos.CENTER_RIGHT);
             HBox.setMargin(bubble, new Insets(0, 4, 0, 60));
             messagesBox.getChildren().add(row);
-            scrollToBottom();
+            scrollTo(chatScrollPane);
         });
     }
 
@@ -214,12 +146,9 @@ public class ChatControllerArij {
             String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
             Label msg = new Label(stripMarkdown(text));
             msg.setWrapText(true);
-            msg.setMaxWidth(380);
-            msg.setStyle(
-                "-fx-background-color:#f1f5f9;-fx-text-fill:#0f172a;" +
-                "-fx-padding:10 14 10 14;-fx-background-radius:14 14 14 4;-fx-font-size:13px;"
-            );
-            Label ts = new Label("🩺 MediAssist  •  " + time);
+            msg.setMaxWidth(360);
+            msg.setStyle("-fx-background-color:#f1f5f9;-fx-text-fill:#0f172a;-fx-padding:10 14;-fx-background-radius:14 14 14 4;-fx-font-size:13px;");
+            Label ts = new Label("🤖 MedTime IA  •  " + time);
             ts.setStyle("-fx-text-fill:#94a3b8;-fx-font-size:10px;");
             VBox bubble = new VBox(3, msg, ts);
             bubble.setAlignment(Pos.CENTER_LEFT);
@@ -227,29 +156,113 @@ public class ChatControllerArij {
             row.setAlignment(Pos.CENTER_LEFT);
             HBox.setMargin(bubble, new Insets(0, 60, 0, 4));
             messagesBox.getChildren().add(row);
-            scrollToBottom();
+            scrollTo(chatScrollPane);
         });
     }
 
-    // ------------------------------------------------------------------ //
-    //  Utilitaires                                                        //
-    // ------------------------------------------------------------------ //
-    private void scrollToBottom() {
+    // ── Bulles Historique IA ──────────────────────────────────────────
+
+    private void addAiWelcome() {
         Platform.runLater(() -> {
-            if (chatScrollPane != null) {
-                chatScrollPane.layout();
-                chatScrollPane.setVvalue(1.0);
-            }
+            Label lbl = new Label("🤖 Bonjour ! Posez-moi une question médicale. Je suis là pour vous aider.");
+            lbl.setWrapText(true);
+            lbl.setMaxWidth(Double.MAX_VALUE);
+            lbl.setStyle("-fx-background-color:#eff6ff;-fx-text-fill:#1d4ed8;-fx-padding:12 14;-fx-background-radius:10;-fx-font-size:12px;-fx-font-style:italic;");
+            aiMessagesBox.getChildren().add(lbl);
         });
+    }
+
+    private void addAiUserBubble(String text) {
+        Platform.runLater(() -> {
+            String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
+            Label msg = new Label(text);
+            msg.setWrapText(true);
+            msg.setMaxWidth(360);
+            msg.setStyle("-fx-background-color:#2563eb;-fx-text-fill:white;-fx-padding:10 14;-fx-background-radius:14 14 4 14;-fx-font-size:13px;");
+            Label ts = new Label("Vous  •  " + time);
+            ts.setStyle("-fx-text-fill:#94a3b8;-fx-font-size:10px;");
+            VBox bubble = new VBox(3, msg, ts);
+            bubble.setAlignment(Pos.CENTER_RIGHT);
+            HBox row = new HBox(bubble);
+            row.setAlignment(Pos.CENTER_RIGHT);
+            HBox.setMargin(bubble, new Insets(0, 4, 0, 60));
+            aiMessagesBox.getChildren().add(row);
+            scrollTo(aiScrollPane);
+        });
+    }
+
+    private void addAiResponseBubble(String text) {
+        Platform.runLater(() -> {
+            String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
+            Label msg = new Label(stripMarkdown(text));
+            msg.setWrapText(true);
+            msg.setMaxWidth(360);
+            msg.setStyle("-fx-background-color:#f0fdf4;-fx-text-fill:#14532d;-fx-padding:10 14;-fx-background-radius:14 14 14 4;-fx-font-size:13px;-fx-border-color:#bbf7d0;-fx-border-width:1;-fx-border-radius:14 14 14 4;");
+            Label ts = new Label("🤖 MedTime IA  •  " + time);
+            ts.setStyle("-fx-text-fill:#94a3b8;-fx-font-size:10px;");
+            VBox bubble = new VBox(3, msg, ts);
+            bubble.setAlignment(Pos.CENTER_LEFT);
+            HBox row = new HBox(bubble);
+            row.setAlignment(Pos.CENTER_LEFT);
+            HBox.setMargin(bubble, new Insets(0, 60, 0, 4));
+            aiMessagesBox.getChildren().add(row);
+            scrollTo(aiScrollPane);
+        });
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────
+
+    private void scrollTo(ScrollPane sp) {
+        Platform.runLater(() -> { if (sp != null) { sp.layout(); sp.setVvalue(1.0); } });
     }
 
     private String stripMarkdown(String text) {
-        return text
-            .replaceAll("\\*\\*(.+?)\\*\\*", "$1")
-            .replaceAll("\\*(.+?)\\*", "$1")
-            .replaceAll("(?m)^#{1,6}\\s*", "")
-            .replaceAll("(?m)^\\* ", "• ")
-            .replaceAll("(?m)^- ", "• ")
-            .trim();
+        return text.replaceAll("\\*\\*(.+?)\\*\\*","$1").replaceAll("\\*(.+?)\\*","$1")
+                   .replaceAll("(?m)^#{1,6}\\s*","").replaceAll("(?m)^\\* ","• ").replaceAll("(?m)^- ","• ").trim();
+    }
+
+    private String readStream(InputStream is) throws IOException {
+        if (is == null) return "";
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+            String line; while ((line = br.readLine()) != null) sb.append(line);
+        }
+        return sb.toString();
+    }
+
+    private String parseContent(String json) {
+        String key = "\"content\":\""; int idx = json.indexOf(key);
+        if (idx == -1) return "Aucune réponse reçue.";
+        int start = idx + key.length(); StringBuilder sb = new StringBuilder(); boolean escape = false;
+        for (int i = start; i < json.length(); i++) {
+            char c = json.charAt(i);
+            if (escape) { switch(c){case 'n':sb.append('\n');break;case 't':sb.append('\t');break;case '\\':sb.append('\\');break;case '"':sb.append('"');break;default:sb.append(c);} escape=false; }
+            else if (c=='\\') escape=true; else if (c=='"') break; else sb.append(c);
+        }
+        return sb.toString().trim();
+    }
+
+    private String escapeJson(String text) {
+        StringBuilder sb = new StringBuilder();
+        for (char c : text.toCharArray()) { switch(c){case '"':sb.append("\\\"");break;case '\\':sb.append("\\\\");break;case '\n':sb.append("\\n");break;case '\r':sb.append("\\r");break;case '\t':sb.append("\\t");break;default:sb.append(c);} }
+        return sb.toString();
+    }
+
+    private String callGroq(String userMessage) {
+        if (apiKey == null || apiKey.isEmpty()) return "Clé API non configurée.";
+        HttpURLConnection conn = null;
+        try {
+            conn = (HttpURLConnection) URI.create(apiUrl).toURL().openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Authorization", "Bearer " + apiKey);
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setConnectTimeout(15000); conn.setReadTimeout(30000); conn.setDoOutput(true);
+            String payload = "{\"model\":\"" + model + "\",\"messages\":[{\"role\":\"system\",\"content\":\"" + escapeJson(SYSTEM_PROMPT) + "\"},{\"role\":\"user\",\"content\":\"" + escapeJson(userMessage) + "\"}],\"temperature\":0.7,\"max_tokens\":1024}";
+            conn.getOutputStream().write(payload.getBytes(StandardCharsets.UTF_8));
+            int code = conn.getResponseCode();
+            String body = readStream(code >= 200 && code < 300 ? conn.getInputStream() : conn.getErrorStream());
+            return code >= 200 && code < 300 ? parseContent(body) : "Erreur API (" + code + "): " + body;
+        } catch (IOException e) { return "Erreur connexion: " + e.getMessage(); }
+        finally { if (conn != null) conn.disconnect(); }
     }
 }

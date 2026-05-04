@@ -1,33 +1,63 @@
 package esprit.fx.controllers;
 
+import esprit.fx.entities.CategorieEnum;
 import esprit.fx.entities.Produit;
 import esprit.fx.services.ServiceProduit;
+import esprit.fx.services.VisionService;
 import esprit.fx.utils.MyDB;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.Base64;
 import java.util.ResourceBundle;
 
 public class FormulaireProduitController implements Initializable {
 
     @FXML private TextField txtNom;
     @FXML private TextArea txtDescription;
-    @FXML private ComboBox<String> cmbCategorie;  // category names from DB
+    @FXML private ComboBox<CategorieEnum> cmbCategorie;
     @FXML private TextField txtPrix;
     @FXML private TextField txtStock;
     @FXML private TextField txtImage;
+    @FXML private ImageView imgPreview;
     @FXML private CheckBox chkDisponible;
     @FXML private CheckBox chkPrescription;
     @FXML private TextField txtMarque;
     @FXML private DatePicker dpDateExpiration;
     @FXML private Label lblTitre;
     @FXML private Button btnValider;
+
+    private static final String IMAGES_DIR = "src/main/resources/images/produits/";
+    private final VisionService visionService = new VisionService();
 
     private ServiceProduit serviceProduit;
     private ListeProduitController listeController;
@@ -36,24 +66,28 @@ public class FormulaireProduitController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        cmbCategorie.getItems().setAll(CategorieEnum.values());
         chkDisponible.setSelected(true);
-        ensureServiceProduit();
-        loadCategories();
-    }
 
-    /** Populate the ComboBox with category names fetched from product_category. */
-    private void loadCategories() {
-        try {
-            List<String> names = serviceProduit.getAllCategoryNames();
-            cmbCategorie.getItems().setAll(names);
-        } catch (SQLException e) {
-            System.err.println("[FormulaireProduit] Erreur chargement catégories: " + e.getMessage());
-        }
+        cmbCategorie.setCellFactory(param -> new ListCell<>() {
+            @Override
+            protected void updateItem(CategorieEnum item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getNom());
+            }
+        });
+
+        cmbCategorie.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(CategorieEnum item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? "Selectionner une categorie" : item.getNom());
+            }
+        });
     }
 
     public void setServiceProduit(ServiceProduit serviceProduit) {
         this.serviceProduit = serviceProduit;
-        loadCategories(); // reload with the injected service
     }
 
     public void setListeController(ListeProduitController listeController) {
@@ -64,10 +98,10 @@ public class FormulaireProduitController implements Initializable {
         this.mode = mode;
         if ("ajouter".equalsIgnoreCase(mode)) {
             lblTitre.setText(" Ajouter un produit");
-            btnValider.setText("Ô×ò");
+            btnValider.setText("➕");
         } else {
-            lblTitre.setText("Ô£Å Modifier un produit");
-            btnValider.setText("Ô£Å");
+            lblTitre.setText("✏ Modifier un produit");
+            btnValider.setText("✏");
         }
     }
 
@@ -76,92 +110,221 @@ public class FormulaireProduitController implements Initializable {
         remplirFormulaire(produit);
     }
 
-    private void remplirFormulaire(Produit p) {
-        txtNom.setText(p.getNom());
-        txtDescription.setText(p.getDescription());
-        // Select by category name (loaded from DB via JOIN in getAll/afficherParId)
-        cmbCategorie.setValue(p.getCategorieName());
-        txtPrix.setText(String.valueOf(p.getPrix()));
-        txtStock.setText(String.valueOf(p.getStock()));
-        txtImage.setText(p.getImage());
-        chkDisponible.setSelected(Boolean.TRUE.equals(p.getDisponible()));
-        chkPrescription.setSelected(Boolean.TRUE.equals(p.getPrescriptionRequise()));
-        txtMarque.setText(p.getMarque() != null ? p.getMarque() : "");
-        dpDateExpiration.setValue(p.getDateExpiration());
+    private void remplirFormulaire(Produit produit) {
+        txtNom.setText(produit.getNom());
+        txtDescription.setText(produit.getDescription());
+        cmbCategorie.setValue(produit.getCategorie());
+        txtPrix.setText(String.valueOf(produit.getPrix()));
+        txtStock.setText(String.valueOf(produit.getStock()));
+        txtImage.setText(produit.getImage());
+        chkDisponible.setSelected(Boolean.TRUE.equals(produit.getDisponible()));
+        chkPrescription.setSelected(Boolean.TRUE.equals(produit.getPrescriptionRequise()));
+        txtMarque.setText(produit.getMarque());
+        dpDateExpiration.setValue(produit.getDateExpiration());
+
+        // Afficher la preview si une image existe
+        if (produit.getImage() != null && !produit.getImage().isBlank()) {
+            try {
+                URL imageUrl = getClass().getResource(produit.getImage());
+                if (imageUrl != null) {
+                    imgPreview.setImage(new Image(imageUrl.toExternalForm()));
+                }
+            } catch (Exception ignored) {}
+        }
     }
 
     private boolean validateInputs() {
-        if (txtNom.getText().isEmpty()) {
-            showAlert("Le nom est obligatoire !");
+        if (txtNom.getText() == null || txtNom.getText().trim().isEmpty()) {
+            showWarningAlert("Le nom est obligatoire !");
             return false;
         }
+
         if (cmbCategorie.getValue() == null) {
-            showAlert("La catégorie est obligatoire !");
+            showWarningAlert("La categorie est obligatoire !");
             return false;
         }
+
         try {
-            Double.parseDouble(txtPrix.getText());
+            double prix = Double.parseDouble(txtPrix.getText().trim());
+            if (prix <= 0) {
+                showWarningAlert("Le prix doit etre superieur a 0 !");
+                return false;
+            }
         } catch (NumberFormatException e) {
-            showAlert("Prix invalide !");
+            showWarningAlert("Prix invalide !");
             return false;
         }
+
+        try {
+            int stock = Integer.parseInt(txtStock.getText().trim());
+            if (stock < 0) {
+                showWarningAlert("Le stock ne peut pas etre inferieur a 0 !");
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            showWarningAlert("Stock invalide !");
+            return false;
+        }
+
+        if (dpDateExpiration.getValue() == null) {
+            showWarningAlert("La date d'expiration est obligatoire !");
+            return false;
+        }
+
+        if (dpDateExpiration.getValue().isBefore(LocalDate.now())) {
+            showWarningAlert("La date d'expiration ne peut pas etre dans le passe !");
+            return false;
+        }
+
         return true;
     }
 
     @FXML
-    private void handleValider() throws SQLException {
-        ensureServiceProduit();
-        if (!validateInputs()) return;
+    private void handleChoisirImage() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choisir une image");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp")
+        );
 
-        // Resolve category name → id
-        String selectedName = cmbCategorie.getValue();
-        Integer categoryId = serviceProduit.resolveCategoryId(selectedName);
-        if (categoryId == null) {
-            showAlert("Catégorie introuvable en base : " + selectedName);
+        Stage stage = (Stage) txtNom.getScene().getWindow();
+        File selectedFile = fileChooser.showOpenDialog(stage);
+
+        if (selectedFile != null) {
+            try {
+                Path destDir = Paths.get(IMAGES_DIR);
+                Files.createDirectories(destDir);
+
+                String fileName = System.currentTimeMillis() + "_" + selectedFile.getName();
+                Path destPath = destDir.resolve(fileName);
+                Files.copy(selectedFile.toPath(), destPath, StandardCopyOption.REPLACE_EXISTING);
+
+                String relativePath = "/images/produits/" + fileName;
+                txtImage.setText(relativePath);
+
+                imgPreview.setImage(new Image(selectedFile.toURI().toString()));
+
+                // Lancer l'analyse IA en arrière-plan
+                txtDescription.setText("🤖 Analyse de l'image en cours...");
+                txtDescription.setDisable(true);
+
+                byte[] imageBytes = Files.readAllBytes(selectedFile.toPath());
+                String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+
+                new Thread(() -> {
+                    try {
+                        String description = visionService.genererDescription(base64Image);
+                        Platform.runLater(() -> {
+                            txtDescription.setText(description);
+                            txtDescription.setDisable(false);
+                        });
+                    } catch (Exception e) {
+                        Platform.runLater(() -> {
+                            txtDescription.setText("⚠️ Impossible de générer la description : " + e.getMessage());
+                            txtDescription.setDisable(false);
+                        });
+                    }
+                }).start();
+
+            } catch (IOException e) {
+                showErrorAlert("Impossible de copier l'image : " + e.getMessage());
+            }
+        }
+    }
+
+    @FXML
+    private void handleValider() {
+        ensureServiceProduit();
+        if (!validateInputs()) {
             return;
         }
 
-        Produit produit = new Produit();
-        produit.setNom(txtNom.getText());
+        // --- CORRECTION ICI ---
+        Produit produit;
+        if ("modifier".equalsIgnoreCase(mode)) {
+            // Si on modifie, on repart de l'objet existant pour garder son ID
+            produit = produitModification;
+        } else {
+            // Si on ajoute, on crée un nouvel objet vide
+            produit = new Produit();
+        }
+
+        // On remplit l'objet avec les valeurs des champs du formulaire
+        produit.setNom(txtNom.getText().trim());
         produit.setDescription(txtDescription.getText());
-        produit.setCategoryId(categoryId);
-        produit.setCategorieName(selectedName);
-        produit.setPrix(Double.parseDouble(txtPrix.getText()));
-        produit.setStock(Integer.parseInt(txtStock.getText()));
+        produit.setCategorie(cmbCategorie.getValue());
+        produit.setPrix(Double.parseDouble(txtPrix.getText().trim()));
+        produit.setStock(Integer.parseInt(txtStock.getText().trim()));
         produit.setImage(txtImage.getText());
         produit.setDisponible(chkDisponible.isSelected());
         produit.setPrescriptionRequise(chkPrescription.isSelected());
         produit.setMarque(txtMarque.getText());
         produit.setDateExpiration(dpDateExpiration.getValue());
 
-        if (!"modifier".equalsIgnoreCase(mode)) {
-            try {
+        try {
+            if (!"modifier".equalsIgnoreCase(mode)) {
                 serviceProduit.ajouter(produit);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+                showInfoAlert("Produit ajouté avec succès !");
+            } else {
+                // L'ID est déjà dans l'objet car on a utilisé produitModification
+                serviceProduit.modifier(produit);
+                showInfoAlert("Produit modifié avec succès !");
             }
-            showAlert("Produit ajouté avec succès !");
-        } else {
-            produit.setId(produitModification.getId());
-            serviceProduit.modifier(produit);
-            showAlert("Produit modifié avec succès !");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showErrorAlert("Impossible d'enregistrer le produit : " + e.getMessage());
+            return;
         }
 
         if (listeController != null) {
-            listeController.refreshList();
+            try {
+                listeController.refreshList();
+            } catch (SQLException e) {
+                showErrorAlert("Produit enregistré, mais la liste n'a pas pu être rechargée.");
+            }
         }
 
-        closeWindow();
+        goBackToListOrClose();
     }
 
     @FXML
     private void handleAnnuler() {
+        goBackToListOrClose();
+    }
+
+    private void goBackToListOrClose() {
+        if (tryNavigateMainContent("/fxml/ListProd.fxml")) {
+            return;
+        }
         closeWindow();
+    }
+
+    private boolean tryNavigateMainContent(String fxmlPath) {
+        try {
+            Parent sceneRoot = txtNom.getScene() != null ? txtNom.getScene().getRoot() : null;
+            if (!(sceneRoot instanceof BorderPane borderPane)) {
+                return false;
+            }
+
+            Node center = borderPane.getCenter();
+            if (!(center instanceof StackPane contentArea)) {
+                return false;
+            }
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Node view = loader.load();
+            contentArea.getChildren().setAll(view);
+            return true;
+        } catch (IOException | NullPointerException e) {
+            return false;
+        }
     }
 
     private void closeWindow() {
         Stage stage = (Stage) txtNom.getScene().getWindow();
-        stage.close();
+        if (stage != null) {
+            stage.close();
+        }
     }
 
     private void ensureServiceProduit() {
@@ -174,7 +337,19 @@ public class FormulaireProduitController implements Initializable {
         }
     }
 
-    private void showAlert(String message) {
+    private void showWarningAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showErrorAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showInfoAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setContentText(message);
         alert.showAndWait();

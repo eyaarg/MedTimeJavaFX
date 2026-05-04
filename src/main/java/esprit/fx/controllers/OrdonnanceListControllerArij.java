@@ -4,10 +4,10 @@ import esprit.fx.entities.ConsultationsArij;
 import esprit.fx.entities.FactureArij;
 import esprit.fx.entities.LigneOrdonnanceArij;
 import esprit.fx.entities.OrdonnanceArij;
-import esprit.fx.services.QrCodeServiceArij;
 import esprit.fx.services.ServiceConsultationsArij;
 import esprit.fx.services.ServiceFactureArij;
 import esprit.fx.services.ServiceOrdonnanceArij;
+import esprit.fx.services.QrCodeServiceArij;
 import esprit.fx.utils.MyDB;
 import esprit.fx.utils.PdfExporterArij;
 import javafx.fxml.FXML;
@@ -24,7 +24,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.sql.PreparedStatement;
@@ -312,8 +311,8 @@ public class OrdonnanceListControllerArij {
             panel.getChildren().add(sec);
         }
 
-        // ── Section QR Code ───────────────────────────────────────────
-        panel.getChildren().add(buildQrSection(o));
+        // ── AJOUTER LA SECTION QR CODE ──
+        panel.getChildren().add(buildQRCodeSection(o));
 
         Stage modal = buildModal("Détails ordonnance", panel);
         Button close = modalBtn("✕ Fermer", "#f1f5f9", "#334155", "#cbd5e1");
@@ -321,105 +320,6 @@ public class OrdonnanceListControllerArij {
         HBox foot = new HBox(close); foot.setAlignment(Pos.CENTER_RIGHT);
         panel.getChildren().add(foot);
         modal.show();
-    }
-
-    /**
-     * Construit la section QR Code dans la modal de détail.
-     *
-     * Contient :
-     *  - ImageView du QR Code (200×200px)
-     *  - Label avec l'URL encodée
-     *  - Bouton "Sauvegarder QR Code" → FileChooser → PNG
-     */
-    private VBox buildQrSection(OrdonnanceArij o) {
-        VBox section = new VBox(10);
-        section.setStyle("-fx-background-color:#f8fafc; -fx-background-radius:10;" +
-                "-fx-border-radius:10; -fx-border-color:#e2e8f0; -fx-border-width:1; -fx-padding:14;");
-
-        Label titre = new Label("🔐  QR Code de vérification");
-        titre.setStyle("-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#475569;");
-
-        // Générer le QR Code (200×200px)
-        javafx.scene.image.Image qrFxImage = qrCodeService.genererQrCodeJavaFx(o, 200);
-
-        HBox qrRow = new HBox(16);
-        qrRow.setAlignment(Pos.CENTER_LEFT);
-
-        if (qrFxImage != null) {
-            // ImageView du QR Code
-            ImageView qrView = new ImageView(qrFxImage);
-            qrView.setFitWidth(160);
-            qrView.setFitHeight(160);
-            qrView.setPreserveRatio(true);
-            qrView.setSmooth(true);
-            qrView.setStyle("-fx-border-color:#e2e8f0; -fx-border-width:1; -fx-border-radius:6;");
-
-            // Infos à droite du QR
-            VBox infoQr = new VBox(8);
-            infoQr.setAlignment(Pos.CENTER_LEFT);
-
-            String urlQr = o.buildScanUrl("http://localhost:8000");
-            Label lblUrl = new Label(urlQr);
-            lblUrl.setStyle("-fx-font-size:10px; -fx-text-fill:#64748b; -fx-wrap-text:true;");
-            lblUrl.setMaxWidth(260);
-            lblUrl.setWrapText(true);
-
-            Label lblToken = new Label("Token : " + o.getAccessToken());
-            lblToken.setStyle("-fx-font-size:9px; -fx-text-fill:#94a3b8;");
-            lblToken.setWrapText(true);
-            lblToken.setMaxWidth(260);
-
-            // Bouton "Sauvegarder QR Code"
-            Button btnSauvegarder = new Button("💾  Sauvegarder QR Code");
-            btnSauvegarder.setStyle(
-                "-fx-background-color:#eff6ff; -fx-text-fill:#1d4ed8;" +
-                "-fx-font-size:12px; -fx-font-weight:bold;" +
-                "-fx-background-radius:8; -fx-border-radius:8;" +
-                "-fx-border-color:#bfdbfe; -fx-border-width:1;" +
-                "-fx-padding:7 14; -fx-cursor:hand;"
-            );
-            btnSauvegarder.setOnAction(e -> sauvegarderQrCode(o));
-
-            infoQr.getChildren().addAll(lblUrl, lblToken, btnSauvegarder);
-            qrRow.getChildren().addAll(qrView, infoQr);
-
-        } else {
-            Label erreur = new Label("⚠ QR Code non disponible (token manquant).");
-            erreur.setStyle("-fx-text-fill:#dc2626; -fx-font-size:12px;");
-            qrRow.getChildren().add(erreur);
-        }
-
-        section.getChildren().addAll(titre, qrRow);
-        return section;
-    }
-
-    /**
-     * Ouvre un FileChooser pour sauvegarder le QR Code en PNG.
-     * Utilise QrCodeServiceArij.genererQrCodeFichier().
-     */
-    private void sauvegarderQrCode(OrdonnanceArij o) {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Sauvegarder le QR Code");
-        chooser.setInitialFileName("qr-ordonnance-" + o.getId() + ".png");
-        chooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Image PNG", "*.png")
-        );
-        // Dossier par défaut : bureau de l'utilisateur
-        File bureau = new File(System.getProperty("user.home") + "/Desktop");
-        if (bureau.exists()) chooser.setInitialDirectory(bureau);
-
-        // Récupérer la fenêtre parente depuis n'importe quel nœud
-        Stage stage = (Stage) cardsContainer.getScene().getWindow();
-        File fichier = chooser.showSaveDialog(stage);
-
-        if (fichier != null) {
-            boolean ok = qrCodeService.genererQrCodeFichier(o, fichier.getAbsolutePath(), 300);
-            if (ok) {
-                showInfoModal("✅ QR Code sauvegardé :\n" + fichier.getAbsolutePath());
-            } else {
-                showInfoModal("✗ Erreur lors de la sauvegarde du QR Code.");
-            }
-        }
     }
 
     // ─── Edit modal ───────────────────────────────────────────────────────────
@@ -653,5 +553,124 @@ public class OrdonnanceListControllerArij {
             System.err.println("findPatientIdByConsultation: " + e.getMessage());
         }
         return 0;
+    }
+
+    // ─── QR Code Section ──────────────────────────────────────────────────────
+
+    /**
+     * Construit la section QR Code pour la modal d'ordonnance.
+     * 
+     * Affiche :
+     *   - Image du QR Code (160x160)
+     *   - URL de scan
+     *   - Token d'accès
+     *   - Bouton pour sauvegarder le QR Code
+     */
+    private VBox buildQRCodeSection(OrdonnanceArij o) {
+        VBox section = new VBox(10);
+        section.setStyle("-fx-background-color:#f8fafc; -fx-background-radius:10;" +
+                "-fx-border-radius:10; -fx-border-color:#e2e8f0; -fx-border-width:1; -fx-padding:14;");
+
+        Label titre = new Label("🔐 QR Code de vérification");
+        titre.setStyle("-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#475569;");
+
+        // Générer le QR Code (160x160)
+        javafx.scene.image.Image qrFxImage = qrCodeService.genererQRCodeOrdonnance(o, 160);
+
+        HBox qrRow = new HBox(16);
+        qrRow.setAlignment(Pos.CENTER_LEFT);
+
+        if (qrFxImage != null) {
+            // ImageView du QR Code
+            ImageView qrView = new ImageView(qrFxImage);
+            qrView.setFitWidth(160);
+            qrView.setFitHeight(160);
+            qrView.setPreserveRatio(true);
+            qrView.setSmooth(true);
+            qrView.setStyle("-fx-border-color:#e2e8f0; -fx-border-width:1; -fx-border-radius:6;");
+
+            // Infos à droite du QR
+            VBox infoQr = new VBox(8);
+            infoQr.setAlignment(Pos.TOP_LEFT);
+
+            String qrContent = qrCodeService.buildOrdonnanceQrContent(o);
+            Label lblUrl = new Label(qrContent);
+            lblUrl.setStyle("-fx-font-size:10px; -fx-text-fill:#64748b; -fx-wrap-text:true;");
+            lblUrl.setMaxWidth(260);
+            lblUrl.setWrapText(true);
+
+            Label lblToken = new Label("Token : " + o.getAccessToken());
+            lblToken.setStyle("-fx-font-size:9px; -fx-text-fill:#94a3b8; -fx-font-family:'Courier New';");
+            lblToken.setWrapText(true);
+            lblToken.setMaxWidth(260);
+
+            Label lblInstructions = new Label("Scannez ce code avec votre téléphone pour accéder aux données de l'ordonnance.");
+            lblInstructions.setStyle("-fx-font-size:10px; -fx-text-fill:#64748b; -fx-wrap-text:true;");
+            lblInstructions.setMaxWidth(260);
+
+            // Bouton "Sauvegarder QR Code"
+            Button btnSauvegarder = new Button("💾 Sauvegarder QR Code");
+            btnSauvegarder.setStyle(
+                "-fx-background-color:#eff6ff; -fx-text-fill:#1d4ed8;" +
+                "-fx-font-size:12px; -fx-font-weight:bold;" +
+                "-fx-background-radius:8; -fx-border-radius:8;" +
+                "-fx-border-color:#bfdbfe; -fx-border-width:1;" +
+                "-fx-padding:7 14; -fx-cursor:hand;"
+            );
+            btnSauvegarder.setOnAction(e -> sauvegarderQRCode(o));
+
+            infoQr.getChildren().addAll(
+                new Label("Contenu du QR :") {{ setStyle("-fx-font-size:12px; -fx-text-fill:#6d28d9; -fx-font-weight:bold;"); }},
+                lblUrl,
+                new Label("Token d'accès :") {{ setStyle("-fx-font-size:12px; -fx-text-fill:#6d28d9; -fx-font-weight:bold;"); }},
+                lblToken,
+                new Label("Instructions :") {{ setStyle("-fx-font-size:12px; -fx-text-fill:#6d28d9; -fx-font-weight:bold;"); }},
+                lblInstructions,
+                btnSauvegarder
+            );
+
+            qrRow.getChildren().addAll(qrView, infoQr);
+
+        } else {
+            Label erreur = new Label("⚠ QR Code non disponible (token manquant).");
+            erreur.setStyle("-fx-text-fill:#dc2626; -fx-font-size:12px;");
+            qrRow.getChildren().add(erreur);
+        }
+
+        section.getChildren().addAll(titre, qrRow);
+        return section;
+    }
+
+    /**
+     * Ouvre un FileChooser pour sauvegarder le QR Code en PNG.
+     */
+    private void sauvegarderQRCode(OrdonnanceArij o) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Sauvegarder le QR Code");
+        chooser.setInitialFileName("qr-ordonnance-" + o.getId() + ".png");
+        chooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("Image PNG", "*.png")
+        );
+
+        // Dossier par défaut : bureau de l'utilisateur
+        File bureau = new File(System.getProperty("user.home") + "/Desktop");
+        if (bureau.exists()) chooser.setInitialDirectory(bureau);
+
+        // Récupérer la fenêtre parente
+        Stage stage = (Stage) cardsContainer.getScene().getWindow();
+        File fichier = chooser.showSaveDialog(stage);
+
+        if (fichier != null) {
+            boolean ok = qrCodeService.genererQRCodeFichier(
+                qrCodeService.buildOrdonnanceQrContent(o),
+                fichier.getAbsolutePath(),
+                300
+            );
+            if (ok) {
+                showInfoModal("✅ QR Code sauvegardé :\n" + fichier.getAbsolutePath());
+            } else {
+                showInfoModal("✗ Erreur lors de la sauvegarde du QR Code.");
+            }
+        }
     }
 }

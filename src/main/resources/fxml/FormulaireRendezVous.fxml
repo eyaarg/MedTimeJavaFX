@@ -38,17 +38,10 @@
                 maxWidth="Infinity" promptText="Sélectionner un médecin" />
 
       <!-- Date -->
-      <Label text="Date :" GridPane.columnIndex="0" GridPane.rowIndex="2"
+      <Label text="Date :" GridPane.columnIndex="0" GridPane.rowIndex="2" 
              style="-fx-font-weight: bold;" />
-      <VBox GridPane.columnIndex="1" GridPane.rowIndex="2" spacing="6">
-         <DatePicker fx:id="datePickerRdv" maxWidth="Infinity" promptText="Sélectionner une date" />
-         <Label fx:id="labelMeteo"
-                wrapText="true"
-                style="-fx-font-size: 12px; -fx-text-fill: #2563eb; -fx-background-color: #eff6ff;
-                        -fx-background-radius: 6; -fx-padding: 6 10; -fx-border-color: #bfdbfe;
-                        -fx-border-radius: 6;"
-                visible="false" managed="false" />
-      </VBox>
+      <DatePicker fx:id="datePickerRdv" GridPane.columnIndex="1" GridPane.rowIndex="2" 
+                  maxWidth="Infinity" promptText="Sélectionner une date" />
 
       <!-- Heure -->
       <Label text="Heure :" GridPane.columnIndex="0" GridPane.rowIndex="3" 

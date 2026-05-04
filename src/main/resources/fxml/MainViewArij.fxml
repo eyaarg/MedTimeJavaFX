@@ -45,6 +45,18 @@
                         onAction="#showConsultationHubs"
                         maxWidth="Infinity"/>
 
+                <Button fx:id="btnModulePrendreRdv"
+                        text="  📅  Prendre RDV"
+                        styleClass="nav-btn"
+                        onAction="#showPrendreRdvView"
+                        maxWidth="Infinity"/>
+
+                <Button fx:id="btnModuleDisponibilite"
+                        text="  🕒  Disponibilités"
+                        styleClass="nav-btn"
+                        onAction="#showDisponibiliteView"
+                        maxWidth="Infinity"/>
+
                 <Button fx:id="btnModuleMarket"
                         text="  💊  Produits Pharmaceutiques"
                         styleClass="nav-btn"

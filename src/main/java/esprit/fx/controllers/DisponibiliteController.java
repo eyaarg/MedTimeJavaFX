@@ -550,19 +550,15 @@ public class DisponibiliteController implements Initializable {
             List<User> doctors = serviceDisponibilite.getAllDoctors();
             if (!doctors.isEmpty()) {
                 for (User doctor : doctors) {
-                    doctorCombo.getItems().add(
-                            doctor.getId() + " - " + doctor.getUsername()
-                    );
+                    doctorCombo.getItems().add("Dr. " + doctor.getUsername());
                 }
             } else {
                 List<Disponibilite> existingDispos = serviceDisponibilite.getAll();
-                java.util.Set<Integer> doctorIds = new java.util.HashSet<>();
+                java.util.Set<String> doctorNoms = new java.util.HashSet<>();
                 for (Disponibilite d : existingDispos) {
-                    doctorIds.add(d.getDoctorId());
+                    doctorNoms.add("Dr. Médecin " + d.getDoctorId());
                 }
-                for (Integer id : doctorIds) {
-                    doctorCombo.getItems().add(id + " - Médecin " + id);
-                }
+                doctorCombo.getItems().addAll(doctorNoms);
             }
         } catch (Exception e) {
             doctorCombo.getItems().addAll("1 - Médecin 1", "2 - Médecin 2");
@@ -661,7 +657,9 @@ public class DisponibiliteController implements Initializable {
         // Remplir si modification
         if (disponibilite != null) {
             for (String item : doctorCombo.getItems()) {
-                if (item.startsWith(disponibilite.getDoctorId() + " ")) {
+                // Chercher par nom du médecin
+                if (item.equals("Dr. " + disponibilite.getDoctorNom()) ||
+                    item.contains(disponibilite.getDoctorNom())) {
                     doctorCombo.setValue(item);
                     break;
                 }
@@ -764,9 +762,13 @@ public class DisponibiliteController implements Initializable {
 
                     if (!isValid) return null;
 
-                    int doctorId = Integer.parseInt(
-                            doctorCombo.getValue().split(" - ")[0]
-                    );
+                    // Récupérer l'ID du médecin depuis la liste par son nom
+                    final String selectedNom = doctorCombo.getValue();
+                    int doctorId = serviceDisponibilite.getAllDoctors().stream()
+                            .filter(d -> ("Dr. " + d.getUsername()).equals(selectedNom))
+                            .findFirst()
+                            .map(esprit.fx.entities.User::getId)
+                            .orElse(0);
 
                     String[] heureDebutParts = heureDebutField.getText().split(":");
                     String[] heureFinParts = heureFinField.getText().split(":");

@@ -67,7 +67,7 @@ public class ListeAttenteController implements Initializable {
         try {
             doctorsList = serviceRendezVous.getAllDoctors();
             for (User d : doctorsList) {
-                comboDocteur.getItems().add(d.getId() + " — Dr. " + d.getUsername());
+                comboDocteur.getItems().add("Dr. " + d.getUsername());
             }
             if (!comboDocteur.getItems().isEmpty())
                 comboDocteur.setValue(comboDocteur.getItems().get(0));
@@ -118,7 +118,11 @@ public class ListeAttenteController implements Initializable {
             return;
         }
 
-        int doctorId = Integer.parseInt(comboDocteur.getValue().split(" — ")[0]);
+        int doctorId = doctorsList.stream()
+                .filter(d -> ("Dr. " + d.getUsername()).equals(comboDocteur.getValue()))
+                .findFirst()
+                .map(User::getId)
+                .orElse(0);
         LocalDate date = datePickerSouhaitee.getValue();
         String plage   = comboPlage.getValue();
 

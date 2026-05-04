@@ -10,6 +10,10 @@ public class Doctor extends User {
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
         private String adresse;
+        // Champs localisation (module Eya)
+        private String city;
+        private Double latitude;
+        private Double longitude;
 
     public Doctor() {
     }
@@ -85,5 +89,14 @@ public class Doctor extends User {
         public void setAdresse(String adresse) {
             this.adresse = adresse;
         }
+
+        public String getCity() { return city; }
+        public void setCity(String city) { this.city = city; }
+
+        public Double getLatitude() { return latitude; }
+        public void setLatitude(Double latitude) { this.latitude = latitude; }
+
+        public Double getLongitude() { return longitude; }
+        public void setLongitude(Double longitude) { this.longitude = longitude; }
 
 }

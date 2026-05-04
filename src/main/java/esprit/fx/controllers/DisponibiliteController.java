@@ -764,11 +764,16 @@ public class DisponibiliteController implements Initializable {
 
                     // Récupérer l'ID du médecin depuis la liste par son nom
                     final String selectedNom = doctorCombo.getValue();
-                    int doctorId = serviceDisponibilite.getAllDoctors().stream()
-                            .filter(d -> ("Dr. " + d.getUsername()).equals(selectedNom))
-                            .findFirst()
-                            .map(esprit.fx.entities.User::getId)
-                            .orElse(0);
+                    int doctorId = 0;
+                    try {
+                        doctorId = serviceDisponibilite.getAllDoctors().stream()
+                                .filter(d -> ("Dr. " + d.getUsername()).equals(selectedNom))
+                                .findFirst()
+                                .map(esprit.fx.entities.User::getId)
+                                .orElse(0);
+                    } catch (java.sql.SQLException ex) {
+                        System.err.println("Erreur récupération médecin: " + ex.getMessage());
+                    }
 
                     String[] heureDebutParts = heureDebutField.getText().split(":");
                     String[] heureFinParts = heureFinField.getText().split(":");

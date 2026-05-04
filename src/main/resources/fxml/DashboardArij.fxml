@@ -12,7 +12,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="esprit.fx.controllers.DashboardControllerArij"
-      spacing="0" stylesheets="@/css/arij-styles.css"
+      spacing="0" stylesheets="@../css/arij-styles.css"
       style="-fx-background-color:#f0f4f8;">
 
     <HBox alignment="CENTER_LEFT" styleClass="page-header">
@@ -52,7 +52,7 @@
                     </HBox>
 
                     <!-- ══════════════ QUIZ SANTÉ ══════════════ -->
-                    <fx:include source="/fxml/QuizSantePanelArij.fxml"/>
+                    <fx:include source="QuizSantePanelArij.fxml"/>
 
                     <!-- Pie : statuts -->
                     <VBox styleClass="chart-card">
@@ -70,7 +70,7 @@
                     </VBox>
 
                     <!-- Wikipedia Widget -->
-                    <fx:include source="/fxml/WikipediaWidgetArij.fxml"/>
+                    <fx:include source="WikipediaWidgetArij.fxml"/>
 
                 </VBox>
 
@@ -127,7 +127,7 @@
                     </HBox>
 
                     <!-- Calendrier des disponibilités -->
-                    <fx:include fx:id="calendarPanel" source="/fxml/CalendrierPanelArij.fxml"/>
+                    <fx:include fx:id="calendarPanel" source="CalendrierPanelArij.fxml"/>
 
                 </VBox>
 

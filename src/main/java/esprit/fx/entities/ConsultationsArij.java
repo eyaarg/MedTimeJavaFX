@@ -16,6 +16,7 @@ public class ConsultationsArij {
     private String rejectionReason;
     private double consultationFee;
     private String lienMeet;
+    private boolean smsSuiviEnvoye;
     
     // Références aux entités (pour faciliter l'accès aux données)
     private User patient;
@@ -53,6 +54,8 @@ public class ConsultationsArij {
     public void setConsultationFee(double consultationFee) { this.consultationFee = consultationFee; }
     public String getLienMeet() { return lienMeet; }
     public void setLienMeet(String lienMeet) { this.lienMeet = lienMeet; }
+    public boolean isSmsSuiviEnvoye() { return smsSuiviEnvoye; }
+    public void setSmsSuiviEnvoye(boolean smsSuiviEnvoye) { this.smsSuiviEnvoye = smsSuiviEnvoye; }
     
     // Getters pour les entités
     public User getPatient() { return patient; }

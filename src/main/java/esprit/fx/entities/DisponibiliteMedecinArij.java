@@ -14,6 +14,8 @@ public class DisponibiliteMedecinArij {
     private LocalDateTime dateFin;
     private boolean estOccupee;
     private String titre;
+    private LocalDateTime createdAt;
+    private String medecinNom;
 
     // ── Constructeurs ─────────────────────────────────────────────────────
 
@@ -47,6 +49,12 @@ public class DisponibiliteMedecinArij {
     public String getTitre() { return titre; }
     public void setTitre(String titre) { this.titre = titre; }
 
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getMedecinNom() { return medecinNom; }
+    public void setMedecinNom(String medecinNom) { this.medecinNom = medecinNom; }
+
     @Override
     public String toString() {
         return "DisponibiliteMedecinArij{" +
@@ -56,6 +64,8 @@ public class DisponibiliteMedecinArij {
                 ", dateFin=" + dateFin +
                 ", estOccupee=" + estOccupee +
                 ", titre='" + titre + '\'' +
+                ", createdAt=" + createdAt +
+                ", medecinNom='" + medecinNom + '\'' +
                 '}';
     }
 }

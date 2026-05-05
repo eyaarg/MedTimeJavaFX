@@ -122,7 +122,6 @@ public class FormulaireProduitController implements Initializable {
         txtMarque.setText(produit.getMarque());
         dpDateExpiration.setValue(produit.getDateExpiration());
 
-        // Afficher la preview si une image existe
         if (produit.getImage() != null && !produit.getImage().isBlank()) {
             try {
                 URL imageUrl = getClass().getResource(produit.getImage());
@@ -138,12 +137,10 @@ public class FormulaireProduitController implements Initializable {
             showWarningAlert("Le nom est obligatoire !");
             return false;
         }
-
         if (cmbCategorie.getValue() == null) {
             showWarningAlert("La categorie est obligatoire !");
             return false;
         }
-
         try {
             double prix = Double.parseDouble(txtPrix.getText().trim());
             if (prix <= 0) {
@@ -154,7 +151,6 @@ public class FormulaireProduitController implements Initializable {
             showWarningAlert("Prix invalide !");
             return false;
         }
-
         try {
             int stock = Integer.parseInt(txtStock.getText().trim());
             if (stock < 0) {
@@ -165,17 +161,14 @@ public class FormulaireProduitController implements Initializable {
             showWarningAlert("Stock invalide !");
             return false;
         }
-
         if (dpDateExpiration.getValue() == null) {
             showWarningAlert("La date d'expiration est obligatoire !");
             return false;
         }
-
         if (dpDateExpiration.getValue().isBefore(LocalDate.now())) {
             showWarningAlert("La date d'expiration ne peut pas etre dans le passe !");
             return false;
         }
-
         return true;
     }
 
@@ -194,40 +187,38 @@ public class FormulaireProduitController implements Initializable {
             try {
                 Path destDir = Paths.get(IMAGES_DIR);
                 Files.createDirectories(destDir);
-
                 String fileName = System.currentTimeMillis() + "_" + selectedFile.getName();
                 Path destPath = destDir.resolve(fileName);
                 Files.copy(selectedFile.toPath(), destPath, StandardCopyOption.REPLACE_EXISTING);
-
-                String relativePath = "/images/produits/" + fileName;
-                txtImage.setText(relativePath);
-
+                txtImage.setText("/images/produits/" + fileName);
                 imgPreview.setImage(new Image(selectedFile.toURI().toString()));
 
-                // Lancer l'analyse IA en arrière-plan
-                txtDescription.setText("🤖 Analyse de l'image en cours...");
+                // --- Préparation de l'IA Gemini ---
+                txtDescription.setText("🤖 Gemini analyse l'image...");
                 txtDescription.setDisable(true);
 
-                byte[] imageBytes = Files.readAllBytes(selectedFile.toPath());
-                String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+                // Redimensionnement et conversion Base64 (propre pour Gemini)
+                String base64Image = encodeAndResizeImage(selectedFile);
 
                 new Thread(() -> {
                     try {
+                        // VisionService utilise maintenant Gemini
                         String description = visionService.genererDescription(base64Image);
                         Platform.runLater(() -> {
                             txtDescription.setText(description);
                             txtDescription.setDisable(false);
                         });
                     } catch (Exception e) {
+                        e.printStackTrace();
                         Platform.runLater(() -> {
-                            txtDescription.setText("⚠️ Impossible de générer la description : " + e.getMessage());
+                            txtDescription.setText("⚠️ Erreur Gemini : " + e.getMessage());
                             txtDescription.setDisable(false);
                         });
                     }
                 }).start();
 
             } catch (IOException e) {
-                showErrorAlert("Impossible de copier l'image : " + e.getMessage());
+                showErrorAlert("Impossible de traiter l'image : " + e.getMessage());
             }
         }
     }
@@ -239,17 +230,13 @@ public class FormulaireProduitController implements Initializable {
             return;
         }
 
-        // --- CORRECTION ICI ---
         Produit produit;
         if ("modifier".equalsIgnoreCase(mode)) {
-            // Si on modifie, on repart de l'objet existant pour garder son ID
             produit = produitModification;
         } else {
-            // Si on ajoute, on crée un nouvel objet vide
             produit = new Produit();
         }
 
-        // On remplit l'objet avec les valeurs des champs du formulaire
         produit.setNom(txtNom.getText().trim());
         produit.setDescription(txtDescription.getText());
         produit.setCategorie(cmbCategorie.getValue());
@@ -266,7 +253,6 @@ public class FormulaireProduitController implements Initializable {
                 serviceProduit.ajouter(produit);
                 showInfoAlert("Produit ajouté avec succès !");
             } else {
-                // L'ID est déjà dans l'objet car on a utilisé produitModification
                 serviceProduit.modifier(produit);
                 showInfoAlert("Produit modifié avec succès !");
             }
@@ -353,5 +339,35 @@ public class FormulaireProduitController implements Initializable {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private String encodeAndResizeImage(File file) {
+        try {
+            java.awt.image.BufferedImage originalImage = javax.imageio.ImageIO.read(file);
+
+            if (originalImage == null) {
+                return Base64.getEncoder().encodeToString(Files.readAllBytes(file.toPath()));
+            }
+
+            int targetWidth = 800;
+            int targetHeight = (int) (originalImage.getHeight() * (double) targetWidth / originalImage.getWidth());
+            int type = originalImage.getType() == 0 ? java.awt.image.BufferedImage.TYPE_INT_RGB : originalImage.getType();
+
+            java.awt.Image resultingImage = originalImage.getScaledInstance(targetWidth, targetHeight, java.awt.Image.SCALE_SMOOTH);
+            java.awt.image.BufferedImage outputImage = new java.awt.image.BufferedImage(targetWidth, targetHeight, type);
+            outputImage.getGraphics().drawImage(resultingImage, 0, 0, null);
+
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+            javax.imageio.ImageIO.write(outputImage, "jpg", baos);
+            
+            // On retourne le Base64 pur sans préfixe pour Gemini
+            return Base64.getEncoder().encodeToString(baos.toByteArray());
+        } catch (Exception e) {
+            try {
+                return Base64.getEncoder().encodeToString(Files.readAllBytes(file.toPath()));
+            } catch (Exception ex) {
+                return "";
+            }
+        }
     }
 }

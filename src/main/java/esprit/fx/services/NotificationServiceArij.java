@@ -77,7 +77,6 @@ public class NotificationServiceArij {
                     notif.setCreatedAt(LocalDateTime.now());
                     notif.setLien(lien);
 
-                    NotificationWebSocketArij.getInstance().publishNotification(destinataireId.intValue());
                     System.out.println("[NotificationServiceArij] ✓ Notification envoyée à userId=" + destinataireId);
                     return notif;
                 }

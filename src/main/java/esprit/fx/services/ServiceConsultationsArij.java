@@ -522,7 +522,6 @@ public class ServiceConsultationsArij {
             ps.setTimestamp(5, ts(LocalDateTime.now()));
             ps.setString(6, link);
             ps.executeUpdate();
-            NotificationWebSocketArij.getInstance().publishNotification(userId);
             System.out.println("[ServiceConsultationsArij] ✅ Notification envoyée à userId=" + userId
                     + (link != null ? " avec lien Meet" : ""));
         } catch (SQLException e) {

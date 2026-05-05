@@ -410,19 +410,24 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
 
     @Override
     public List<Disponibilite> getAll() throws SQLException {
-        String sql = "SELECT * FROM availability ORDER BY id DESC";
-        
+        String sql = """
+            SELECT d.*, u.username AS doctor_nom, u.email AS doctor_email
+            FROM availability d
+            LEFT JOIN users u ON d.doctor_id = u.id
+            ORDER BY d.id DESC
+            """;
+
         List<Disponibilite> disponibilites = new ArrayList<>();
-        
+
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-            
+
             while (rs.next()) {
-                Disponibilite d = mapResultSetToDisponibiliteSimple(rs);
+                Disponibilite d = mapResultSetToDisponibilite(rs);
                 disponibilites.add(d);
             }
         }
-        
+
         return disponibilites;
     }
 

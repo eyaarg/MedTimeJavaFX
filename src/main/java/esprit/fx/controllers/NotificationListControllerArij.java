@@ -24,10 +24,6 @@ public class NotificationListControllerArij {
     @FXML private void initialize()  { /* context is set after load */ }
     @FXML private void markAllRead() { service.markAllAsRead(userId); loadNotifications(); }
 
-    public void refreshFromWebSocket() {
-        loadNotifications();
-    }
-
     private void loadNotifications() {
         notificationsContainer.getChildren().clear();
         List<NotificationsArij> list = service.getNotificationsByUser(userId);

@@ -1,11 +1,9 @@
 package esprit.fx.services;
 
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 /**
@@ -41,15 +39,15 @@ public class TranslationService {
         if (texte == null || texte.isBlank()) return "";
         if (source == cible) return texte;
 
-        // Nettoyer tous les caractères de contrôle
-        String propre = texte.replaceAll("[\\r\\n\\t]", " ")
-                             .replaceAll("\\s+", " ")
-                             .trim();
+        // Nettoyer — garder seulement les caractères sûrs, max 400 chars
+        String propre = texte.replace("\n", " ").replace("\r", " ")
+                             .replace("…", "").trim();
         if (propre.length() > 400) propre = propre.substring(0, 400);
 
         try {
             String langPair = source.code + "|" + cible.code;
-            // Utiliser new URI() avec paramètres séparés — encode automatiquement
+
+            // Utiliser URI avec constructeur complet pour éviter les caractères illégaux
             URI uri = new URI("https", "api.mymemory.translated.net",
                     "/get", "q=" + propre + "&langpair=" + langPair, null);
 
@@ -64,13 +62,13 @@ public class TranslationService {
             if (response.statusCode() == 200) {
                 return parseTranslation(response.body());
             } else {
-                return "Erreur API (" + response.statusCode() + ")";
+                return "❌ Erreur API (" + response.statusCode() + ")";
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            return "Traduction interrompue";
+            return "❌ Traduction interrompue";
         } catch (Exception e) {
-            return "Erreur : " + e.getMessage();
+            return "❌ Erreur : " + e.getMessage();
         }
     }
 

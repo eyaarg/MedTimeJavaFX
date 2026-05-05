@@ -130,7 +130,6 @@ public class NotificationDAOArij {
 
             ResultSet keys = ps.getGeneratedKeys();
             if (keys.next()) n.setId(keys.getLong(1));
-            NotificationWebSocketArij.getInstance().publishNotification(n.getDestinataireId().intValue());
         } catch (SQLException e) {
             System.err.println("[NotificationDAOArij] save: " + e.getMessage());
         }

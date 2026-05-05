@@ -64,8 +64,6 @@ public class DisponibiliteMedecinArij {
                 ", dateFin=" + dateFin +
                 ", estOccupee=" + estOccupee +
                 ", titre='" + titre + '\'' +
-                ", createdAt=" + createdAt +
-                ", medecinNom='" + medecinNom + '\'' +
                 '}';
     }
 }

@@ -2,7 +2,7 @@ package esprit.fx.controllers;
 
 import esprit.fx.entities.LigneOrdonnanceArij;
 import esprit.fx.entities.OrdonnanceArij;
-import esprit.fx.services.QrCodeServiceArij;
+import esprit.fx.services.QRCodeServiceArij;
 import esprit.fx.services.ServiceOrdonnanceArij;
 import esprit.fx.utils.PdfExporterArij;
 import javafx.fxml.FXML;
@@ -245,20 +245,18 @@ public class OrdonnanceDetailControllerArij {
             if (ordonnance.getAccessToken() != null && !ordonnance.getAccessToken().isEmpty()) {
                 // QR Code génération (optionnel)
                 try {
-                    QrCodeServiceArij qrService = new QrCodeServiceArij();
-                    Image qrImage = qrService.genererQRCodeOrdonnance(ordonnance, 200);
+                    QRCodeServiceArij qrService = new QRCodeServiceArij();
+                    String scanUrl = ordonnance.buildScanUrl("http://localhost:8000");
                     
-                    if (qrImage != null && qrCodeImageView != null) {
+                    if (scanUrl != null && qrService != null) {
                         // byte[] qrCodeBytes = qrService.generateQRCode(scanUrl, 200, 200);
                         // Image qrImage = new Image(new ByteArrayInputStream(qrCodeBytes));
-                        qrCodeImageView.setImage(qrImage);
-                        System.out.println("[OrdonnanceDetailControllerArij] QR Code affiche");
+                        // qrCodeImageView.setImage(qrImage);
+                        System.out.println("[OrdonnanceDetailControllerArij] QR Code génération skippée");
                     }
                 } catch (Exception qrEx) {
                     System.err.println("[OrdonnanceDetailControllerArij] QR Code error: " + qrEx.getMessage());
                 }
-            } else if (qrCodeImageView != null) {
-                qrCodeImageView.setImage(null);
             }
         } catch (Exception e) {
             System.err.println("[OrdonnanceDetailControllerArij] Erreur génération QR Code : " + e.getMessage());

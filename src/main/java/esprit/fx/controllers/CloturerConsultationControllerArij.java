@@ -290,7 +290,7 @@ public class CloturerConsultationControllerArij {
                 numeroOrd, prix
             );
             notifService.notifier(
-                Long.valueOf(patientUserId),
+                (long) patientUserId,
                 msgNotif,
                 NotificationArij.TYPE_SUCCESS,
                 null

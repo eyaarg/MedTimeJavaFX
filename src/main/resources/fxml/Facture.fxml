@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.FactureController"
+      spacing="0" style="-fx-background-color: #f0f4f8;">
+
+    <!-- Header -->
+    <VBox style="-fx-background-color: #2c3e50;" alignment="CENTER">
+        <padding><Insets top="24" right="32" bottom="24" left="32"/></padding>
+        <Label text="🏥 MedTime" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+        <Label text="Facture de commande" style="-fx-font-size: 14px; -fx-text-fill: #bdc3c7;"/>
+    </VBox>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                style="-fx-background-color: transparent; -fx-background: transparent;">
+        <content>
+            <VBox spacing="16">
+                <padding><Insets top="24" right="40" bottom="24" left="40"/></padding>
+
+                <!-- Infos commande -->
+                <VBox spacing="8" style="-fx-background-color: white; -fx-background-radius: 10;
+                                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);">
+                    <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
+
+                    <HBox spacing="16">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label fx:id="lblNumeroCommande" text="Commande #"
+                                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                            <Label fx:id="lblDateCommande" text=""
+                                   style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d;"/>
+                        </VBox>
+                        <Label fx:id="lblStatut" text="✅ PAYÉE"
+                               style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #27ae60;
+                                      -fx-background-color: #eafaf1; -fx-background-radius: 20; -fx-padding: 6 16;"/>
+                    </HBox>
+
+                    <Separator/>
+
+                    <HBox spacing="8">
+                        <Label text="Client :" style="-fx-font-size: 13px; -fx-text-fill: #7f8c8d;"/>
+                        <Label fx:id="lblClient" text="" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Tableau des produits -->
+                <VBox style="-fx-background-color: white; -fx-background-radius: 10;
+                              -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);">
+                    <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
+
+                    <Label text="Détail des articles" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                    <Separator style="-fx-padding: 4 0;"/>
+
+                    <!-- En-tête tableau -->
+                    <HBox style="-fx-background-color: #f8f9fa; -fx-background-radius: 6; -fx-padding: 8 12;">
+                        <Label text="Produit" style="-fx-font-weight: bold; -fx-text-fill: #7f8c8d; -fx-font-size: 12px;" HBox.hgrow="ALWAYS" prefWidth="200"/>
+                        <Label text="Qté" style="-fx-font-weight: bold; -fx-text-fill: #7f8c8d; -fx-font-size: 12px;" prefWidth="60"/>
+                        <Label text="Prix unit." style="-fx-font-weight: bold; -fx-text-fill: #7f8c8d; -fx-font-size: 12px;" prefWidth="90"/>
+                        <Label text="Sous-total" style="-fx-font-weight: bold; -fx-text-fill: #7f8c8d; -fx-font-size: 12px;" prefWidth="90"/>
+                    </HBox>
+
+                    <VBox fx:id="itemsContainer" spacing="4">
+                        <padding><Insets top="8"/></padding>
+                    </VBox>
+                </VBox>
+
+                <!-- Réduction fidélité si applicable -->
+                <Label fx:id="lblReduction" text="" managed="false" visible="false"
+                       style="-fx-background-color: #fef9e7; -fx-text-fill: #f39c12; -fx-font-weight: bold;
+                              -fx-font-size: 13px; -fx-background-radius: 8; -fx-padding: 10 16;"/>
+
+                <!-- Total -->
+                <VBox style="-fx-background-color: #2c3e50; -fx-background-radius: 10;">
+                    <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
+                    <HBox alignment="CENTER_RIGHT" spacing="16">
+                        <Label text="TOTAL TTC" style="-fx-font-size: 16px; -fx-text-fill: #bdc3c7;"/>
+                        <Label fx:id="lblTotal" text="0.00 TND"
+                               style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #2ecc71;"/>
+                    </HBox>
+                </VBox>
+
+            </VBox>
+        </content>
+    </ScrollPane>
+
+    <!-- Footer boutons -->
+    <HBox spacing="12" alignment="CENTER_RIGHT"
+          style="-fx-background-color: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, -2, 0);">
+        <padding><Insets top="16" right="32" bottom="16" left="32"/></padding>
+
+        <Button text="✅ Fermer" onAction="#handleFermer"
+                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;
+                       -fx-background-radius: 8; -fx-padding: 10 20;"/>
+    </HBox>
+
+</VBox>

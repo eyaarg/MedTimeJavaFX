@@ -27,30 +27,42 @@ public class ServiceProduit implements IService<Produit> {
 
     @Override
     public void ajouter(Produit produit) throws SQLException {
-        String requete = "INSERT INTO product(name, description, price, stock, created_at, updated_at, " +
-                "is_available, is_prescription_required, brand, category_id, image, expire_at) " +
-                "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String requete = "INSERT INTO product(name, description, price, stock, " +
+                "is_available, is_prescription_required, brand, category_id_id, image, expire_at) " +
+                "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement pstmt = conn.prepareStatement(requete)) {
-            LocalDateTime now = LocalDateTime.now();
             pstmt.setString(1, produit.getNom());
             pstmt.setString(2, produit.getDescription());
             pstmt.setDouble(3, produit.getPrix());
             pstmt.setInt(4, produit.getStock());
-            pstmt.setTimestamp(5, Timestamp.valueOf(now));
-            pstmt.setTimestamp(6, Timestamp.valueOf(now));
-            pstmt.setBoolean(7, Boolean.TRUE.equals(produit.getDisponible()));
-            pstmt.setBoolean(8, Boolean.TRUE.equals(produit.getPrescriptionRequise()));
-            pstmt.setString(9, produit.getMarque());
-            pstmt.setInt(10, resolveCategoryId(produit.getCategorie()));
-            pstmt.setString(11, produit.getImage());
-            pstmt.setObject(12, produit.getDateExpiration());
+            pstmt.setBoolean(5, Boolean.TRUE.equals(produit.getDisponible()));
+            pstmt.setBoolean(6, Boolean.TRUE.equals(produit.getPrescriptionRequise()));
+            pstmt.setString(7, produit.getMarque());
+            pstmt.setInt(8, resolveCategoryId(produit.getCategorie()));
+            pstmt.setString(9, produit.getImage());
+            pstmt.setObject(10, produit.getDateExpiration());
             pstmt.executeUpdate();
         }
     }
 
     @Override
     public void supprimer(int id) throws SQLException {
+        // Supprimer d'abord les références dans ligne_panier
+        String deleteLignePanier = "DELETE FROM ligne_panier WHERE produit_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(deleteLignePanier)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        }
+
+        // Supprimer les références dans order_item
+        String deleteOrderItem = "DELETE FROM order_item WHERE product_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(deleteOrderItem)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        }
+
+        // Supprimer le produit
         String sql = "DELETE FROM product WHERE id=?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -61,7 +73,7 @@ public class ServiceProduit implements IService<Produit> {
     @Override
     public void modifier(Produit produit) throws SQLException {
         String requete = "UPDATE product SET name = ?, description = ?, price = ?, stock = ?, image = ?, " +
-                "is_available = ?, is_prescription_required = ?, brand = ?, category_id = ?, expire_at = ?, updated_at = ? " +
+                "is_available = ?, is_prescription_required = ?, brand = ?, category_id_id = ?, expire_at = ? " +
                 "WHERE id = ?";
 
         try (PreparedStatement pstmt = conn.prepareStatement(requete)) {
@@ -75,8 +87,7 @@ public class ServiceProduit implements IService<Produit> {
             pstmt.setString(8, produit.getMarque());
             pstmt.setInt(9, resolveCategoryId(produit.getCategorie()));
             pstmt.setObject(10, produit.getDateExpiration());
-            pstmt.setTimestamp(11, Timestamp.valueOf(LocalDateTime.now()));
-            pstmt.setLong(12, produit.getId());
+            pstmt.setLong(11, produit.getId());
             pstmt.executeUpdate();
         }
     }
@@ -84,7 +95,7 @@ public class ServiceProduit implements IService<Produit> {
     @Override
     public List<Produit> getAll() throws SQLException {
         String requete = "SELECT p.*, pc.name AS category_name FROM product p " +
-                "LEFT JOIN product_category pc ON pc.id = p.category_id";
+                "LEFT JOIN product_category pc ON pc.id = p.category_id_id";
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(requete)) {
             List<Produit> listproduits = new ArrayList<>();
@@ -98,7 +109,7 @@ public class ServiceProduit implements IService<Produit> {
     @Override
     public Produit afficherParId(int id) throws SQLException {
         String requete = "SELECT p.*, pc.name AS category_name FROM product p " +
-                "LEFT JOIN product_category pc ON pc.id = p.category_id WHERE p.id = ?";
+                "LEFT JOIN product_category pc ON pc.id = p.category_id_id WHERE p.id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(requete)) {
             pstmt.setInt(1, id);
             try (ResultSet rs = pstmt.executeQuery()) {

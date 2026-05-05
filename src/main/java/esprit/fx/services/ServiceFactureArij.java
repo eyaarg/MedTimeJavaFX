@@ -16,7 +16,7 @@ public class ServiceFactureArij {
             return new ArrayList<>();
         }
         List<FactureArij> list = new ArrayList<>();
-        String sql = "SELECT f.*, p.status AS paiement_status FROM facture f JOIN paiement p ON f.paiement_id = p.id WHERE p.patient_id = ?";
+        String sql = "SELECT f.* FROM facture f JOIN paiement p ON f.paiement_id = p.id WHERE p.patient_id = ?";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, patientId);
             ResultSet rs = ps.executeQuery();
@@ -26,12 +26,7 @@ public class ServiceFactureArij {
     }
 
     public FactureArij findByOrdonnanceId(int ordonnanceId) {
-        try (PreparedStatement ps = conn().prepareStatement("""
-                SELECT f.*, p.status AS paiement_status
-                FROM facture f
-                LEFT JOIN paiement p ON p.id = f.paiement_id
-                WHERE f.ordonnance_id = ?
-                """)) {
+        try (PreparedStatement ps = conn().prepareStatement("SELECT * FROM facture WHERE ordonnance_id = ?")) {
             ps.setInt(1, ordonnanceId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return mapRow(rs);
@@ -84,38 +79,16 @@ public class ServiceFactureArij {
             ps.setString(4, "FACTURE");
             ps.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
             ps.executeUpdate();
-            NotificationWebSocketArij.getInstance().publishNotification(patientUserId);
         } catch (SQLException e) { System.err.println("notifyFacture: " + e.getMessage()); }
     }
 
     public FactureArij findById(int id) {
-        try (PreparedStatement ps = conn().prepareStatement("""
-                SELECT f.*, p.status AS paiement_status
-                FROM facture f
-                LEFT JOIN paiement p ON p.id = f.paiement_id
-                WHERE f.id = ?
-                """)) {
+        try (PreparedStatement ps = conn().prepareStatement("SELECT * FROM facture WHERE id = ?")) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return mapRow(rs);
         } catch (SQLException e) { System.err.println("findById: " + e.getMessage()); }
         return null;
-    }
-
-    public boolean confirmerPaiement(int factureId) {
-        String sql = """
-                UPDATE paiement p
-                JOIN facture f ON f.paiement_id = p.id
-                SET p.status = 'PAYE', p.methode = 'STRIPE'
-                WHERE f.id = ?
-                """;
-        try (PreparedStatement ps = conn().prepareStatement(sql)) {
-            ps.setInt(1, factureId);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            System.err.println("confirmerPaiement: " + e.getMessage());
-            return false;
-        }
     }
 
     private int findPatientUserId(int patientId) {
@@ -141,11 +114,6 @@ public class ServiceFactureArij {
         f.setCheminPdf(rs.getString("chemin_pdf"));
         f.setPaiementId(rs.getInt("paiement_id"));
         f.setOrdonnanceId(rs.getInt("ordonnance_id"));
-        try {
-            f.setPaiementStatus(rs.getString("paiement_status"));
-        } catch (SQLException ignored) {
-            f.setPaiementStatus(null);
-        }
         return f;
     }
 }

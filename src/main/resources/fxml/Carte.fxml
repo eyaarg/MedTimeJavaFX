@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.CarteController"
+      prefWidth="750" prefHeight="550"
+      style="-fx-background-color: #f8fafc;">
+
+    <!-- Barre de chargement -->
+    <HBox fx:id="loadingBar" alignment="CENTER" spacing="10"
+          style="-fx-background-color: #eff6ff; -fx-padding: 10;
+                 -fx-border-color: #bfdbfe; -fx-border-width: 0 0 1 0;"
+          visible="true" managed="true">
+        <Label text="⏳" style="-fx-font-size: 16px;"/>
+        <Label fx:id="labelChargement"
+               text="Recherche de l'adresse en cours..."
+               style="-fx-font-size: 13px; -fx-text-fill: #1d4ed8; -fx-font-weight: 600;"/>
+    </HBox>
+
+    <!-- WebView carte -->
+    <WebView fx:id="webViewCarte" VBox.vgrow="ALWAYS"/>
+
+    <!-- Pied de page -->
+    <HBox alignment="CENTER_RIGHT" spacing="10"
+          style="-fx-background-color: white; -fx-padding: 10 15;
+                 -fx-border-color: #e5e7eb; -fx-border-width: 1 0 0 0;">
+        <Label text="🗺️ OpenStreetMap — Nominatim"
+               style="-fx-font-size: 11px; -fx-text-fill: #9ca3af;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnFermer" text="✖ Fermer" onAction="#fermer"
+                style="-fx-background-color: #6b7280; -fx-text-fill: white;
+                       -fx-font-weight: 600; -fx-padding: 8 20;
+                       -fx-background-radius: 8; -fx-cursor: hand;"/>
+    </HBox>
+
+</VBox>

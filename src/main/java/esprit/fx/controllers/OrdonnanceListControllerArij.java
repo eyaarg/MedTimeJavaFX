@@ -249,11 +249,11 @@ public class OrdonnanceListControllerArij {
 
         box.getChildren().add(btnView);
 
-        if (isDoctor) {
+        if (false && isDoctor) {
             Button btnEdit = iconBtn("✏️", "#e0f2fe", "#0369a1", "#bae6fd", "Modifier");
             btnEdit.setOnAction(e -> openEditModal(o, pid, pInfo));
             box.getChildren().add(btnEdit);
-        } else {
+        } else if (false) {
             // Patient : télécharger PDF ordonnance + facture
             Button btnPdfOrd = iconBtn("🖨", "#eff6ff", "#1d4ed8", "#bfdbfe", "Télécharger ordonnance PDF");
             btnPdfOrd.setOnAction(e -> {

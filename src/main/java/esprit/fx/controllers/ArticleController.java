@@ -442,7 +442,7 @@ public class ArticleController implements Initializable {
             if (src == cible) { lblResultTitle.setText("⚠️ Choisissez deux langues différentes"); resultBox.setVisible(true); resultBox.setManaged(true); return; }
             btnGo.setDisable(true); lblLoading.setVisible(true); lblLoading.setManaged(true); resultBox.setVisible(false); resultBox.setManaged(false);
             Thread t = new Thread(() -> {
-                String traduit = translationService.traduire(article.getTitre() + "\n\n" + article.getContenu(), src, cible);
+                String traduit = translationService.traduire(article.getTitre() + " " + article.getContenu(), src, cible);
                 Platform.runLater(() -> { lblLoading.setVisible(false); lblLoading.setManaged(false); btnGo.setDisable(false); lblResultTitle.setText(src.label + "  →  " + cible.label); lblResultText.setText(traduit); resultBox.setVisible(true); resultBox.setManaged(true); });
             }); t.setDaemon(true); t.start();
         });
@@ -468,7 +468,6 @@ public class ArticleController implements Initializable {
     public void ajouterArticle() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AjouterArticle.fxml"));
-            loader.setController(new AjouterArticleController());
             Parent root = loader.load();
             Stage stage = new Stage();
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);

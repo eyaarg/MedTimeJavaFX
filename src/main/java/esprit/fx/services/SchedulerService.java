@@ -44,7 +44,7 @@ public class SchedulerService {
         try {
             Connection con = MyDB.getInstance().getConnection();
             // Trouver les articles planifiés dont la date est arrivée
-            String sqlSelect = "SELECT id, titre FROM article WHERE statut = 'planifié' AND date_publication <= NOW()";
+            String sqlSelect = "SELECT id, titre FROM article WHERE statut = 'planifie' AND date_creation <= NOW()";
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(sqlSelect);
 

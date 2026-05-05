@@ -1,0 +1,51 @@
+[33m7680074[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmodule_c[m[33m, [m[1;31morigin/module_c[m[33m)[m Module C - 2nd validation: 5 AI APIs + Unit Tests + Advanced features
+[33md22167b[m feat: complet
+[33md08e908[m feat: planification
+[33m5c19d4a[m feat: moderation ia
+[33m5a7c0a1[m feat: ajout commentaires + reactions + traduction
+[33m219cb9b[m merge: master into module_c
+[33m1305200[m merge: Module_Consultation_online into master
+[33mb97811f[m[33m ([m[1;31morigin/Module_Consultation_online[m[33m)[m feat: module consultation articles et commentaires
+[33m74c1d86[m fix: restore Produit/CategorieEnum/ServiceProduit, rename Main class, fix showFeedback
+[33m5853981[m feat: LauncherForum
+[33m7c8f662[m Merge Module_Consultation_online into master
+[33m84bbdd6[m Module Consultation Online - Arij: cards UI, modals CRUD, splash screen, sidebar #197bff, hub navigation, search/filter/sort
+[33m2c3457d[m feat: LauncherForum
+[33m5fd31fb[m feat: connexion fenêtres controllers forum
+[33m1a920f5[m feat: interfaces fxml forum corrigées
+[33mad9e35b[m feat: connexion login -> module consultation, correction champs email/password
+[33m456a8c2[m merge: integration travail equipe - login controller, services
+[33mab57531[m fix: correction erreurs chargement pages, Main.java, dashboard par defaut
+[33m6e180c3[m feat: interface AjouterCommentaire.fxml
+[33mc9defb0[m feat: interface AjouterArticle.fxml
+[33m647563c[m feat: CRUD CategorieService
+[33m21e63b5[m feat: ajout cmntcntrlr
+[33mde6b52d[m feat: ajout article cntrlr
+[33m1b6945a[m feat: interface modification cmnt
+[33mc8becc2[m feat: interface modification article
+[33m83d357c[m feat: interface liste article
+[33m3156b9e[m feat: interface liste cmnt
+[33m59f2c10[m feat: interface ajout cmnt
+[33m423bdd7[m feat: CRUD ArticleService
+[33m176b689[m feat: CRUD CategorieService
+[33m9a36b25[m feat: CRUD CommentaireService
+[33m0ddbb93[m feat: CRUD ArticleService
+[33m0bd0779[m feat: interface IService Forum
+[33m9e98ee4[m feat: entité Commentaire
+[33mab3338f[m feat: entité Categorie
+[33m2f5ebc3[m feat: entité Article
+[33m89a17be[m Merge pull request #2 from eyaarg/ModuleA-Eya
+[33md62aff7[m page login
+[33m5411b84[m hashage mdp
+[33ma15e2be[m Merge pull request #1 from eyaarg/ModuleA-Eya
+[33m3fd77b5[m modification jointure et login
+[33ma83f857[m merge: controle saisie complet + statistiques dashboard
+[33m4a65f6c[m feat: controle unicite, validation renforcee, statistiques dashboard patient/medecin
+[33ma548670[m merge: structure plate - supprimer sous-dossier consultationonline
+[33m1799850[m refactor: supprimer sous-dossier consultationonline - structure plate controllers/css/fxml
+[33m19ff125[m merge: module consultation en ligne
+[33mf71eaa0[m chore: update MyDB
+[33m14ab983[m feat: module consultation en ligne - refactoring esprit.fx, CRUD, IA chat, PDF
+[33m6e5ac95[m feat: module consultation en ligne - interface professionnelle, chat IA, tableau de bord
+[33m3c550fa[m Add consultation online module
+[33m2aa6a85[m Initalisation

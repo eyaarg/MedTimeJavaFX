@@ -41,15 +41,20 @@ public class TranslationService {
         if (texte == null || texte.isBlank()) return "";
         if (source == cible) return texte;
 
-        String texteTronque = texte.length() > 500 ? texte.substring(0, 500) + "…" : texte;
+        // Nettoyer tous les caractères de contrôle
+        String propre = texte.replaceAll("[\\r\\n\\t]", " ")
+                             .replaceAll("\\s+", " ")
+                             .trim();
+        if (propre.length() > 400) propre = propre.substring(0, 400);
 
         try {
-            String encoded  = URLEncoder.encode(texteTronque, StandardCharsets.UTF_8);
             String langPair = source.code + "|" + cible.code;
-            String url      = API_URL + "?q=" + encoded + "&langpair=" + langPair;
+            // Utiliser new URI() avec paramètres séparés — encode automatiquement
+            URI uri = new URI("https", "api.mymemory.translated.net",
+                    "/get", "q=" + propre + "&langpair=" + langPair, null);
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
+                    .uri(uri)
                     .timeout(Duration.ofSeconds(15))
                     .GET()
                     .build();
@@ -59,13 +64,13 @@ public class TranslationService {
             if (response.statusCode() == 200) {
                 return parseTranslation(response.body());
             } else {
-                return "❌ Erreur API (" + response.statusCode() + ")";
+                return "Erreur API (" + response.statusCode() + ")";
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            return "❌ Traduction interrompue";
+            return "Traduction interrompue";
         } catch (Exception e) {
-            return "❌ Erreur : " + e.getMessage();
+            return "Erreur : " + e.getMessage();
         }
     }
 

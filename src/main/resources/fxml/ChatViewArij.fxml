@@ -9,11 +9,12 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+<VBox xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="esprit.fx.controllers.ChatControllerArij"
-      spacing="0" stylesheets="@/css/arij-styles.css"
+      spacing="0" stylesheets="@../css/arij-styles.css"
       style="-fx-background-color: #f0f4f8;">
 
+    <!-- ── PAGE HEADER ─────────────────────────────────────────────── -->
     <HBox alignment="CENTER_LEFT" styleClass="page-header">
         <padding><Insets top="28" right="32" bottom="20" left="32"/></padding>
         <VBox spacing="3">
@@ -25,7 +26,7 @@
     <HBox spacing="20" VBox.vgrow="ALWAYS">
         <padding><Insets top="0" right="32" bottom="28" left="32"/></padding>
 
-        <!-- Chat panel -->
+        <!-- ── PANNEAU GAUCHE : Chat en direct ─────────────────────── -->
         <VBox spacing="0" HBox.hgrow="ALWAYS" styleClass="chat-panel">
             <VBox styleClass="chat-panel-header">
                 <padding><Insets top="14" right="18" bottom="14" left="18"/></padding>
@@ -45,31 +46,51 @@
             </HBox>
         </VBox>
 
-        <!-- AI panel -->
+        <!-- ── PANNEAU DROIT : Historique IA ───────────────────────── -->
         <VBox spacing="0" HBox.hgrow="ALWAYS" styleClass="chat-panel">
-            <VBox styleClass="ai-panel-header">
-                <padding><Insets top="14" right="18" bottom="14" left="18"/></padding>
-                <Label text="🤖  Assistant Médical IA" styleClass="panel-title"/>
-            </VBox>
-            <VBox spacing="14" VBox.vgrow="ALWAYS" style="-fx-background-color: white;">
-                <padding><Insets top="16" right="18" bottom="18" left="18"/></padding>
-                <TextArea fx:id="questionInput" prefRowCount="4" styleClass="form-input"
-                          promptText="Posez une question médicale…"/>
-                <HBox spacing="8" alignment="CENTER_LEFT">
-                    <Button text="Expliquer le diagnostic" styleClass="chip-btn" onAction="#presetExplain"/>
-                    <Button text="Effets secondaires" styleClass="chip-btn" onAction="#presetSideEffects"/>
-                    <Button text="Prochaines étapes" styleClass="chip-btn" onAction="#presetNextSteps"/>
-                </HBox>
-                <HBox alignment="CENTER_LEFT" spacing="12">
-                    <Button text="Demander à l'IA" styleClass="btn-primary" onAction="#handleAskAi"/>
-                    <Label fx:id="loadingLabel" text="⏳  Réflexion en cours…" styleClass="muted"
+
+            <!-- Header IA -->
+            <VBox style="-fx-background-color:#1e3a5f;-fx-padding:14 18 14 18;">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="🤖  Assistant Médical IA" styleClass="panel-title"
+                           style="-fx-text-fill:white;-fx-font-size:14px;-fx-font-weight:bold;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="aiLoadingLabel" text="⏳ Réflexion…"
+                           style="-fx-text-fill:#94a3b8;-fx-font-size:11px;"
                            visible="false" managed="false"/>
                 </HBox>
-                <Label text="Réponse" styleClass="field-label"/>
-                <TextArea fx:id="aiResponse" editable="false" prefRowCount="10"
-                          styleClass="ai-response" wrapText="true"
-                          promptText="La réponse de l'IA apparaîtra ici…"/>
+                <!-- Chips de suggestions -->
+                <HBox spacing="8" style="-fx-padding:10 0 0 0;">
+                    <Button text="Expliquer le diagnostic" onAction="#presetExplain"
+                            style="-fx-background-color:#2d5a8e;-fx-text-fill:white;
+                                   -fx-font-size:11px;-fx-padding:5 10;
+                                   -fx-background-radius:12;-fx-cursor:hand;"/>
+                    <Button text="Effets secondaires" onAction="#presetSideEffects"
+                            style="-fx-background-color:#2d5a8e;-fx-text-fill:white;
+                                   -fx-font-size:11px;-fx-padding:5 10;
+                                   -fx-background-radius:12;-fx-cursor:hand;"/>
+                    <Button text="Prochaines étapes" onAction="#presetNextSteps"
+                            style="-fx-background-color:#2d5a8e;-fx-text-fill:white;
+                                   -fx-font-size:11px;-fx-padding:5 10;
+                                   -fx-background-radius:12;-fx-cursor:hand;"/>
+                </HBox>
             </VBox>
+
+            <!-- Historique des messages IA -->
+            <ScrollPane fx:id="aiScrollPane" fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="chat-scroll">
+                <padding><Insets top="14" right="14" bottom="14" left="14"/></padding>
+                <content>
+                    <VBox fx:id="aiMessagesBox" spacing="10"/>
+                </content>
+            </ScrollPane>
+
+            <!-- Zone de saisie IA -->
+            <HBox spacing="10" styleClass="chat-input-bar">
+                <padding><Insets top="12" right="14" bottom="12" left="14"/></padding>
+                <TextField fx:id="aiInput" promptText="Posez une question médicale à l'IA…"
+                           HBox.hgrow="ALWAYS" styleClass="chat-input" onAction="#handleAskAi"/>
+                <Button text="Demander →" styleClass="btn-primary" onAction="#handleAskAi"/>
+            </HBox>
         </VBox>
 
     </HBox>

@@ -12,7 +12,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="esprit.fx.controllers.DashboardControllerArij"
-      spacing="0" stylesheets="@/css/arij-styles.css"
+      spacing="0" stylesheets="@../css/arij-styles.css"
       style="-fx-background-color:#f0f4f8;">
 
     <HBox alignment="CENTER_LEFT" styleClass="page-header">
@@ -51,6 +51,9 @@
                         </VBox>
                     </HBox>
 
+                    <!-- ══════════════ QUIZ SANTÉ ══════════════ -->
+                    <fx:include source="QuizSantePanelArij.fxml"/>
+
                     <!-- Pie : statuts -->
                     <VBox styleClass="chart-card">
                         <Label text="📊  Répartition par statut" styleClass="section-title"/>
@@ -65,6 +68,9 @@
                             <yAxis><NumberAxis label="Nombre"/></yAxis>
                         </BarChart>
                     </VBox>
+
+                    <!-- Wikipedia Widget -->
+                    <fx:include source="WikipediaWidgetArij.fxml"/>
 
                 </VBox>
 
@@ -105,6 +111,23 @@
                         <Label text="📊  Répartition par statut" styleClass="section-title"/>
                         <PieChart fx:id="doctorStatusPie" prefHeight="280" legendVisible="true"/>
                     </VBox>
+
+                    <!-- Export Excel Button -->
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <javafx.scene.control.Button text="📊 Exporter l'historique en Excel"
+                                                      onAction="#exportHistoriqueExcel"
+                                                      style="-fx-font-size:13px;
+                                                              -fx-padding:12 20 12 20;
+                                                              -fx-background-color:#4CAF50;
+                                                              -fx-text-fill:white;
+                                                              -fx-background-radius:8;
+                                                              -fx-font-weight:bold;
+                                                              -fx-cursor:hand;
+                                                              -fx-effect:dropshadow(gaussian, rgba(76,175,80,0.3), 5, 0, 0, 2);"/>
+                    </HBox>
+
+                    <!-- Calendrier des disponibilités -->
+                    <fx:include fx:id="calendarPanel" source="CalendrierPanelArij.fxml"/>
 
                 </VBox>
 

@@ -1,13 +1,18 @@
 package esprit.fx.controllers;
 
+import esprit.fx.services.ExcelExportServiceArij;
 import esprit.fx.services.ServiceConsultationsArij;
 import esprit.fx.services.ServiceOrdonnanceArij;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.chart.*;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -39,8 +44,12 @@ public class DashboardControllerArij {
     @FXML private BarChart<String, Number> weeklyBarChart;
     @FXML private PieChart                 doctorStatusPie;
 
+    // Calendar
+    @FXML private CalendrierControllerArij calendarPanelController;
+
     private final ServiceConsultationsArij consultationService = new ServiceConsultationsArij();
     private final ServiceOrdonnanceArij    ordonnanceService   = new ServiceOrdonnanceArij();
+    private final ExcelExportServiceArij   excelExportService  = new ExcelExportServiceArij();
 
     private boolean isPatient = true;
     private int patientId = 0;
@@ -133,6 +142,54 @@ public class DashboardControllerArij {
             new PieChart.Data("Terminée ("   + consultationService.countByStatus("TERMINEE", uid) + ")",
                                consultationService.countByStatus("TERMINEE", uid))
         ));
+
+        // Charger le calendrier
+        if (calendarPanelController != null) {
+            calendarPanelController.loadCalendar(uid);
+        }
+    }
+
+    // ── Export Excel ──────────────────────────────────────────────────────
+
+    /**
+     * Exporte l'historique médical en Excel.
+     */
+    @FXML
+    public void exportHistoriqueExcel() {
+        if (isPatient) {
+            showAlert("Non disponible", "L'export est disponible uniquement pour les médecins", Alert.AlertType.INFORMATION);
+            return;
+        }
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Exporter l'historique médical");
+        fileChooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("Fichiers Excel (*.xlsx)", "*.xlsx")
+        );
+        fileChooser.setInitialFileName("Historique_Medical_" + System.currentTimeMillis() + ".xlsx");
+
+        Stage stage = new Stage();
+        File file = fileChooser.showSaveDialog(stage);
+
+        if (file != null) {
+            boolean success = excelExportService.exportHistoriqueMedical(doctorId, file.getAbsolutePath());
+            if (success) {
+                showAlert("Succès", "Historique médical exporté avec succès!\n" + file.getAbsolutePath(), Alert.AlertType.INFORMATION);
+            } else {
+                showAlert("Erreur", "Impossible d'exporter l'historique médical", Alert.AlertType.ERROR);
+            }
+        }
+    }
+
+    /**
+     * Affiche une alerte.
+     */
+    private void showAlert(String title, String message, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────

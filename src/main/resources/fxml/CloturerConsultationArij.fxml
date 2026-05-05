@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.CloturerConsultationControllerArij"
+      stylesheets="@../css/arij-styles.css"
+      style="-fx-background-color: #f0f4f8;"
+      prefWidth="620" spacing="0">
+
+    <!-- ═══════════════════════════════════════════════════
+         EN-TÊTE
+    ═══════════════════════════════════════════════════ -->
+    <VBox styleClass="modal-header"
+          style="-fx-background-color: linear-gradient(to right, #1d4ed8, #6d28d9);">
+        <padding><Insets top="22" right="28" bottom="18" left="28"/></padding>
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label text="✔" style="-fx-font-size:22px; -fx-text-fill:white;"/>
+            <VBox spacing="3">
+                <Label text="Clôturer la consultation" styleClass="modal-title"/>
+                <Label text="Remplissez l'ordonnance et définissez le prix avant de clore"
+                       styleClass="modal-subtitle"/>
+            </VBox>
+        </HBox>
+    </VBox>
+
+    <!-- ═══════════════════════════════════════════════════
+         INFOS CONSULTATION (lecture seule)
+    ═══════════════════════════════════════════════════ -->
+    <HBox spacing="16"
+          style="-fx-background-color: white;
+                 -fx-border-color: #e2e8f0;
+                 -fx-border-width: 0 0 1 0;
+                 -fx-padding: 14 28 14 28;">
+        <VBox spacing="3" HBox.hgrow="ALWAYS">
+            <Label text="Patient" styleClass="field-label"/>
+            <Label fx:id="lblPatientNom"
+                   text="—"
+                   style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
+        </VBox>
+        <VBox spacing="3">
+            <Label text="Date consultation" styleClass="field-label"/>
+            <Label fx:id="lblDateConsultation"
+                   text="—"
+                   style="-fx-font-size:13px; -fx-text-fill:#475569;"/>
+        </VBox>
+        <VBox spacing="3">
+            <Label text="Consultation #" styleClass="field-label"/>
+            <Label fx:id="lblConsultationId"
+                   text="—"
+                   style="-fx-font-size:13px; -fx-text-fill:#475569;"/>
+        </VBox>
+    </HBox>
+
+    <!-- ═══════════════════════════════════════════════════
+         FORMULAIRE
+    ═══════════════════════════════════════════════════ -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll">
+        <content>
+            <VBox spacing="18" style="-fx-background-color: white;">
+                <padding><Insets top="24" right="28" bottom="28" left="28"/></padding>
+
+                <!-- ── Médicaments ── -->
+                <VBox spacing="6">
+                    <Label text="💊  Médicaments prescrits" styleClass="field-label"/>
+                    <TextArea fx:id="medicamentsArea"
+                              prefRowCount="4"
+                              wrapText="true"
+                              styleClass="form-input"
+                              promptText="Ex : Amoxicilline 500mg, Ibuprofène 400mg…"/>
+                    <Label fx:id="errMedicaments"
+                           text="⚠ Veuillez saisir au moins un médicament."
+                           styleClass="field-error"
+                           visible="false" managed="false"/>
+                </VBox>
+
+                <!-- ── Posologie ── -->
+                <VBox spacing="6">
+                    <Label text="📋  Posologie" styleClass="field-label"/>
+                    <TextArea fx:id="posologieArea"
+                              prefRowCount="3"
+                              wrapText="true"
+                              styleClass="form-input"
+                              promptText="Ex : 1 comprimé matin et soir pendant 7 jours…"/>
+                    <Label fx:id="errPosologie"
+                           text="⚠ Veuillez saisir la posologie."
+                           styleClass="field-error"
+                           visible="false" managed="false"/>
+                </VBox>
+
+                <!-- ── Recommandations ── -->
+                <VBox spacing="6">
+                    <Label text="📝  Recommandations" styleClass="field-label"/>
+                    <TextArea fx:id="recommandationsArea"
+                              prefRowCount="3"
+                              wrapText="true"
+                              styleClass="form-input"
+                              promptText="Conseils au patient, suivi, repos…"/>
+                </VBox>
+
+                <Separator/>
+
+                <!-- ── Prix + Lien Meet (2 colonnes) ── -->
+                <HBox spacing="16">
+                    <!-- Prix -->
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="💰  Prix de la consultation (TND)" styleClass="field-label"/>
+                        <TextField fx:id="prixField"
+                                   styleClass="form-input"
+                                   promptText="Ex : 50.00"
+                                   style="-fx-pref-width: 200px;"/>
+                        <Label fx:id="errPrix"
+                               text="⚠ Prix invalide (nombre > 0 requis)."
+                               styleClass="field-error"
+                               visible="false" managed="false"/>
+                    </VBox>
+
+                    <!-- Lien Google Meet -->
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="🎥  Lien Google Meet (optionnel)" styleClass="field-label"/>
+                        <TextField fx:id="lienMeetField"
+                                   styleClass="form-input"
+                                   promptText="https://meet.google.com/xxx-xxxx-xxx"/>
+                    </VBox>
+                </HBox>
+
+                <!-- ── Message d'erreur global ── -->
+                <Label fx:id="errGlobal"
+                       text=""
+                       style="-fx-text-fill: #dc2626; -fx-font-size: 12px; -fx-wrap-text: true;"
+                       visible="false" managed="false"
+                       wrapText="true"/>
+
+                <!-- ── Boutons ── -->
+                <HBox spacing="12" alignment="CENTER_RIGHT">
+                    <padding><Insets top="8"/></padding>
+                    <Button text="Annuler"
+                            styleClass="btn-secondary"
+                            onAction="#handleAnnuler"/>
+                    <Button fx:id="btnCloturer"
+                            text="✔  Envoyer l'ordonnance et clore"
+                            styleClass="btn-primary"
+                            style="-fx-background-color: #16a34a;"
+                            onAction="#handleCloturer"/>
+                </HBox>
+
+            </VBox>
+        </content>
+    </ScrollPane>
+
+</VBox>

@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.ConsultationFiltreControllerArij"
+      stylesheets="@../css/arij-styles.css"
+      style="-fx-background-color: #f0f4f8;"
+      spacing="0">
+
+    <!-- ═══════════════════════════════════════════════════
+         EN-TÊTE
+    ═══════════════════════════════════════════════════ -->
+    <VBox styleClass="hero-header">
+        <padding><Insets top="20" right="32" bottom="16" left="32"/></padding>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="🔍" style="-fx-font-size: 16px;"/>
+            <Label text="Recherche avancée — Consultations"
+                   styleClass="hero-title" style="-fx-font-size: 18px;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <!-- Badge résultats -->
+            <Label fx:id="lblResultats"
+                   text="0 résultat(s)"
+                   style="-fx-background-color: #eff6ff;
+                          -fx-text-fill: #1d4ed8;
+                          -fx-font-size: 12px;
+                          -fx-font-weight: bold;
+                          -fx-padding: 4 12 4 12;
+                          -fx-background-radius: 999;
+                          -fx-border-color: #bfdbfe;
+                          -fx-border-radius: 999;"/>
+        </HBox>
+        <Label text="Filtrez les consultations par date, statut, médecin ou nom du patient"
+               styleClass="hero-subtitle"/>
+    </VBox>
+
+    <!-- ═══════════════════════════════════════════════════
+         BARRE DE FILTRES
+    ═══════════════════════════════════════════════════ -->
+    <VBox spacing="10"
+          style="-fx-background-color: white;
+                 -fx-border-color: #e2e8f0;
+                 -fx-border-width: 0 0 1 0;
+                 -fx-padding: 16 32 14 32;">
+
+        <!-- Ligne 1 : dates + statut + médecin -->
+        <HBox spacing="12" alignment="CENTER_LEFT">
+
+            <!-- Date début -->
+            <VBox spacing="4">
+                <Label text="Date début" styleClass="field-label"/>
+                <DatePicker fx:id="dateDebutPicker"
+                            promptText="jj/mm/aaaa"
+                            prefWidth="150"
+                            onAction="#handleFiltreChange"
+                            style="-fx-background-color: #f8fafc;
+                                   -fx-border-color: #cbd5e1;
+                                   -fx-border-radius: 8;
+                                   -fx-background-radius: 8;"/>
+            </VBox>
+
+            <!-- Date fin -->
+            <VBox spacing="4">
+                <Label text="Date fin" styleClass="field-label"/>
+                <DatePicker fx:id="dateFinPicker"
+                            promptText="jj/mm/aaaa"
+                            prefWidth="150"
+                            onAction="#handleFiltreChange"
+                            style="-fx-background-color: #f8fafc;
+                                   -fx-border-color: #cbd5e1;
+                                   -fx-border-radius: 8;
+                                   -fx-background-radius: 8;"/>
+            </VBox>
+
+            <!-- Statut -->
+            <VBox spacing="4">
+                <Label text="Statut" styleClass="field-label"/>
+                <ComboBox fx:id="statutCombo"
+                          onAction="#handleFiltreChange"
+                          prefWidth="150"
+                          style="-fx-background-color: #f8fafc;
+                                 -fx-border-color: #cbd5e1;
+                                 -fx-border-radius: 8;
+                                 -fx-background-radius: 8;
+                                 -fx-font-size: 13px;"/>
+            </VBox>
+
+            <!-- Médecin -->
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Médecin" styleClass="field-label"/>
+                <ComboBox fx:id="medecinCombo"
+                          onAction="#handleFiltreChange"
+                          maxWidth="Infinity"
+                          style="-fx-background-color: #f8fafc;
+                                 -fx-border-color: #cbd5e1;
+                                 -fx-border-radius: 8;
+                                 -fx-background-radius: 8;
+                                 -fx-font-size: 13px;"/>
+            </VBox>
+
+        </HBox>
+
+        <!-- Ligne 2 : recherche nom patient + bouton réinitialiser -->
+        <HBox spacing="12" alignment="CENTER_LEFT">
+
+            <!-- Recherche nom patient -->
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Nom du patient" styleClass="field-label"/>
+                <TextField fx:id="rechercheField"
+                           promptText="🔍  Rechercher par nom du patient…"
+                           HBox.hgrow="ALWAYS"
+                           style="-fx-background-color: #f8fafc;
+                                  -fx-border-color: #cbd5e1;
+                                  -fx-border-radius: 8;
+                                  -fx-background-radius: 8;
+                                  -fx-padding: 8 12;
+                                  -fx-font-size: 13px;"/>
+            </VBox>
+
+            <!-- Bouton Réinitialiser -->
+            <VBox spacing="4" alignment="BOTTOM_LEFT">
+                <Label text=" " styleClass="field-label"/>
+                <Button fx:id="btnReinitialiser"
+                        text="↺  Réinitialiser"
+                        onAction="#handleReinitialiser"
+                        styleClass="btn-secondary"
+                        style="-fx-padding: 8 16;"/>
+            </VBox>
+
+        </HBox>
+
+        <!-- Label erreur date -->
+        <Label fx:id="lblErreurDate"
+               text=""
+               style="-fx-text-fill: #dc2626; -fx-font-size: 11px;"
+               visible="false" managed="false"/>
+
+    </VBox>
+
+    <!-- ═══════════════════════════════════════════════════
+         TABLEAU DES RÉSULTATS
+    ═══════════════════════════════════════════════════ -->
+    <VBox VBox.vgrow="ALWAYS"
+          style="-fx-background-color: white;
+                 -fx-padding: 16 32 24 32;">
+
+        <TableView fx:id="tableConsultations"
+                   VBox.vgrow="ALWAYS"
+                   style="-fx-background-color: white;
+                          -fx-background-radius: 10;
+                          -fx-border-radius: 10;
+                          -fx-border-color: #e2e8f0;">
+
+            <!-- Colonne : Patient -->
+            <columns>
+                <TableColumn fx:id="colPatient"
+                             text="👤 Patient"
+                             prefWidth="160"/>
+
+                <!-- Colonne : Médecin -->
+                <TableColumn fx:id="colMedecin"
+                             text="🩺 Médecin"
+                             prefWidth="160"/>
+
+                <!-- Colonne : Date -->
+                <TableColumn fx:id="colDate"
+                             text="📅 Date"
+                             prefWidth="160"/>
+
+                <!-- Colonne : Statut -->
+                <TableColumn fx:id="colStatut"
+                             text="Statut"
+                             prefWidth="120"/>
+
+                <!-- Colonne : Prix -->
+                <TableColumn fx:id="colPrix"
+                             text="💰 Prix (TND)"
+                             prefWidth="110"/>
+
+                <!-- Colonne : Actions -->
+                <TableColumn fx:id="colActions"
+                             text="Actions"
+                             prefWidth="120"
+                             sortable="false"/>
+            </columns>
+
+            <!-- Placeholder quand aucun résultat -->
+            <placeholder>
+                <Label text="Aucune consultation ne correspond aux filtres."
+                       style="-fx-text-fill: #94a3b8; -fx-font-size: 13px;"/>
+            </placeholder>
+
+        </TableView>
+
+    </VBox>
+
+</VBox>

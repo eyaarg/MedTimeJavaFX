@@ -26,12 +26,16 @@ public class ChatControllerArij {
         "Be thorough, accurate, compassionate. Always recommend consulting a qualified doctor. " +
         "Decline non-medical questions politely.";
 
-    @FXML private VBox messagesBox;
-    @FXML private TextField messageInput;
-    @FXML private TextArea questionInput;
-    @FXML private TextArea aiResponse;
-    @FXML private Label loadingLabel;
+    // ── Chat en direct ────────────────────────────────────────────────
+    @FXML private VBox       messagesBox;
+    @FXML private TextField  messageInput;
     @FXML private ScrollPane chatScrollPane;
+
+    // ── Historique IA ─────────────────────────────────────────────────
+    @FXML private VBox       aiMessagesBox;
+    @FXML private TextField  aiInput;
+    @FXML private ScrollPane aiScrollPane;
+    @FXML private Label      aiLoadingLabel;
 
     private String apiKey, model, apiUrl;
 
@@ -39,6 +43,7 @@ public class ChatControllerArij {
     private void initialize() {
         loadConfig();
         addSystemMessage("👋 Bonjour ! Je suis MedTime IA, votre assistant médical. Posez-moi toutes vos questions sur la santé — dans n'importe quelle langue !");
+        addAiWelcome();
     }
 
     private void loadConfig() {
@@ -51,55 +56,67 @@ public class ChatControllerArij {
         apiUrl = props.getProperty("groq.api.url", "https://api.groq.com/openai/v1/chat/completions");
     }
 
+    // ── Chat en direct ────────────────────────────────────────────────
+
     @FXML
     private void handleSend() {
         String text = messageInput.getText();
         if (text == null || text.trim().isEmpty()) return;
-        String q = text.trim(); messageInput.clear();
+        String q = text.trim();
+        messageInput.clear();
         addUserBubble(q);
-        Task<String> task = new Task<>() { @Override protected String call() { return callGroq(q); } };
+        Task<String> task = new Task<String>() {
+            @Override protected String call() { return callGroq(q); }
+        };
         task.setOnSucceeded(e -> addAiBubble(task.getValue()));
         task.setOnFailed(e -> addAiBubble("⚠️ Erreur : " + task.getException().getMessage()));
         new Thread(task, "groq-chat").start();
     }
 
-    @FXML private void presetExplain()     { questionInput.setText("Expliquez mon diagnostic en termes simples."); }
-    @FXML private void presetSideEffects() { questionInput.setText("Quels sont les effets secondaires courants de mes médicaments ?"); }
-    @FXML private void presetNextSteps()   { questionInput.setText("Quelles sont les prochaines étapes après ma consultation ?"); }
+    // ── Historique IA ─────────────────────────────────────────────────
+
+    /** Chips de suggestion — remplissent le champ IA */
+    @FXML private void presetExplain()     { aiInput.setText("Expliquez mon diagnostic en termes simples."); aiInput.requestFocus(); }
+    @FXML private void presetSideEffects() { aiInput.setText("Quels sont les effets secondaires courants de mes médicaments ?"); aiInput.requestFocus(); }
+    @FXML private void presetNextSteps()   { aiInput.setText("Quelles sont les prochaines étapes après ma consultation ?"); aiInput.requestFocus(); }
 
     @FXML
     private void handleAskAi() {
-        String q = questionInput.getText();
+        String q = aiInput.getText();
         if (q == null || q.trim().isEmpty()) return;
-        loadingLabel.setVisible(true); loadingLabel.setManaged(true); aiResponse.clear();
-        Task<String> task = new Task<>() { @Override protected String call() { return callGroq(q.trim()); } };
-        task.setOnSucceeded(e -> { loadingLabel.setVisible(false); loadingLabel.setManaged(false); aiResponse.setText(stripMarkdown(task.getValue())); });
-        task.setOnFailed(e -> { loadingLabel.setVisible(false); loadingLabel.setManaged(false); aiResponse.setText("⚠️ Erreur : " + task.getException().getMessage()); });
+        String question = q.trim();
+        aiInput.clear();
+
+        // Bulle utilisateur côté IA
+        addAiUserBubble(question);
+
+        // Indicateur de chargement
+        aiLoadingLabel.setVisible(true);
+        aiLoadingLabel.setManaged(true);
+
+        Task<String> task = new Task<String>() {
+            @Override protected String call() { return callGroq(question); }
+        };
+        task.setOnSucceeded(e -> {
+            aiLoadingLabel.setVisible(false);
+            aiLoadingLabel.setManaged(false);
+            addAiResponseBubble(task.getValue());
+        });
+        task.setOnFailed(e -> {
+            aiLoadingLabel.setVisible(false);
+            aiLoadingLabel.setManaged(false);
+            addAiResponseBubble("⚠️ Erreur : " + task.getException().getMessage());
+        });
         new Thread(task, "groq-ai").start();
     }
 
-    private String callGroq(String userMessage) {
-        if (apiKey == null || apiKey.isEmpty()) return "Clé API non configurée.";
-        HttpURLConnection conn = null;
-        try {
-            conn = (HttpURLConnection) URI.create(apiUrl).toURL().openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Authorization", "Bearer " + apiKey);
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setConnectTimeout(15000); conn.setReadTimeout(30000); conn.setDoOutput(true);
-            String payload = "{\"model\":\"" + model + "\",\"messages\":[{\"role\":\"system\",\"content\":\"" + escapeJson(SYSTEM_PROMPT) + "\"},{\"role\":\"user\",\"content\":\"" + escapeJson(userMessage) + "\"}],\"temperature\":0.7,\"max_tokens\":1024}";
-            conn.getOutputStream().write(payload.getBytes(StandardCharsets.UTF_8));
-            int code = conn.getResponseCode();
-            String body = readStream(code >= 200 && code < 300 ? conn.getInputStream() : conn.getErrorStream());
-            return code >= 200 && code < 300 ? parseContent(body) : "Erreur API (" + code + "): " + body;
-        } catch (IOException e) { return "Erreur connexion: " + e.getMessage(); }
-        finally { if (conn != null) conn.disconnect(); }
-    }
+    // ── Bulles Chat en direct ─────────────────────────────────────────
 
     private void addSystemMessage(String text) {
         Platform.runLater(() -> {
-            Label lbl = new Label(text); lbl.setWrapText(true);
-            lbl.setStyle("-fx-background-color:#eff6ff;-fx-text-fill:#1d4ed8;-fx-padding:10 14 10 14;-fx-background-radius:10;-fx-font-size:12px;-fx-font-style:italic;");
+            Label lbl = new Label(text);
+            lbl.setWrapText(true);
+            lbl.setStyle("-fx-background-color:#eff6ff;-fx-text-fill:#1d4ed8;-fx-padding:10 14;-fx-background-radius:10;-fx-font-size:12px;-fx-font-style:italic;");
             lbl.setMaxWidth(Double.MAX_VALUE);
             messagesBox.getChildren().add(lbl);
         });
@@ -108,31 +125,95 @@ public class ChatControllerArij {
     private void addUserBubble(String text) {
         Platform.runLater(() -> {
             String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
-            Label msg = new Label(text); msg.setWrapText(true); msg.setMaxWidth(380);
-            msg.setStyle("-fx-background-color:#2563eb;-fx-text-fill:white;-fx-padding:10 14 10 14;-fx-background-radius:14 14 4 14;-fx-font-size:13px;");
-            Label ts = new Label(time); ts.setStyle("-fx-text-fill:#94a3b8;-fx-font-size:10px;");
-            VBox bubble = new VBox(3, msg, ts); bubble.setAlignment(Pos.CENTER_RIGHT);
-            HBox row = new HBox(bubble); row.setAlignment(Pos.CENTER_RIGHT);
+            Label msg = new Label(text);
+            msg.setWrapText(true);
+            msg.setMaxWidth(360);
+            msg.setStyle("-fx-background-color:#2563eb;-fx-text-fill:white;-fx-padding:10 14;-fx-background-radius:14 14 4 14;-fx-font-size:13px;");
+            Label ts = new Label(time);
+            ts.setStyle("-fx-text-fill:#94a3b8;-fx-font-size:10px;");
+            VBox bubble = new VBox(3, msg, ts);
+            bubble.setAlignment(Pos.CENTER_RIGHT);
+            HBox row = new HBox(bubble);
+            row.setAlignment(Pos.CENTER_RIGHT);
             HBox.setMargin(bubble, new Insets(0, 4, 0, 60));
-            messagesBox.getChildren().add(row); scrollToBottom();
+            messagesBox.getChildren().add(row);
+            scrollTo(chatScrollPane);
         });
     }
 
     private void addAiBubble(String text) {
         Platform.runLater(() -> {
             String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
-            Label msg = new Label(stripMarkdown(text)); msg.setWrapText(true); msg.setMaxWidth(380);
-            msg.setStyle("-fx-background-color:#f1f5f9;-fx-text-fill:#0f172a;-fx-padding:10 14 10 14;-fx-background-radius:14 14 14 4;-fx-font-size:13px;");
-            Label ts = new Label("🤖 MedTime IA  •  " + time); ts.setStyle("-fx-text-fill:#94a3b8;-fx-font-size:10px;");
-            VBox bubble = new VBox(3, msg, ts); bubble.setAlignment(Pos.CENTER_LEFT);
-            HBox row = new HBox(bubble); row.setAlignment(Pos.CENTER_LEFT);
+            Label msg = new Label(stripMarkdown(text));
+            msg.setWrapText(true);
+            msg.setMaxWidth(360);
+            msg.setStyle("-fx-background-color:#f1f5f9;-fx-text-fill:#0f172a;-fx-padding:10 14;-fx-background-radius:14 14 14 4;-fx-font-size:13px;");
+            Label ts = new Label("🤖 MedTime IA  •  " + time);
+            ts.setStyle("-fx-text-fill:#94a3b8;-fx-font-size:10px;");
+            VBox bubble = new VBox(3, msg, ts);
+            bubble.setAlignment(Pos.CENTER_LEFT);
+            HBox row = new HBox(bubble);
+            row.setAlignment(Pos.CENTER_LEFT);
             HBox.setMargin(bubble, new Insets(0, 60, 0, 4));
-            messagesBox.getChildren().add(row); scrollToBottom();
+            messagesBox.getChildren().add(row);
+            scrollTo(chatScrollPane);
         });
     }
 
-    private void scrollToBottom() {
-        Platform.runLater(() -> { if (chatScrollPane != null) { chatScrollPane.layout(); chatScrollPane.setVvalue(1.0); } });
+    // ── Bulles Historique IA ──────────────────────────────────────────
+
+    private void addAiWelcome() {
+        Platform.runLater(() -> {
+            Label lbl = new Label("🤖 Bonjour ! Posez-moi une question médicale. Je suis là pour vous aider.");
+            lbl.setWrapText(true);
+            lbl.setMaxWidth(Double.MAX_VALUE);
+            lbl.setStyle("-fx-background-color:#eff6ff;-fx-text-fill:#1d4ed8;-fx-padding:12 14;-fx-background-radius:10;-fx-font-size:12px;-fx-font-style:italic;");
+            aiMessagesBox.getChildren().add(lbl);
+        });
+    }
+
+    private void addAiUserBubble(String text) {
+        Platform.runLater(() -> {
+            String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
+            Label msg = new Label(text);
+            msg.setWrapText(true);
+            msg.setMaxWidth(360);
+            msg.setStyle("-fx-background-color:#2563eb;-fx-text-fill:white;-fx-padding:10 14;-fx-background-radius:14 14 4 14;-fx-font-size:13px;");
+            Label ts = new Label("Vous  •  " + time);
+            ts.setStyle("-fx-text-fill:#94a3b8;-fx-font-size:10px;");
+            VBox bubble = new VBox(3, msg, ts);
+            bubble.setAlignment(Pos.CENTER_RIGHT);
+            HBox row = new HBox(bubble);
+            row.setAlignment(Pos.CENTER_RIGHT);
+            HBox.setMargin(bubble, new Insets(0, 4, 0, 60));
+            aiMessagesBox.getChildren().add(row);
+            scrollTo(aiScrollPane);
+        });
+    }
+
+    private void addAiResponseBubble(String text) {
+        Platform.runLater(() -> {
+            String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
+            Label msg = new Label(stripMarkdown(text));
+            msg.setWrapText(true);
+            msg.setMaxWidth(360);
+            msg.setStyle("-fx-background-color:#f0fdf4;-fx-text-fill:#14532d;-fx-padding:10 14;-fx-background-radius:14 14 14 4;-fx-font-size:13px;-fx-border-color:#bbf7d0;-fx-border-width:1;-fx-border-radius:14 14 14 4;");
+            Label ts = new Label("🤖 MedTime IA  •  " + time);
+            ts.setStyle("-fx-text-fill:#94a3b8;-fx-font-size:10px;");
+            VBox bubble = new VBox(3, msg, ts);
+            bubble.setAlignment(Pos.CENTER_LEFT);
+            HBox row = new HBox(bubble);
+            row.setAlignment(Pos.CENTER_LEFT);
+            HBox.setMargin(bubble, new Insets(0, 60, 0, 4));
+            aiMessagesBox.getChildren().add(row);
+            scrollTo(aiScrollPane);
+        });
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────
+
+    private void scrollTo(ScrollPane sp) {
+        Platform.runLater(() -> { if (sp != null) { sp.layout(); sp.setVvalue(1.0); } });
     }
 
     private String stripMarkdown(String text) {
@@ -165,5 +246,23 @@ public class ChatControllerArij {
         StringBuilder sb = new StringBuilder();
         for (char c : text.toCharArray()) { switch(c){case '"':sb.append("\\\"");break;case '\\':sb.append("\\\\");break;case '\n':sb.append("\\n");break;case '\r':sb.append("\\r");break;case '\t':sb.append("\\t");break;default:sb.append(c);} }
         return sb.toString();
+    }
+
+    private String callGroq(String userMessage) {
+        if (apiKey == null || apiKey.isEmpty()) return "Clé API non configurée.";
+        HttpURLConnection conn = null;
+        try {
+            conn = (HttpURLConnection) URI.create(apiUrl).toURL().openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Authorization", "Bearer " + apiKey);
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setConnectTimeout(15000); conn.setReadTimeout(30000); conn.setDoOutput(true);
+            String payload = "{\"model\":\"" + model + "\",\"messages\":[{\"role\":\"system\",\"content\":\"" + escapeJson(SYSTEM_PROMPT) + "\"},{\"role\":\"user\",\"content\":\"" + escapeJson(userMessage) + "\"}],\"temperature\":0.7,\"max_tokens\":1024}";
+            conn.getOutputStream().write(payload.getBytes(StandardCharsets.UTF_8));
+            int code = conn.getResponseCode();
+            String body = readStream(code >= 200 && code < 300 ? conn.getInputStream() : conn.getErrorStream());
+            return code >= 200 && code < 300 ? parseContent(body) : "Erreur API (" + code + "): " + body;
+        } catch (IOException e) { return "Erreur connexion: " + e.getMessage(); }
+        finally { if (conn != null) conn.disconnect(); }
     }
 }

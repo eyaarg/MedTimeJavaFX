@@ -1,5 +1,6 @@
 package esprit.fx.entities;
 
+import esprit.fx.services.ChiffrementServiceArij;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ public class OrdonnanceArij {
     private int documentSize;
     private String documentMimeType;
     private String documentOriginalName;
+    private String accessToken;
     private List<LigneOrdonnanceArij> lignes = new ArrayList<>();
 
     public OrdonnanceArij() {}
@@ -62,4 +64,41 @@ public class OrdonnanceArij {
     public void setDocumentOriginalName(String documentOriginalName) { this.documentOriginalName = documentOriginalName; }
     public List<LigneOrdonnanceArij> getLignes() { return lignes; }
     public void setLignes(List<LigneOrdonnanceArij> lignes) { this.lignes = lignes != null ? lignes : new ArrayList<>(); }
+    
+    public String getAccessToken() { return accessToken; }
+    public void setAccessToken(String accessToken) { this.accessToken = accessToken; }
+    
+    /**
+     * Construit l'URL de scan du QR Code pour cette ordonnance.
+     * @param baseUrl URL de base (ex: http://localhost:8000)
+     * @return URL complète de scan
+     */
+    public String buildScanUrl(String baseUrl) {
+        if (accessToken == null || accessToken.isBlank()) {
+            return null;
+        }
+        return baseUrl + "/ordonnance/scan/" + accessToken;
+    }
+
+    /**
+     * Déchiffre les données après chargement depuis la BDD.
+     */
+    public void dechiffrerApresChargement() {
+        ChiffrementServiceArij cs = ChiffrementServiceArij.getInstance();
+        this.diagnosis = cs.dechiffrer(this.diagnosis);
+        this.content = cs.dechiffrer(this.content);
+        this.instructions = cs.dechiffrer(this.instructions);
+        System.out.println("[OrdonnanceArij] Données déchiffrées après chargement");
+    }
+
+    /**
+     * Chiffre les données avant sauvegarde en BDD.
+     */
+    public void chiffrerAvantSauvegarde() {
+        ChiffrementServiceArij cs = ChiffrementServiceArij.getInstance();
+        this.diagnosis = cs.chiffrer(this.diagnosis);
+        this.content = cs.chiffrer(this.content);
+        this.instructions = cs.chiffrer(this.instructions);
+        System.out.println("[OrdonnanceArij] Données chiffrées avant sauvegarde");
+    }
 }

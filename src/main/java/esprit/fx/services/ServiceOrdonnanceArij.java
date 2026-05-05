@@ -56,9 +56,12 @@ public class ServiceOrdonnanceArij {
         o.setTokenVerification(randomHex(16));
         o.setDateEmission(now);
         o.setCreatedAt(now);
+        if (o.getAccessToken() == null || o.getAccessToken().isBlank()) {
+            o.setAccessToken(UUID.randomUUID().toString());
+        }
 
-        String sql = "INSERT INTO ordonnances (consultation_id, doctor_id, content, diagnosis, numero_ordonnance, date_emission, date_validite, signature_path, instructions, created_at, updated_at, token_verification, document_nom, document_size, document_mime_type, document_original_name) " +
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO ordonnances (consultation_id, doctor_id, content, diagnosis, numero_ordonnance, date_emission, date_validite, signature_path, instructions, created_at, updated_at, token_verification, access_token, document_nom, document_size, document_mime_type, document_original_name) " +
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         try (PreparedStatement ps = conn().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, o.getConsultationId());
@@ -73,10 +76,11 @@ public class ServiceOrdonnanceArij {
             ps.setTimestamp(10, ts(o.getCreatedAt()));
             ps.setTimestamp(11, ts(o.getUpdatedAt()));
             ps.setString(12, o.getTokenVerification());
-            ps.setString(13, o.getDocumentNom());
-            ps.setObject(14, o.getDocumentSize() == 0 ? null : o.getDocumentSize());
-            ps.setString(15, o.getDocumentMimeType());
-            ps.setString(16, o.getDocumentOriginalName());
+            ps.setString(13, o.getAccessToken());
+            ps.setString(14, o.getDocumentNom());
+            ps.setObject(15, o.getDocumentSize() == 0 ? null : o.getDocumentSize());
+            ps.setString(16, o.getDocumentMimeType());
+            ps.setString(17, o.getDocumentOriginalName());
             ps.executeUpdate();
 
             ResultSet keys = ps.getGeneratedKeys();
@@ -212,6 +216,7 @@ public class ServiceOrdonnanceArij {
             ps.setString(4, "ORDONNANCE");
             ps.setTimestamp(5, ts(LocalDateTime.now()));
             ps.executeUpdate();
+            NotificationWebSocketArij.getInstance().publishNotification(patientUserId);
         } catch (SQLException e) {
             System.err.println("notifyPatient: " + e.getMessage());
         }
@@ -256,6 +261,7 @@ public class ServiceOrdonnanceArij {
         o.setUpdatedAt(ua != null ? ua.toLocalDateTime() : null);
 
         o.setTokenVerification(rs.getString("token_verification"));
+        o.setAccessToken(rs.getString("access_token"));
         o.setDocumentNom(rs.getString("document_nom"));
 
         Object sizeObj = rs.getObject("document_size");
@@ -288,5 +294,23 @@ public class ServiceOrdonnanceArij {
 
     private String randomHex(int n) {
         return UUID.randomUUID().toString().replace("-", "").substring(0, n);
+    }
+
+    /**
+     * Récupère toutes les ordonnances d'un médecin - utilisé par ExcelExportServiceArij.
+     */
+    public List<OrdonnanceArij> findByDoctor(int doctorId) {
+        List<OrdonnanceArij> list = new ArrayList<>();
+        String sql = "SELECT * FROM ordonnances WHERE doctor_id = ? ORDER BY date_emission DESC";
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
+            ps.setInt(1, doctorId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("findByDoctor: " + e.getMessage());
+        }
+        return list;
     }
 }

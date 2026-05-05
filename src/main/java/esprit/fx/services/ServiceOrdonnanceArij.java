@@ -216,6 +216,7 @@ public class ServiceOrdonnanceArij {
             ps.setString(4, "ORDONNANCE");
             ps.setTimestamp(5, ts(LocalDateTime.now()));
             ps.executeUpdate();
+            NotificationWebSocketArij.getInstance().publishNotification(patientUserId);
         } catch (SQLException e) {
             System.err.println("notifyPatient: " + e.getMessage());
         }

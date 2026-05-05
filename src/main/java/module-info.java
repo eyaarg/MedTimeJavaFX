@@ -6,6 +6,7 @@ module MedTimeFX {
     requires javafx.media;
     requires java.sql;
     requires java.net.http;
+    requires jdk.httpserver;
     requires jakarta.mail;
     requires java.desktop;
     requires org.apache.pdfbox;
@@ -14,6 +15,7 @@ module MedTimeFX {
 
     // Third-party libraries used by teammates' modules
     requires org.json;
+    requires org.java_websocket;
     requires com.google.zxing;
     requires com.google.zxing.javase;
     requires com.calendarfx.view;

@@ -6,6 +6,7 @@ import esprit.fx.entities.Patient;
 import esprit.fx.services.ServiceDoctor;
 import esprit.fx.services.ServiceNotificationsArij;
 import esprit.fx.services.ServicePatient;
+import esprit.fx.services.NotificationWebSocketArij;
 import esprit.fx.utils.UserSession;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -47,7 +48,9 @@ public class MainControllerArij {
     @FXML private Label notifBadgeLabel;
 
     private final ServiceNotificationsArij notifService = new ServiceNotificationsArij();
+    private final NotificationWebSocketArij notificationWebSocket = NotificationWebSocketArij.getInstance();
     private Timeline notifBadgeTimeline;
+    private NotificationListControllerArij activeNotificationController;
 
     private int userId = 0;
     private int patientId = 0;
@@ -75,6 +78,7 @@ public class MainControllerArij {
 
         showDashboardView();
         startNotifBadge();
+        notificationWebSocket.startForUser(userId, this::handleRealtimeNotification);
     }
 
     /** Met à jour le badge de notifications toutes les 30 secondes */
@@ -96,6 +100,15 @@ public class MainControllerArij {
                 notifBadgeLabel.setVisible(true);
             } else {
                 notifBadgeLabel.setVisible(false);
+            }
+        });
+    }
+
+    private void handleRealtimeNotification() {
+        Platform.runLater(() -> {
+            updateNotifBadge();
+            if (activeNotificationController != null) {
+                activeNotificationController.refreshFromWebSocket();
             }
         });
     }
@@ -176,6 +189,7 @@ public class MainControllerArij {
     private void handleLogout() {
         try {
             UserSession.clear();
+            notificationWebSocket.stop();
             Parent loginRoot = FXMLLoader.load(Objects.requireNonNull(
                     MainControllerArij.class.getResource("/Login.fxml"),
                     "FXML not found: /Login.fxml"));
@@ -399,6 +413,7 @@ public class MainControllerArij {
 
     private void loadView(String fxmlPath) {
         try {
+            activeNotificationController = null;
             FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(getClass().getResource(fxmlPath)));
             Node view = loader.load();
 
@@ -417,6 +432,7 @@ public class MainControllerArij {
                 c.setPatientId(patientId);
             } else if (ctrl instanceof NotificationListControllerArij c) {
                 c.setUserId(userId);
+                activeNotificationController = c;
             } else if (ctrl instanceof ArticleController c) {
                 c.setRole(isDoctor());
             } else if (ctrl instanceof RendezVousController c) {

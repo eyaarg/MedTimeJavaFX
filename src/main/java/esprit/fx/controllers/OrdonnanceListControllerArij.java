@@ -7,7 +7,7 @@ import esprit.fx.entities.OrdonnanceArij;
 import esprit.fx.services.ServiceConsultationsArij;
 import esprit.fx.services.ServiceFactureArij;
 import esprit.fx.services.ServiceOrdonnanceArij;
-import esprit.fx.services.QrCodeServiceArij;
+import esprit.fx.services.QRCodeServiceArij;
 import esprit.fx.utils.MyDB;
 import esprit.fx.utils.PdfExporterArij;
 import javafx.fxml.FXML;
@@ -46,7 +46,7 @@ public class OrdonnanceListControllerArij {
     private final ServiceConsultationsArij consultationService = new ServiceConsultationsArij();
     private final ServiceOrdonnanceArij ordonnanceService = new ServiceOrdonnanceArij();
     private final ServiceFactureArij factureService = new ServiceFactureArij();
-    private final QrCodeServiceArij qrCodeService = new QrCodeServiceArij();
+    private final QRCodeServiceArij qrCodeService = new QRCodeServiceArij();
 
     private Map<Integer, String[]> patientInfoById = new HashMap<>();
     private Map<Integer, String[]> doctorInfoById  = new HashMap<>();
@@ -249,11 +249,11 @@ public class OrdonnanceListControllerArij {
 
         box.getChildren().add(btnView);
 
-        if (false && isDoctor) {
+        if (isDoctor) {
             Button btnEdit = iconBtn("✏️", "#e0f2fe", "#0369a1", "#bae6fd", "Modifier");
             btnEdit.setOnAction(e -> openEditModal(o, pid, pInfo));
             box.getChildren().add(btnEdit);
-        } else if (false) {
+        } else {
             // Patient : télécharger PDF ordonnance + facture
             Button btnPdfOrd = iconBtn("🖨", "#eff6ff", "#1d4ed8", "#bfdbfe", "Télécharger ordonnance PDF");
             btnPdfOrd.setOnAction(e -> {
@@ -575,7 +575,7 @@ public class OrdonnanceListControllerArij {
         titre.setStyle("-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#475569;");
 
         // Générer le QR Code (160x160)
-        javafx.scene.image.Image qrFxImage = qrCodeService.genererQRCodeOrdonnance(o, 160);
+        javafx.scene.image.Image qrFxImage = qrCodeService.genererQRCodeOrdonnance(o.getId(), o.getAccessToken());
 
         HBox qrRow = new HBox(16);
         qrRow.setAlignment(Pos.CENTER_LEFT);
@@ -593,8 +593,8 @@ public class OrdonnanceListControllerArij {
             VBox infoQr = new VBox(8);
             infoQr.setAlignment(Pos.TOP_LEFT);
 
-            String qrContent = qrCodeService.buildOrdonnanceQrContent(o);
-            Label lblUrl = new Label(qrContent);
+            String urlQr = o.buildScanUrl("http://localhost:8000");
+            Label lblUrl = new Label(urlQr);
             lblUrl.setStyle("-fx-font-size:10px; -fx-text-fill:#64748b; -fx-wrap-text:true;");
             lblUrl.setMaxWidth(260);
             lblUrl.setWrapText(true);
@@ -620,7 +620,7 @@ public class OrdonnanceListControllerArij {
             btnSauvegarder.setOnAction(e -> sauvegarderQRCode(o));
 
             infoQr.getChildren().addAll(
-                new Label("Contenu du QR :") {{ setStyle("-fx-font-size:12px; -fx-text-fill:#6d28d9; -fx-font-weight:bold;"); }},
+                new Label("URL de scan :") {{ setStyle("-fx-font-size:12px; -fx-text-fill:#6d28d9; -fx-font-weight:bold;"); }},
                 lblUrl,
                 new Label("Token d'accès :") {{ setStyle("-fx-font-size:12px; -fx-text-fill:#6d28d9; -fx-font-weight:bold;"); }},
                 lblToken,
@@ -662,7 +662,7 @@ public class OrdonnanceListControllerArij {
 
         if (fichier != null) {
             boolean ok = qrCodeService.genererQRCodeFichier(
-                qrCodeService.buildOrdonnanceQrContent(o),
+                o.buildScanUrl("http://localhost:8000"),
                 fichier.getAbsolutePath(),
                 300
             );

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<DialogPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="esprit.fx.controllers.AcceptationDialogController"
+            style="-fx-background-color: white;">
+
+    <!-- Header -->
+    <header>
+        <VBox style="-fx-background-color: #10b981; -fx-padding: 16;" spacing="8">
+            <Label text="✅ Accepter la consultation" 
+                   style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <Label fx:id="patientLabel" text="Patient : " 
+                   style="-fx-font-size: 12px; -fx-text-fill: #d1fae5;"/>
+        </VBox>
+    </header>
+
+    <!-- Content -->
+    <content>
+        <VBox spacing="16" style="-fx-padding: 20;">
+
+            <!-- Date Picker -->
+            <VBox spacing="6">
+                <Label text="📅 Date de la consultation" 
+                       style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
+                <DatePicker fx:id="datePicker" 
+                           style="-fx-font-size: 12px; -fx-padding: 8;"/>
+            </VBox>
+
+            <!-- Time Picker -->
+            <HBox spacing="16">
+                <!-- Heure -->
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="🕐 Heure (0-23)" 
+                           style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
+                    <Spinner fx:id="heurePicker" prefWidth="100" 
+                            style="-fx-font-size: 12px;"/>
+                </VBox>
+
+                <!-- Minutes -->
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="⏱ Minutes (0, 15, 30, 45)" 
+                           style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
+                    <Spinner fx:id="minutePicker" prefWidth="100" 
+                            style="-fx-font-size: 12px;"/>
+                </VBox>
+            </HBox>
+
+            <!-- Meet Link Preview -->
+            <VBox spacing="6" style="-fx-background-color: #f0fdf4; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #bbf7d0; -fx-border-width: 1; -fx-padding: 12;">
+                <Label text="🎥 Google Meet" 
+                       style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #166534;"/>
+                <Label text="Un lien Google Meet unique sera généré automatiquement et envoyé au patient." 
+                       style="-fx-font-size: 11px; -fx-text-fill: #4b5563; -fx-wrap-text: true;"/>
+            </VBox>
+
+            <!-- Separator -->
+            <Separator/>
+
+            <!-- Info Message -->
+            <Label text="ℹ Le patient recevra une notification avec le lien Google Meet et la date/heure de la consultation." 
+                   style="-fx-font-size: 11px; -fx-text-fill: #64748b; -fx-wrap-text: true;"/>
+
+        </VBox>
+    </content>
+
+    <!-- Buttons -->
+    <buttons>
+        <ButtonType fx:constant="CANCEL"/>
+        <ButtonType fx:id="accepterButton" text="✅ Accepter"/>
+    </buttons>
+
+</DialogPane>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.QuizSanteController"
+      spacing="16" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 3);">
+
+    <!-- Header -->
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <Label text="🧠 Quiz Santé du Jour" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1e40af;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="difficultyBadge" text="Facile" style="-fx-background-color: #dbeafe; -fx-text-fill: #1e40af; -fx-padding: 4 8; -fx-background-radius: 6; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+    </HBox>
+
+    <!-- Progress Bar -->
+    <VBox spacing="4">
+        <ProgressBar fx:id="progressBar" prefHeight="8" style="-fx-accent: #3b82f6;"/>
+        <Label fx:id="progressLabel" text="Question 1/5" style="-fx-font-size: 11px; -fx-text-fill: #64748b;"/>
+    </VBox>
+
+    <!-- Question -->
+    <Label fx:id="questionLabel" text="Quelle est la température corporelle normale?" 
+            style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-wrap-text: true; -fx-line-spacing: 2;"
+            wrapText="true" minHeight="60"/>
+
+    <!-- Réponses -->
+    <VBox fx:id="reponsesBox" spacing="10" style="-fx-padding: 10;"/>
+
+    <!-- Feedback -->
+    <VBox spacing="6" style="-fx-background-color: #f8fafc; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-padding: 12; -fx-min-height: 50;">
+        <Label fx:id="feedbackLabel" text="" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-wrap-text: true;"/>
+        <Label fx:id="bonneReponseLabel" text="" style="-fx-font-size: 12px; -fx-text-fill: #64748b; -fx-wrap-text: true;"/>
+    </VBox>
+
+    <!-- Bouton Suivante -->
+    <HBox alignment="CENTER_RIGHT">
+        <Button fx:id="btnSuivante" text="Question suivante →" 
+                style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-border-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;"
+                visible="false" managed="false"/>
+    </HBox>
+
+    <!-- Score Panel -->
+    <VBox fx:id="scorePanel" spacing="12" style="-fx-background-color: #f0f9ff; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #bfdbfe; -fx-border-width: 1; -fx-padding: 16;" visible="false" managed="false">
+        <Label fx:id="scoreLabel" text="Vous avez 5/5 bonnes réponses!" 
+                style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1e40af;"/>
+        <ProgressBar fx:id="scoreProgressBar" prefHeight="10" style="-fx-accent: #10b981;"/>
+        <Label fx:id="messageLabel" text="🏆 Parfait! Vous êtes un expert santé!" 
+                style="-fx-font-size: 13px; -fx-text-fill: #059669; -fx-wrap-text: true;"/>
+        <Button fx:id="btnRejouer" text="🔄 Nouveau Quiz" 
+                style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-border-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;"/>
+    </VBox>
+
+    <!-- Loading Indicator -->
+    <ProgressIndicator fx:id="loadingIndicator" prefWidth="40" prefHeight="40" style="-fx-padding: 20;"/>
+
+</VBox>

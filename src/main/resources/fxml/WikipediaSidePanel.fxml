@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.WikipediaSidePanelController"
+      prefWidth="280" spacing="12" style="-fx-background-color: white; -fx-padding: 16; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 12, 0, -2, 0);">
+
+    <!-- Header -->
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <Label text="📖 Fiche Maladie" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1e40af;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnFermer" text="✕" 
+                style="-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-size: 16px; -fx-padding: 0; -fx-cursor: hand;"
+                onAction="#fermerPanneau"/>
+    </HBox>
+
+    <!-- Image -->
+    <ImageView fx:id="imageView" fitWidth="200" fitHeight="120" preserveRatio="false" 
+               style="-fx-border-color: #e2e8f0; -fx-border-radius: 6;" visible="false" managed="false"/>
+
+    <!-- Titre -->
+    <Label fx:id="titreLabel" text="Titre de la maladie" 
+            style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-wrap-text: true;"
+            wrapText="true" visible="false" managed="false"/>
+
+    <!-- Séparateur -->
+    <Separator visible="false" managed="false"/>
+
+    <!-- Résumé -->
+    <ScrollPane fx:id="scrollPane" fitToWidth="true" style="-fx-background-color: white; -fx-border-color: transparent;" 
+                visible="false" managed="false" prefHeight="150">
+        <Label fx:id="resumeLabel" text="Résumé de la maladie" 
+                style="-fx-font-size: 12px; -fx-text-fill: #475569; -fx-wrap-text: true; -fx-line-spacing: 1.6;"
+                wrapText="true"/>
+    </ScrollPane>
+
+    <!-- Lien article complet -->
+    <Hyperlink fx:id="lienArticle" text="Lire l'article complet →" 
+               style="-fx-font-size: 12px; -fx-text-fill: #3b82f6; -fx-padding: 0;"
+               visible="false" managed="false"/>
+
+    <!-- Source -->
+    <Label fx:id="sourceLabel" text="Source : Wikipedia" 
+            style="-fx-font-size: 10px; -fx-text-fill: #94a3b8; -fx-font-style: italic;"
+            visible="false" managed="false"/>
+
+    <!-- Loading Indicator -->
+    <ProgressIndicator fx:id="loadingIndicator" prefWidth="40" prefHeight="40" 
+                       style="-fx-padding: 20;" visible="false" managed="false"/>
+
+    <!-- Not Found Label -->
+    <Label fx:id="notFoundLabel" text="⚠ Aucune fiche trouvée pour cette maladie" 
+            style="-fx-font-size: 12px; -fx-text-fill: #dc2626; -fx-wrap-text: true;"
+            wrapText="true" visible="false" managed="false"/>
+
+</VBox>

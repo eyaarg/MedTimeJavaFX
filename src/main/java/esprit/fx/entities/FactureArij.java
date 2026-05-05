@@ -10,7 +10,6 @@ public class FactureArij {
     private String cheminPdf;
     private int paiementId;
     private int ordonnanceId;
-    private String paiementStatus;
 
     public FactureArij() {}
 
@@ -28,6 +27,4 @@ public class FactureArij {
     public void setPaiementId(int paiementId) { this.paiementId = paiementId; }
     public int getOrdonnanceId() { return ordonnanceId; }
     public void setOrdonnanceId(int ordonnanceId) { this.ordonnanceId = ordonnanceId; }
-    public String getPaiementStatus() { return paiementStatus; }
-    public void setPaiementStatus(String paiementStatus) { this.paiementStatus = paiementStatus; }
 }

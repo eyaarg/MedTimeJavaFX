@@ -11,7 +11,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="esprit.fx.controllers.MainControllerArij"
-            stylesheets="@../css/arij-styles.css"
+            stylesheets="@css/arij-styles.css"
             prefWidth="1280" prefHeight="800">
 
     <left>

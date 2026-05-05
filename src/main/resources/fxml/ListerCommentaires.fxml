@@ -12,7 +12,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="esprit.fx.controllers.CommentaireController"
-      spacing="0" stylesheets="@/css/arij-styles.css"
+      spacing="0" stylesheets="@/fxml/css/arij-styles.css"
       style="-fx-background-color:#f0f4f8;">
 
     <!-- Header -->

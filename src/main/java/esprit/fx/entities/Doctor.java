@@ -9,6 +9,7 @@ public class Doctor extends User {
         private boolean isCertified;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
+        private String adresse;
 
     public Doctor() {
     }
@@ -75,6 +76,14 @@ public class Doctor extends User {
 
         public void setUpdatedAt(LocalDateTime updatedAt) {
             this.updatedAt = updatedAt;
+        }
+
+        public String getAdresse() {
+            return adresse;
+        }
+
+        public void setAdresse(String adresse) {
+            this.adresse = adresse;
         }
 
 }

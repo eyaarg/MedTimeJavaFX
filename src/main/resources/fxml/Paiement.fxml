@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="esprit.fx.controllers.PaiementController"
+      spacing="0" style="-fx-background-color: #f0f4f8;"
+      prefWidth="800" prefHeight="600">
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="12"
+          style="-fx-background-color: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);">
+        <padding><Insets top="16" right="24" bottom="16" left="24"/></padding>
+        <Label text="💳 Paiement PayPal"
+               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+        <Label fx:id="lblMontant" text=""
+               style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+    </HBox>
+
+    <!-- Indicateur de chargement -->
+    <HBox fx:id="loadingBox" alignment="CENTER" spacing="12">
+        <padding><Insets top="16" bottom="8"/></padding>
+        <ProgressIndicator prefWidth="24" prefHeight="24"/>
+        <Label text="Connexion à PayPal en cours..."
+               style="-fx-font-size: 13px; -fx-text-fill: #7f8c8d;"/>
+    </HBox>
+
+    <!-- WebView PayPal -->
+    <WebView fx:id="webView" prefHeight="450" prefWidth="800" VBox.vgrow="ALWAYS"/>
+
+    <!-- Status bar -->
+    <HBox alignment="CENTER" style="-fx-background-color: white;">
+        <padding><Insets top="10" bottom="10"/></padding>
+        <Label fx:id="lblStatut" text=""
+               style="-fx-font-size: 13px; -fx-text-fill: #7f8c8d;"/>
+    </HBox>
+
+</VBox>

@@ -138,7 +138,7 @@ public class StripeServiceArij {
 
         // ── Construction de l'URL de succès avec consultationId ───────
         String urlSucces = (consultationId != null && consultationId > 0)
-            ? successUrl + "?factureId=" + consultationId + "&session_id={CHECKOUT_SESSION_ID}"
+            ? successUrl + "/" + consultationId
             : successUrl;
 
         // ── Construction du body URL-encoded ──────────────────────────
@@ -353,10 +353,7 @@ public class StripeServiceArij {
         return secretKey != null
             && !secretKey.isBlank()
             && !secretKey.startsWith("YOUR_")
-            && (secretKey.startsWith("sk_test_")
-                || secretKey.startsWith("sk_live_")
-                || secretKey.startsWith("rk_test_")
-                || secretKey.startsWith("rk_live_"));
+            && (secretKey.startsWith("sk_test_") || secretKey.startsWith("sk_live_"));
     }
 
     /**

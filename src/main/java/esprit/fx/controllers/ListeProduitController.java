@@ -3,17 +3,19 @@ package esprit.fx.controllers;
 import esprit.fx.entities.Produit;
 import esprit.fx.entities.CategorieEnum;
 import esprit.fx.services.ServiceFavoris;
+import esprit.fx.services.ServiceOrder;
+import esprit.fx.services.ServicePanier;
 import esprit.fx.services.ServiceProduit;
-import esprit.fx.service.SmartSearchService;
+import esprit.fx.services.SmartSearchService;
 import esprit.fx.utils.MyDB;
-// NOUVEAUX IMPORTS POUR L'IA
+import esprit.fx.utils.UserSession;
 import javafx.application.Platform;
 import java.util.stream.Collectors;
-// ---
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -38,10 +40,9 @@ public class ListeProduitController implements Initializable {
     private Connection connection;
     private List<Produit> produitsList;
 
-    // AJOUT : Instance du service IA
-    private final SmartSearchService aiService = new esprit.fx.service.SmartSearchService();
-
+    private final SmartSearchService aiService = new SmartSearchService();
     private final ServiceFavoris serviceFavoris = ServiceFavoris.getInstance();
+    private final ServicePanier servicePanier = new ServicePanier();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -54,7 +55,6 @@ public class ListeProduitController implements Initializable {
         setupSearchListener();
     }
 
-    // --- NOUVELLE MÉTHODE : RECHERCHE INTELLIGENTE ---
     @FXML
     private void onSmartSearch() {
         String query = txtSearch.getText();
@@ -66,36 +66,29 @@ public class ListeProduitController implements Initializable {
 
         lblStatus.setText("🤖 Groq réfléchit...");
 
-        // On utilise un Thread séparé pour ne pas "figer" l'interface JavaFX pendant l'appel API
         new Thread(() -> {
             try {
-                // 1. On prépare la liste des noms disponibles
                 List<String> productNames = produitsList.stream()
                         .map(Produit::getNom)
                         .collect(Collectors.toList());
 
-                // 2. Appel au service Groq
                 String suggestedName = aiService.askGroq(query, productNames);
 
-                // 3. Retour à l'interface graphique (UI Thread)
                 Platform.runLater(() -> {
                     if (suggestedName != null && !suggestedName.equalsIgnoreCase("NONE")) {
                         List<Produit> smartResult = produitsList.stream()
                                 .filter(p -> p.getNom().equalsIgnoreCase(suggestedName))
                                 .toList();
-
                         displayCards(smartResult);
                         lblStatus.setText("✨ IA a trouvé : " + suggestedName);
                     } else {
-                        displayCards(List.of()); // Liste vide
+                        displayCards(List.of());
                         lblStatus.setText("❌ IA n'a rien trouvé pour : " + query);
                     }
                 });
 
             } catch (Exception e) {
-                Platform.runLater(() -> {
-                    lblStatus.setText("⚠️ Erreur IA : " + e.getMessage());
-                });
+                Platform.runLater(() -> lblStatus.setText("⚠️ Erreur IA : " + e.getMessage()));
             }
         }).start();
     }
@@ -117,34 +110,29 @@ public class ListeProduitController implements Initializable {
 
     private void displayCards(List<Produit> produits) {
         cardsContainer.getChildren().clear();
-
         for (Produit p : produits) {
-            VBox card = createCard(p);
-            cardsContainer.getChildren().add(card);
+            cardsContainer.getChildren().add(createCard(p));
         }
     }
 
     private VBox createCard(Produit p) {
-        // Conteneur principal de la carte
         VBox card = new VBox(8);
         card.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);");
         card.setPrefWidth(220);
         card.setPrefHeight(280);
         card.setPadding(new Insets(12));
 
-        // Icône selon catégorie (fallback si pas d'image)
+        // Image ou icône
         String imagePath = p.getImage();
         if (imagePath != null && !imagePath.isBlank()) {
             try {
                 URL imgUrl = getClass().getResource(imagePath);
                 if (imgUrl != null) {
                     javafx.scene.image.ImageView imageView = new javafx.scene.image.ImageView(
-                            new javafx.scene.image.Image(imgUrl.toExternalForm())
-                    );
+                            new javafx.scene.image.Image(imgUrl.toExternalForm()));
                     imageView.setFitWidth(100);
                     imageView.setFitHeight(80);
                     imageView.setPreserveRatio(true);
-                    imageView.setStyle("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 1);");
                     card.getChildren().add(0, imageView);
                 } else {
                     card.getChildren().add(0, makeIconLabel(p));
@@ -156,27 +144,59 @@ public class ListeProduitController implements Initializable {
             card.getChildren().add(0, makeIconLabel(p));
         }
 
-        // Nom du produit
+        // Nom
         Label nomLabel = new Label(p.getNom());
         nomLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
         nomLabel.setWrapText(true);
         nomLabel.setMaxWidth(200);
 
-        // Prix
+        // Prix avec réduction éventuelle
         Label prixLabel = new Label(String.format("%.2f €", p.getPrix()));
         prixLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #27ae60;");
 
-        // Stock
-        Label stockLabel = new Label("📦 Stock: " + p.getStock());
-        stockLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #7f8c8d;");
+        // Vérifier éligibilité réduction
+        boolean eligible = false;
+        try {
+            int userId = UserSession.getCurrentUser() != null ? UserSession.getCurrentUser().getId() : 0;
+            eligible = new ServiceOrder().estEligibleReduction(userId);
+        } catch (Exception ignored) {}
+
+        if (eligible) {
+            Label prixBarre = new Label(String.format("%.2f €", p.getPrix()));
+            prixBarre.setStyle("-fx-font-size: 13px; -fx-text-fill: #e74c3c; -fx-strikethrough: true;");
+            double prixReduit = p.getPrix() * 0.80;
+            prixLabel.setText(String.format("%.2f €", prixReduit));
+            Label badge = new Label("🏷️ -20% Fidélité");
+            badge.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; " +
+                    "-fx-font-size: 10px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 2 6;");
+            card.getChildren().addAll(prixBarre, badge);
+        }
+
+        // Stock avec alerte
+        HBox stockBox = new HBox(6);
+        stockBox.setAlignment(Pos.CENTER_LEFT);
+        int stock = p.getStock() != null ? p.getStock() : 0;
+        if (stock < 5) {
+            Label stockLabel = new Label("🔴 Stock: " + stock);
+            stockLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #e74c3c; -fx-font-weight: bold;");
+            Label alertLabel = new Label("⚠️ Stock faible !");
+            alertLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: white; -fx-background-color: #e74c3c;" +
+                    "-fx-background-radius: 8; -fx-padding: 2 6;");
+            stockBox.getChildren().addAll(stockLabel, alertLabel);
+        } else {
+            Label stockLabel = new Label("📦 Stock: " + stock);
+            stockLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #7f8c8d;");
+            stockBox.getChildren().add(stockLabel);
+        }
 
         // Disponibilité
-        Label dispoLabel = new Label(p.getDisponible() ? "✅ Disponible" : "❌ Indisponible");
-        dispoLabel.setStyle(p.getDisponible() ? "-fx-text-fill: #27ae60; -fx-font-size: 11px;" : "-fx-text-fill: #e74c3c; -fx-font-size: 11px;");
+        Label dispoLabel = new Label(Boolean.TRUE.equals(p.getDisponible()) ? "✅ Disponible" : "❌ Indisponible");
+        dispoLabel.setStyle(Boolean.TRUE.equals(p.getDisponible()) ?
+                "-fx-text-fill: #27ae60; -fx-font-size: 11px;" : "-fx-text-fill: #e74c3c; -fx-font-size: 11px;");
 
         // Boutons
-        HBox buttonsBox = new HBox(10);
-        buttonsBox.setAlignment(javafx.geometry.Pos.CENTER);
+        HBox buttonsBox = new HBox(8);
+        buttonsBox.setAlignment(Pos.CENTER);
 
         Button detailsBtn = new Button("👁");
         detailsBtn.setTooltip(new Tooltip("Afficher"));
@@ -192,34 +212,28 @@ public class ListeProduitController implements Initializable {
         supprimerBtn.setTooltip(new Tooltip("Supprimer"));
         supprimerBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 16; -fx-padding: 5 10;");
         supprimerBtn.setOnAction(e -> {
-            try {
-                handleSupprimer(p);
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
+            try { handleSupprimer(p); } catch (SQLException ex) { throw new RuntimeException(ex); }
         });
 
-        // Bouton favori
-        boolean isFavori = serviceFavoris.estFavori(p);
-        Button favoriBtn = new Button(isFavori ? "❤️" : "🤍");
-        favoriBtn.setTooltip(new Tooltip(isFavori ? "Retirer des favoris" : "Ajouter aux favoris"));
+        Button favoriBtn = new Button(serviceFavoris.estFavori(p) ? "❤️" : "🤍");
         favoriBtn.setStyle("-fx-background-color: transparent; -fx-font-size: 14px; -fx-padding: 5 6;");
         favoriBtn.setOnAction(e -> {
             if (serviceFavoris.estFavori(p)) {
                 serviceFavoris.supprimerFavori(p);
                 favoriBtn.setText("🤍");
-                favoriBtn.setTooltip(new Tooltip("Ajouter aux favoris"));
             } else {
                 serviceFavoris.ajouterFavori(p);
                 favoriBtn.setText("❤️");
-                favoriBtn.setTooltip(new Tooltip("Retirer des favoris"));
             }
         });
 
-        buttonsBox.getChildren().addAll(detailsBtn, modifierBtn, supprimerBtn, favoriBtn);
+        Button panierBtn = new Button("🛒");
+        panierBtn.setTooltip(new Tooltip("Ajouter au panier"));
+        panierBtn.setStyle("-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 16; -fx-padding: 5 10;");
+        panierBtn.setOnAction(e -> handleAjouterAuPanier(p));
 
-        // Ajouter tous les éléments à la carte (l'image/icône est déjà ajoutée en index 0)
-        card.getChildren().addAll(nomLabel, prixLabel, stockLabel, dispoLabel, buttonsBox);
+        buttonsBox.getChildren().addAll(detailsBtn, modifierBtn, supprimerBtn, favoriBtn, panierBtn);
+        card.getChildren().addAll(nomLabel, prixLabel, stockBox, dispoLabel, buttonsBox);
 
         return card;
     }
@@ -228,26 +242,24 @@ public class ListeProduitController implements Initializable {
         Label iconLabel = new Label(getIconForCategorie(p.getCategorie()));
         iconLabel.setStyle("-fx-font-size: 40px;");
         iconLabel.setMaxWidth(Double.MAX_VALUE);
-        iconLabel.setAlignment(javafx.geometry.Pos.CENTER);
+        iconLabel.setAlignment(Pos.CENTER);
         return iconLabel;
     }
 
     private String getIconForCategorie(CategorieEnum categorie) {
         if (categorie == null) return "📦";
-        switch (categorie) {
-            case MEDICAMENT: return "💊";
-            case MATERIEL_MEDICAL: return "🩺";
-            case PARAPHARMACIE: return "🧴";
-            case HYGIENE: return "🧼";
-            case COMPLEMENT_ALIMENTAIRE: return "🥗";
-            default: return "📦";
-        }
+        return switch (categorie) {
+            case MEDICAMENT -> "💊";
+            case MATERIEL_MEDICAL -> "🩺";
+            case PARAPHARMACIE -> "🧴";
+            case HYGIENE -> "🧼";
+            case COMPLEMENT_ALIMENTAIRE -> "🥗";
+            default -> "📦";
+        };
     }
 
     private void setupSearchListener() {
-        txtSearch.textProperty().addListener((observable, oldValue, newValue) -> {
-            filterCards(newValue);
-        });
+        txtSearch.textProperty().addListener((obs, oldVal, newVal) -> filterCards(newVal));
     }
 
     private void filterCards(String keyword) {
@@ -256,12 +268,10 @@ public class ListeProduitController implements Initializable {
             updateStatus(produitsList.size());
             return;
         }
-
         List<Produit> filtered = produitsList.stream()
                 .filter(p -> p.getNom().toLowerCase().contains(keyword.toLowerCase()) ||
                         (p.getMarque() != null && p.getMarque().toLowerCase().contains(keyword.toLowerCase())))
                 .toList();
-
         displayCards(filtered);
         updateStatus(filtered.size());
     }
@@ -275,20 +285,16 @@ public class ListeProduitController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AjoutProd.fxml"));
             Parent root = loader.load();
-
             FormulaireProduitController controller = loader.getController();
             controller.setServiceProduit(serviceProduit);
             controller.setListeController(this);
             controller.setMode("ajouter");
-
             Stage stage = new Stage();
             stage.setTitle("Ajouter un produit");
             stage.setScene(new Scene(root, 500, 600));
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
-
         } catch (Exception e) {
-            e.printStackTrace();
             showAlert("Erreur: " + e.getMessage());
         }
     }
@@ -297,21 +303,17 @@ public class ListeProduitController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AjoutProd.fxml"));
             Parent root = loader.load();
-
             FormulaireProduitController controller = loader.getController();
             controller.setServiceProduit(serviceProduit);
             controller.setListeController(this);
             controller.setMode("modifier");
             controller.setProduit(produit);
-
             Stage stage = new Stage();
             stage.setTitle("Modifier le produit");
             stage.setScene(new Scene(root, 500, 600));
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
-
         } catch (Exception e) {
-            e.printStackTrace();
             showAlert("Erreur: " + e.getMessage());
         }
     }
@@ -321,11 +323,12 @@ public class ListeProduitController implements Initializable {
         info.setTitle("Détails produit");
         info.setHeaderText(produit.getNom());
         info.setContentText(
-                "Catégorie: " + (produit.getCategorie() != null ? produit.getCategorie().name() : "N/A") + "\n" +
+                "Catégorie: " + (produit.getCategorie() != null ? produit.getCategorie().name() :
+                        (produit.getCategorieName() != null ? produit.getCategorieName() : "N/A")) + "\n" +
                         "Prix: " + produit.getPrix() + "\n" +
                         "Stock: " + produit.getStock() + "\n" +
                         "Marque: " + (produit.getMarque() != null ? produit.getMarque() : "-") + "\n" +
-                        "Disponible: " + (produit.getDisponible() ? "Oui" : "Non"));
+                        "Disponible: " + (Boolean.TRUE.equals(produit.getDisponible()) ? "Oui" : "Non"));
         info.showAndWait();
     }
 
@@ -333,7 +336,6 @@ public class ListeProduitController implements Initializable {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Confirmation");
         confirm.setContentText("Supprimer " + produit.getNom() + " ?");
-
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             serviceProduit.supprimer(produit.getId().intValue());
@@ -341,8 +343,30 @@ public class ListeProduitController implements Initializable {
         }
     }
 
-    public void refreshList() throws SQLException {
-        loadProduits();
+    private void handleAjouterAuPanier(Produit produit) {
+        try {
+            int userId = UserSession.getCurrentUser() != null ? UserSession.getCurrentUser().getId() : 0;
+            servicePanier.ajouterAuPanier(userId, produit, 1);
+            showAlert("✅ \"" + produit.getNom() + "\" ajouté au panier !");
+        } catch (SQLException e) {
+            showAlert("Erreur panier : " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleMonPanier() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Panier.fxml"));
+            Parent root = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("🛒 Mon Panier");
+            stage.setScene(new Scene(root, 700, 550));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+            try { loadProduits(); } catch (SQLException ignored) {}
+        } catch (Exception e) {
+            showAlert("Erreur: " + e.getMessage());
+        }
     }
 
     @FXML
@@ -356,9 +380,12 @@ public class ListeProduitController implements Initializable {
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
         } catch (Exception e) {
-            e.printStackTrace();
             showAlert("Erreur: " + e.getMessage());
         }
+    }
+
+    public void refreshList() throws SQLException {
+        loadProduits();
     }
 
     private void showAlert(String message) {

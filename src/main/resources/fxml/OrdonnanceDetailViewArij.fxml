@@ -6,7 +6,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="esprit.fx.controllers.OrdonnanceDetailControllerArij"
-      spacing="0" stylesheets="@../css/arij-styles.css"
+      spacing="0" stylesheets="@/fxml/css/arij-styles.css"
       style="-fx-background-color:#f0f4f8;" prefWidth="900" prefHeight="700">
 
     <!-- En-tête avec badge sécurité -->

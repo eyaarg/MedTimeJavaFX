@@ -123,16 +123,11 @@ public class MainControllerArij {
 
     @FXML
     private void showPrendreRdvView() {
-        System.out.println("=== PRENDRE RDV - Début ===");
         setModuleActive(btnModulePrendreRdv);
-        
         try {
-            System.out.println("Chargement de PrendreRendezVous.fxml...");
-            loadView("/fxml/PrendreRendezVous.fxml");
-            System.out.println("✓ PrendreRendezVous.fxml chargé avec succès !");
+            loadView("/fxml/RendezVousList.fxml");
         } catch (Exception e) {
-            System.err.println("✗ ERREUR lors du chargement: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Erreur chargement RendezVousList: " + e.getMessage());
         }
     }
 

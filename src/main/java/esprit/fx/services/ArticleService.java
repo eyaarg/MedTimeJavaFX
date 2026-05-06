@@ -55,11 +55,16 @@ public class ArticleService implements IService<Article> {
 
     @Override
     public List<Article> getAll() throws SQLException {
+        return getAllByRole(false);
+    }
+
+    public List<Article> getAllByRole(boolean isDoctor) throws SQLException {
         List<Article> articles = new ArrayList<>();
-        String sql = "SELECT id, titre, contenu, image, date_creation, nb_vues, statut, specialite_id FROM article";
+        String sql = isDoctor
+            ? "SELECT id, titre, contenu, image, date_creation, nb_vues, statut, specialite_id FROM article"
+            : "SELECT id, titre, contenu, image, date_creation, nb_vues, statut, specialite_id FROM article WHERE statut = 'publie' OR statut = 'publié'";
         Statement st = con.createStatement();
         ResultSet rs = st.executeQuery(sql);
-
         while (rs.next()) {
             Article article = new Article();
             article.setId(rs.getInt("id"));

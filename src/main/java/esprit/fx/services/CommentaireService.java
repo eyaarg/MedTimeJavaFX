@@ -4,6 +4,7 @@ import esprit.fx.entities.Article;
 import esprit.fx.entities.Commentaire;
 import esprit.fx.utils.MyDB;
 import esprit.fx.utils.Session;
+import esprit.fx.utils.UserSession;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -19,7 +20,13 @@ public class CommentaireService implements IService<Commentaire> {
 
     @Override
     public void ajouter(Commentaire commentaire) throws SQLException {
-        int userId = Session.getCurrentUserId();
+        // Priorité à UserSession (login principal) puis Session (fallback)
+        int userId = 0;
+        if (UserSession.getCurrentUser() != null) {
+            userId = UserSession.getCurrentUser().getId();
+        } else {
+            userId = Session.getCurrentUserId();
+        }
         if (userId == 0) {
             userId = getFirstUserId();
         }

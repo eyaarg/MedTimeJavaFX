@@ -319,7 +319,7 @@ public class MainControllerArij {
     }
 
     private List<HubCard> buildForumHubs() {
-        if (isDoctor()) {
+        if (isDoctor() || UserSession.isAdmin()) {
             return Arrays.asList(
                     new HubCard("📰", "Articles medicaux", "Consultez et gerez les articles", () -> loadView("/fxml/ListerArticles.fxml")),
                     new HubCard("💬", "Commentaires", "Gerez tous les commentaires", () -> loadView("/fxml/ListerCommentaires.fxml"))
@@ -428,7 +428,9 @@ public class MainControllerArij {
             } else if (ctrl instanceof NotificationListControllerArij c) {
                 c.setUserId(userId);
             } else if (ctrl instanceof ArticleController c) {
-                c.setRole(isDoctor());
+                // Doctors AND admins can add/manage articles
+                boolean canManage = isDoctor() || UserSession.isAdmin();
+                c.setRole(canManage);
             } else if (ctrl instanceof RendezVousController c) {
                 // pas de config spéciale
             } else if (ctrl instanceof DisponibiliteController c) {

@@ -28,7 +28,7 @@ public class ServiceProduit implements IService<Produit> {
     @Override
     public void ajouter(Produit produit) throws SQLException {
         String requete = "INSERT INTO product(name, description, price, stock, " +
-                "is_available, is_prescription_required, brand, category_id_id, image, expire_at) " +
+                "is_available, is_prescription_required, brand, category_id, image, expire_at) " +
                 "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement pstmt = conn.prepareStatement(requete)) {
@@ -73,7 +73,7 @@ public class ServiceProduit implements IService<Produit> {
     @Override
     public void modifier(Produit produit) throws SQLException {
         String requete = "UPDATE product SET name = ?, description = ?, price = ?, stock = ?, image = ?, " +
-                "is_available = ?, is_prescription_required = ?, brand = ?, category_id_id = ?, expire_at = ? " +
+                "is_available = ?, is_prescription_required = ?, brand = ?, category_id = ?, expire_at = ? " +
                 "WHERE id = ?";
 
         try (PreparedStatement pstmt = conn.prepareStatement(requete)) {
@@ -95,7 +95,7 @@ public class ServiceProduit implements IService<Produit> {
     @Override
     public List<Produit> getAll() throws SQLException {
         String requete = "SELECT p.*, pc.name AS category_name FROM product p " +
-                "LEFT JOIN product_category pc ON pc.id = p.category_id_id";
+                "LEFT JOIN product_category pc ON pc.id = p.category_id";
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(requete)) {
             List<Produit> listproduits = new ArrayList<>();
@@ -109,7 +109,7 @@ public class ServiceProduit implements IService<Produit> {
     @Override
     public Produit afficherParId(int id) throws SQLException {
         String requete = "SELECT p.*, pc.name AS category_name FROM product p " +
-                "LEFT JOIN product_category pc ON pc.id = p.category_id_id WHERE p.id = ?";
+                "LEFT JOIN product_category pc ON pc.id = p.category_id WHERE p.id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(requete)) {
             pstmt.setInt(1, id);
             try (ResultSet rs = pstmt.executeQuery()) {

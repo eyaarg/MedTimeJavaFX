@@ -23,12 +23,12 @@ public class ServiceRendezVous implements IService<RendezVous> {
             ps.setInt(1, rendezVous.getPatientId());
             ps.setInt(2, rendezVous.getDoctorId());
             ps.setTimestamp(3, Timestamp.valueOf(rendezVous.getDateHeure()));
-            ps.setInt(4, 40); // Durée par défaut: 40 minutes
+            ps.setInt(4, 40); // DurÃ©e par dÃ©faut: 40 minutes
             ps.setString(5, "IN_PERSON"); // Type de consultation: en personne
             ps.setString(6, rendezVous.getMotif());
             ps.setString(7, rendezVous.getStatut());
             ps.setString(8, rendezVous.getNotes());
-            ps.setBoolean(9, false); // Rappel non envoyé
+            ps.setBoolean(9, false); // Rappel non envoyÃ©
             ps.setTimestamp(10, Timestamp.valueOf(rendezVous.getDateCreation()));
             
             ps.executeUpdate();
@@ -39,7 +39,7 @@ public class ServiceRendezVous implements IService<RendezVous> {
                 }
             }
             
-            System.out.println("✓ Rendez-vous ajouté avec succès - ID: " + rendezVous.getId());
+            System.out.println("âœ“ Rendez-vous ajoutÃ© avec succÃ¨s - ID: " + rendezVous.getId());
         }
     }
 
@@ -58,7 +58,7 @@ public class ServiceRendezVous implements IService<RendezVous> {
             ps.setInt(8, rendezVous.getId());
             
             ps.executeUpdate();
-            System.out.println("✓ Rendez-vous modifié avec succès - ID: " + rendezVous.getId());
+            System.out.println("âœ“ Rendez-vous modifiÃ© avec succÃ¨s - ID: " + rendezVous.getId());
         }
     }
 
@@ -139,7 +139,7 @@ public class ServiceRendezVous implements IService<RendezVous> {
                 }
             }
             
-            System.out.println("✓ " + rendezVousList.size() + " rendez-vous chargés pour le patient " + patientId);
+            System.out.println("âœ“ " + rendezVousList.size() + " rendez-vous chargÃ©s pour le patient " + patientId);
         }
         
         return rendezVousList;
@@ -221,7 +221,7 @@ public class ServiceRendezVous implements IService<RendezVous> {
             // Colonne peut ne pas exister
         }
         
-        // Informations supplémentaires
+        // Informations supplÃ©mentaires
         try {
             rv.setPatientNom(rs.getString("patient_nom"));
             rv.setPatientEmail(rs.getString("patient_email"));
@@ -230,7 +230,7 @@ public class ServiceRendezVous implements IService<RendezVous> {
         } catch (SQLException e) {
             // Ces colonnes viennent du JOIN, peuvent ne pas exister
             rv.setPatientNom("Patient " + rv.getPatientId());
-            rv.setDoctorNom("Médecin " + rv.getDoctorId());
+            rv.setDoctorNom("MÃ©decin " + rv.getDoctorId());
         }
         
         return rv;
@@ -249,7 +249,7 @@ public class ServiceRendezVous implements IService<RendezVous> {
                 rv.setDateHeure(dateHeure.toLocalDateTime());
             }
         } catch (SQLException e) {
-            System.err.println("Colonne appointment_date_time non trouvée: " + e.getMessage());
+            System.err.println("Colonne appointment_date_time non trouvÃ©e: " + e.getMessage());
         }
         
         // Utiliser reason
@@ -274,8 +274,32 @@ public class ServiceRendezVous implements IService<RendezVous> {
         
         // Noms temporaires
         rv.setPatientNom("Patient " + rv.getPatientId());
-        rv.setDoctorNom("Médecin " + rv.getDoctorId());
+        rv.setDoctorNom("MÃ©decin " + rv.getDoctorId());
         
         return rv;
+    }
+    /**
+     * Get all users with DOCTOR role.
+     * Used by SuggestionController and ListeAttenteController.
+     */
+    public List<esprit.fx.entities.User> getAllDoctors() throws java.sql.SQLException {
+        List<esprit.fx.entities.User> doctors = new java.util.ArrayList<>();
+        String sql = "SELECT DISTINCT u.id, u.username, u.email " +
+                     "FROM users u " +
+                     "INNER JOIN user_roles ur ON u.id = ur.user_id " +
+                     "INNER JOIN roles r ON ur.role_id = r.id " +
+                     "WHERE r.name IN ('DOCTOR', 'ROLE_DOCTOR', 'Medecin', 'MEDECIN') " +
+                     "AND u.is_active = 1 ORDER BY u.username";
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                esprit.fx.entities.User doctor = new esprit.fx.entities.User();
+                doctor.setId(rs.getInt("id"));
+                doctor.setUsername(rs.getString("username"));
+                doctor.setEmail(rs.getString("email"));
+                doctors.add(doctor);
+            }
+        }
+        return doctors;
     }
 }

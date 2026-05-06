@@ -18,12 +18,12 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
     @Override
     public void ajouter(Disponibilite disponibilite) throws SQLException {
         System.out.println("\n========================================");
-        System.out.println("AJOUT DISPONIBILITÉ - DEBUG v2.0 (FIX DATE)");
-        System.out.println("Date début reçue: " + disponibilite.getDateDebut());
-        System.out.println("Date fin reçue: " + disponibilite.getDateFin());
+        System.out.println("AJOUT DISPONIBILITÃ‰ - DEBUG v2.0 (FIX DATE)");
+        System.out.println("Date dÃ©but reÃ§ue: " + disponibilite.getDateDebut());
+        System.out.println("Date fin reÃ§ue: " + disponibilite.getDateFin());
         System.out.println("========================================\n");
         
-        // D'abord, découvrir la structure de la table
+        // D'abord, dÃ©couvrir la structure de la table
         DatabaseMetaData metaData = conn.getMetaData();
         ResultSet columns = metaData.getColumns(null, null, "availability", null);
         
@@ -37,7 +37,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
             
             columnNames.add(columnName);
             
-            // Si la colonne n'est pas nullable et n'a pas de valeur par défaut, elle est requise
+            // Si la colonne n'est pas nullable et n'a pas de valeur par dÃ©faut, elle est requise
             if ("NO".equals(isNullable) && (columnDef == null || columnDef.isEmpty())) {
                 if (!"id".equalsIgnoreCase(columnName)) { // Ignorer l'ID auto-increment
                     requiredColumns.add(columnName);
@@ -49,7 +49,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
         System.out.println("Colonnes disponibles dans 'availability': " + columnNames);
         System.out.println("Colonnes requises: " + requiredColumns);
         
-        // Construire la requête dynamiquement
+        // Construire la requÃªte dynamiquement
         StringBuilder sqlBuilder = new StringBuilder("INSERT INTO availability (");
         StringBuilder valuesBuilder = new StringBuilder(" VALUES (");
         
@@ -60,34 +60,34 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
             fieldsToInsert.add("doctor_id");
         }
         
-        // IMPORTANT: Pour les dates complètes, on doit TOUJOURS séparer date et heure
+        // IMPORTANT: Pour les dates complÃ¨tes, on doit TOUJOURS sÃ©parer date et heure
         // Les colonnes start_date et end_date sont OBLIGATOIRES
         boolean hasStartDate = columnNames.contains("start_date");
         boolean hasEndDate = columnNames.contains("end_date");
         boolean hasStartTime = columnNames.contains("start_time");
         boolean hasEndTime = columnNames.contains("end_time");
         
-        System.out.println("Colonnes de date détectées: start_date=" + hasStartDate + ", end_date=" + hasEndDate + 
+        System.out.println("Colonnes de date dÃ©tectÃ©es: start_date=" + hasStartDate + ", end_date=" + hasEndDate + 
                           ", start_time=" + hasStartTime + ", end_time=" + hasEndTime);
         
         if (hasStartDate) {
             fieldsToInsert.add("start_date");
-            System.out.println("  → Ajout de start_date à la requête");
+            System.out.println("  â†’ Ajout de start_date Ã  la requÃªte");
         }
         if (hasStartTime) {
             fieldsToInsert.add("start_time");
-            System.out.println("  → Ajout de start_time à la requête");
+            System.out.println("  â†’ Ajout de start_time Ã  la requÃªte");
         }
         if (hasEndDate) {
             fieldsToInsert.add("end_date");
-            System.out.println("  → Ajout de end_date à la requête");
+            System.out.println("  â†’ Ajout de end_date Ã  la requÃªte");
         }
         if (hasEndTime) {
             fieldsToInsert.add("end_time");
-            System.out.println("  → Ajout de end_time à la requête");
+            System.out.println("  â†’ Ajout de end_time Ã  la requÃªte");
         }
         
-        // Colonnes supplémentaires
+        // Colonnes supplÃ©mentaires
         if (columnNames.contains("is_online")) {
             fieldsToInsert.add("is_online");
         }
@@ -98,15 +98,15 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
             fieldsToInsert.add("created_at");
         }
         
-        // Ajouter des valeurs par défaut pour les colonnes requises manquantes
+        // Ajouter des valeurs par dÃ©faut pour les colonnes requises manquantes
         for (String reqCol : requiredColumns) {
             if (!fieldsToInsert.contains(reqCol)) {
                 fieldsToInsert.add(reqCol);
-                System.out.println("⚠ Ajout de colonne requise avec valeur par défaut: " + reqCol);
+                System.out.println("âš  Ajout de colonne requise avec valeur par dÃ©faut: " + reqCol);
             }
         }
         
-        System.out.println("✓ LISTE FINALE DES COLONNES À INSÉRER: " + fieldsToInsert);
+        System.out.println("âœ“ LISTE FINALE DES COLONNES Ã€ INSÃ‰RER: " + fieldsToInsert);
         
         for (int i = 0; i < fieldsToInsert.size(); i++) {
             sqlBuilder.append(fieldsToInsert.get(i));
@@ -121,7 +121,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
         valuesBuilder.append(")");
         String sql = sqlBuilder.toString() + valuesBuilder.toString();
         
-        System.out.println("Requête SQL générée: " + sql);
+        System.out.println("RequÃªte SQL gÃ©nÃ©rÃ©e: " + sql);
         
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             int paramIndex = 1;
@@ -134,7 +134,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
                     case "start_date":
                         if (disponibilite.getDateDebut() != null) {
                             ps.setDate(paramIndex++, java.sql.Date.valueOf(disponibilite.getDateDebut().toLocalDate()));
-                            System.out.println("  → start_date = " + disponibilite.getDateDebut().toLocalDate());
+                            System.out.println("  â†’ start_date = " + disponibilite.getDateDebut().toLocalDate());
                         } else {
                             ps.setDate(paramIndex++, java.sql.Date.valueOf(LocalDateTime.now().toLocalDate()));
                         }
@@ -142,7 +142,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
                     case "end_date":
                         if (disponibilite.getDateFin() != null) {
                             ps.setDate(paramIndex++, java.sql.Date.valueOf(disponibilite.getDateFin().toLocalDate()));
-                            System.out.println("  → end_date = " + disponibilite.getDateFin().toLocalDate());
+                            System.out.println("  â†’ end_date = " + disponibilite.getDateFin().toLocalDate());
                         } else {
                             ps.setDate(paramIndex++, java.sql.Date.valueOf(LocalDateTime.now().toLocalDate()));
                         }
@@ -150,7 +150,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
                     case "start_time":
                         if (disponibilite.getDateDebut() != null) {
                             ps.setTime(paramIndex++, java.sql.Time.valueOf(disponibilite.getDateDebut().toLocalTime()));
-                            System.out.println("  → start_time = " + disponibilite.getDateDebut().toLocalTime());
+                            System.out.println("  â†’ start_time = " + disponibilite.getDateDebut().toLocalTime());
                         } else {
                             ps.setTime(paramIndex++, java.sql.Time.valueOf(LocalDateTime.now().toLocalTime()));
                         }
@@ -158,7 +158,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
                     case "end_time":
                         if (disponibilite.getDateFin() != null) {
                             ps.setTime(paramIndex++, java.sql.Time.valueOf(disponibilite.getDateFin().toLocalTime()));
-                            System.out.println("  → end_time = " + disponibilite.getDateFin().toLocalTime());
+                            System.out.println("  â†’ end_time = " + disponibilite.getDateFin().toLocalTime());
                         } else {
                             ps.setTime(paramIndex++, java.sql.Time.valueOf(LocalDateTime.now().plusHours(1).toLocalTime()));
                         }
@@ -169,38 +169,38 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
                         ps.setTime(paramIndex++, java.sql.Time.valueOf("00:00:00"));
                         break;
                     case "is_online":
-                        // IMPORTANT: is_online semble être l'inverse de estDisponible
+                        // IMPORTANT: is_online semble Ãªtre l'inverse de estDisponible
                         // Si disponible = true, alors is_online = false (consultation en cabinet)
                         // Si disponible = false, alors is_online = true (consultation en ligne)
                         boolean isOnlineValue = !disponibilite.isEstDisponible();
                         ps.setBoolean(paramIndex++, isOnlineValue);
-                        System.out.println("  → is_online = " + isOnlineValue + " (estDisponible = " + disponibilite.isEstDisponible() + ")");
+                        System.out.println("  â†’ is_online = " + isOnlineValue + " (estDisponible = " + disponibilite.isEstDisponible() + ")");
                         break;
                     case "notes":
                         String notesValue = disponibilite.getNotes() != null ? disponibilite.getNotes() : "";
                         ps.setString(paramIndex++, notesValue);
-                        System.out.println("  → notes = '" + notesValue + "'");
+                        System.out.println("  â†’ notes = '" + notesValue + "'");
                         break;
                     case "created_at":
                         ps.setTimestamp(paramIndex++, Timestamp.valueOf(LocalDateTime.now()));
                         break;
                     default:
-                        // Pour les colonnes inconnues, essayer de déterminer le type
-                        System.out.println("⚠ Colonne inconnue '" + field + "', tentative de détection du type");
+                        // Pour les colonnes inconnues, essayer de dÃ©terminer le type
+                        System.out.println("âš  Colonne inconnue '" + field + "', tentative de dÃ©tection du type");
                         
-                        // Récupérer le type de la colonne
+                        // RÃ©cupÃ©rer le type de la colonne
                         DatabaseMetaData meta = conn.getMetaData();
                         ResultSet colInfo = meta.getColumns(null, null, "availability", field);
                         
                         if (colInfo.next()) {
                             int dataType = colInfo.getInt("DATA_TYPE");
                             String typeName = colInfo.getString("TYPE_NAME");
-                            System.out.println("  Type détecté: " + typeName + " (code: " + dataType + ")");
+                            System.out.println("  Type dÃ©tectÃ©: " + typeName + " (code: " + dataType + ")");
                             
                             // java.sql.Types constants
                             if (dataType == java.sql.Types.INTEGER || dataType == java.sql.Types.BIGINT || 
                                 dataType == java.sql.Types.SMALLINT || dataType == java.sql.Types.TINYINT) {
-                                ps.setInt(paramIndex++, 0); // Valeur par défaut pour entier
+                                ps.setInt(paramIndex++, 0); // Valeur par dÃ©faut pour entier
                             } else if (dataType == java.sql.Types.BOOLEAN || dataType == java.sql.Types.BIT) {
                                 ps.setBoolean(paramIndex++, false);
                             } else if (dataType == java.sql.Types.TIMESTAMP || dataType == java.sql.Types.DATE) {
@@ -209,11 +209,11 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
                                        dataType == java.sql.Types.FLOAT) {
                                 ps.setDouble(paramIndex++, 0.0);
                             } else {
-                                // Par défaut, chaîne vide pour VARCHAR, TEXT, etc.
+                                // Par dÃ©faut, chaÃ®ne vide pour VARCHAR, TEXT, etc.
                                 ps.setString(paramIndex++, "");
                             }
                         } else {
-                            // Si on ne peut pas déterminer le type, utiliser NULL
+                            // Si on ne peut pas dÃ©terminer le type, utiliser NULL
                             ps.setNull(paramIndex++, java.sql.Types.VARCHAR);
                         }
                         colInfo.close();
@@ -229,10 +229,10 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
                 }
             }
             
-            System.out.println("✓ Disponibilité ajoutée avec succès - ID: " + disponibilite.getId());
+            System.out.println("âœ“ DisponibilitÃ© ajoutÃ©e avec succÃ¨s - ID: " + disponibilite.getId());
             
         } catch (SQLException e) {
-            System.err.println("✗ Erreur lors de l'ajout: " + e.getMessage());
+            System.err.println("âœ— Erreur lors de l'ajout: " + e.getMessage());
             e.printStackTrace();
             throw e;
         }
@@ -240,7 +240,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
 
     @Override
     public void modifier(Disponibilite disponibilite) throws SQLException {
-        // D'abord, découvrir la structure de la table
+        // D'abord, dÃ©couvrir la structure de la table
         DatabaseMetaData metaData = conn.getMetaData();
         ResultSet columns = metaData.getColumns(null, null, "availability", null);
         
@@ -254,7 +254,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
         
         System.out.println("Modification - Colonnes disponibles: " + columnNames);
         
-        // Construire la requête UPDATE dynamiquement
+        // Construire la requÃªte UPDATE dynamiquement
         StringBuilder sqlBuilder = new StringBuilder("UPDATE availability SET ");
         List<String> fieldsToUpdate = new ArrayList<>();
         
@@ -263,7 +263,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
             fieldsToUpdate.add("doctor_id");
         }
         
-        // Pour les dates complètes, on doit séparer date et heure
+        // Pour les dates complÃ¨tes, on doit sÃ©parer date et heure
         if (columnNames.contains("start_date")) {
             fieldsToUpdate.add("start_date");
         }
@@ -297,7 +297,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
         sqlBuilder.append(" WHERE id=?");
         String sql = sqlBuilder.toString();
         
-        System.out.println("Requête UPDATE générée: " + sql);
+        System.out.println("RequÃªte UPDATE gÃ©nÃ©rÃ©e: " + sql);
         
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             int paramIndex = 1;
@@ -338,12 +338,12 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
                     case "is_online":
                         boolean isOnlineValue = !disponibilite.isEstDisponible();
                         ps.setBoolean(paramIndex++, isOnlineValue);
-                        System.out.println("  → UPDATE is_online = " + isOnlineValue + " (estDisponible = " + disponibilite.isEstDisponible() + ")");
+                        System.out.println("  â†’ UPDATE is_online = " + isOnlineValue + " (estDisponible = " + disponibilite.isEstDisponible() + ")");
                         break;
                     case "notes":
                         String notesValue = disponibilite.getNotes() != null ? disponibilite.getNotes() : "";
                         ps.setString(paramIndex++, notesValue);
-                        System.out.println("  → UPDATE notes = '" + notesValue + "'");
+                        System.out.println("  â†’ UPDATE notes = '" + notesValue + "'");
                         break;
                     case "updated_at":
                         ps.setTimestamp(paramIndex++, Timestamp.valueOf(LocalDateTime.now()));
@@ -355,10 +355,10 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
             ps.setInt(paramIndex, disponibilite.getId());
             
             int rowsAffected = ps.executeUpdate();
-            System.out.println("✓ Disponibilité modifiée avec succès - ID: " + disponibilite.getId() + " (" + rowsAffected + " ligne(s) affectée(s))");
+            System.out.println("âœ“ DisponibilitÃ© modifiÃ©e avec succÃ¨s - ID: " + disponibilite.getId() + " (" + rowsAffected + " ligne(s) affectÃ©e(s))");
             
         } catch (SQLException e) {
-            System.err.println("✗ Erreur lors de la modification: " + e.getMessage());
+            System.err.println("âœ— Erreur lors de la modification: " + e.getMessage());
             e.printStackTrace();
             throw e;
         }
@@ -366,7 +366,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
 
     @Override
     public void supprimer(int id) throws SQLException {
-        // Vérifier d'abord s'il y a des rendez-vous liés
+        // VÃ©rifier d'abord s'il y a des rendez-vous liÃ©s
         String checkSql = "SELECT COUNT(*) as count FROM rendez_vous WHERE disponibilite_id = ?";
         
         try (PreparedStatement checkPs = conn.prepareStatement(checkSql)) {
@@ -376,33 +376,33 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
             if (rs.next()) {
                 int count = rs.getInt("count");
                 if (count > 0) {
-                    throw new SQLException("Impossible de supprimer cette disponibilité car " + count + 
-                                         " rendez-vous y sont liés. Veuillez d'abord supprimer ou modifier ces rendez-vous.");
+                    throw new SQLException("Impossible de supprimer cette disponibilitÃ© car " + count + 
+                                         " rendez-vous y sont liÃ©s. Veuillez d'abord supprimer ou modifier ces rendez-vous.");
                 }
             }
             rs.close();
         } catch (SQLException e) {
             // Si la colonne disponibilite_id n'existe pas, essayer avec availability_id
             if (e.getMessage().contains("Unknown column")) {
-                System.out.println("Colonne 'disponibilite_id' non trouvée, tentative avec d'autres noms...");
+                System.out.println("Colonne 'disponibilite_id' non trouvÃ©e, tentative avec d'autres noms...");
                 // Continuer avec la suppression normale
             } else {
                 throw e;
             }
         }
         
-        // Si pas de rendez-vous liés, procéder à la suppression
+        // Si pas de rendez-vous liÃ©s, procÃ©der Ã  la suppression
         String sql = "DELETE FROM availability WHERE id=?";
         
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             int rowsAffected = ps.executeUpdate();
-            System.out.println("✓ Disponibilité supprimée - ID: " + id + " (" + rowsAffected + " ligne(s) supprimée(s))");
+            System.out.println("âœ“ DisponibilitÃ© supprimÃ©e - ID: " + id + " (" + rowsAffected + " ligne(s) supprimÃ©e(s))");
         } catch (SQLException e) {
-            // Si l'erreur est une contrainte de clé étrangère
+            // Si l'erreur est une contrainte de clÃ© Ã©trangÃ¨re
             if (e.getMessage().contains("foreign key constraint")) {
-                throw new SQLException("Cette disponibilité ne peut pas être supprimée car elle est utilisée par d'autres éléments (rendez-vous, etc.). " +
-                                     "Veuillez d'abord supprimer ou modifier ces éléments.");
+                throw new SQLException("Cette disponibilitÃ© ne peut pas Ãªtre supprimÃ©e car elle est utilisÃ©e par d'autres Ã©lÃ©ments (rendez-vous, etc.). " +
+                                     "Veuillez d'abord supprimer ou modifier ces Ã©lÃ©ments.");
             }
             throw e;
         }
@@ -460,8 +460,8 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
                     }
                     
                     Disponibilite dispo = mapResultSetToDisponibilite(rs);
-                    System.out.println("Date début après mapping: " + dispo.getDateDebut());
-                    System.out.println("Date fin après mapping: " + dispo.getDateFin());
+                    System.out.println("Date dÃ©but aprÃ¨s mapping: " + dispo.getDateDebut());
+                    System.out.println("Date fin aprÃ¨s mapping: " + dispo.getDateFin());
                     System.out.println("=========================");
                     
                     return dispo;
@@ -568,7 +568,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
         d.setId(rs.getInt("id"));
         d.setDoctorId(rs.getInt("doctor_id"));
         
-        // Combiner start_date + start_time pour obtenir la date/heure complète
+        // Combiner start_date + start_time pour obtenir la date/heure complÃ¨te
         try {
             java.sql.Date startDate = rs.getDate("start_date");
             java.sql.Time startTime = rs.getTime("start_time");
@@ -593,7 +593,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
             d.setDateFin(LocalDateTime.now().plusHours(1));
         }
         
-        // Disponibilité
+        // DisponibilitÃ©
         try {
             d.setEstDisponible(!rs.getBoolean("is_online"));
         } catch (SQLException e) {
@@ -607,7 +607,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
             d.setNotes("");
         }
         
-        // Date de création
+        // Date de crÃ©ation
         try {
             Timestamp createdAt = rs.getTimestamp("created_at");
             if (createdAt != null) {
@@ -617,11 +617,11 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
             // Ignorer si la colonne n'existe pas
         }
         
-        // Informations supplémentaires
+        // Informations supplÃ©mentaires
         try {
             d.setDoctorNom(rs.getString("doctor_nom"));
         } catch (SQLException e) {
-            d.setDoctorNom("Médecin " + d.getDoctorId());
+            d.setDoctorNom("MÃ©decin " + d.getDoctorId());
         }
         
         try {
@@ -648,7 +648,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
             d.setDoctorId(0);
         }
         
-        // Combiner start_date + start_time pour obtenir la date/heure complète
+        // Combiner start_date + start_time pour obtenir la date/heure complÃ¨te
         LocalDateTime dateDebut = null;
         LocalDateTime dateFin = null;
         
@@ -658,7 +658,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
             
             if (startDate != null && startTime != null) {
                 dateDebut = LocalDateTime.of(startDate.toLocalDate(), startTime.toLocalTime());
-                System.out.println("Date début combinée: " + dateDebut);
+                System.out.println("Date dÃ©but combinÃ©e: " + dateDebut);
             }
         } catch (SQLException e) {
             // Colonnes n'existent pas
@@ -670,7 +670,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
             
             if (endDate != null && endTime != null) {
                 dateFin = LocalDateTime.of(endDate.toLocalDate(), endTime.toLocalTime());
-                System.out.println("Date fin combinée: " + dateFin);
+                System.out.println("Date fin combinÃ©e: " + dateFin);
             }
         } catch (SQLException e) {
             // Colonnes n'existent pas
@@ -679,7 +679,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
         d.setDateDebut(dateDebut != null ? dateDebut : java.time.LocalDateTime.now());
         d.setDateFin(dateFin != null ? dateFin : java.time.LocalDateTime.now().plusHours(8));
         
-        // Disponibilité
+        // DisponibilitÃ©
         try {
             d.setEstDisponible(!rs.getBoolean("is_online")); // is_online = inverse ?
         } catch (SQLException e) {
@@ -694,8 +694,32 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
             d.setNotes("");
         }
         
-        d.setDoctorNom("Médecin " + d.getDoctorId());
+        d.setDoctorNom("MÃ©decin " + d.getDoctorId());
         
         return d;
+    }
+    /**
+     * Get all users with DOCTOR role.
+     * Used by DisponibiliteController formulaire.
+     */
+    public List<esprit.fx.entities.User> getAllDoctors() throws java.sql.SQLException {
+        List<esprit.fx.entities.User> doctors = new java.util.ArrayList<>();
+        String sql = "SELECT DISTINCT u.id, u.username, u.email " +
+                     "FROM users u " +
+                     "INNER JOIN user_roles ur ON u.id = ur.user_id " +
+                     "INNER JOIN roles r ON ur.role_id = r.id " +
+                     "WHERE r.name IN ('DOCTOR', 'ROLE_DOCTOR', 'Medecin', 'MEDECIN') " +
+                     "AND u.is_active = 1 ORDER BY u.username";
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                esprit.fx.entities.User doctor = new esprit.fx.entities.User();
+                doctor.setId(rs.getInt("id"));
+                doctor.setUsername(rs.getString("username"));
+                doctor.setEmail(rs.getString("email"));
+                doctors.add(doctor);
+            }
+        }
+        return doctors;
     }
 }

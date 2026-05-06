@@ -7,7 +7,7 @@
 <VBox xmlns="http://javafx.com/javafx/23"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="esprit.fx.controllers.DisponibiliteController"
-      spacing="20" style="-fx-background-color: #f3f4f6;">
+      spacing="20" style="-fx-background-color: #f0f4f8;">
 
    <padding>
       <Insets top="20" right="20" bottom="20" left="20" />
@@ -15,7 +15,7 @@
 
    <!-- Header -->
    <HBox alignment="CENTER_LEFT" spacing="20"
-         style="-fx-background-color: linear-gradient(to right, #667eea 0%, #764ba2 100%);
+         style="-fx-background-color: linear-gradient(to right, #1d4ed8 0%, #0ea5e9 100%);
                 -fx-padding: 30; -fx-background-radius: 16;
                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 2);">
       <VBox spacing="5">
@@ -27,10 +27,10 @@
       <Region HBox.hgrow="ALWAYS" />
       <Button fx:id="btnActualiser" text="Actualiser"
               onAction="#actualiserListe"
-              style="-fx-background-color: rgba(255,255,255,0.2);
-                     -fx-text-fill: white; -fx-font-weight: bold;
+              style="-fx-background-color: #eff6ff;
+                     -fx-text-fill: #1d4ed8; -fx-font-weight: bold;
                      -fx-padding: 12 24; -fx-background-radius: 10;
-                     -fx-font-size: 14px; -fx-border-color: rgba(255,255,255,0.3);
+                     -fx-font-size: 14px; -fx-border-color: #bfdbfe;
                      -fx-border-width: 1; -fx-border-radius: 10; -fx-cursor: hand;" />
    </HBox>
 
@@ -80,7 +80,7 @@
                 style="-fx-font-weight: 600; -fx-font-size: 13px; -fx-text-fill: #6b7280;" />
          <Button fx:id="btnAjouter" text="+ Nouvelle Disponibilite"
                  onAction="#ajouterDisponibilite"
-                 style="-fx-background-color: #10b981; -fx-text-fill: white;
+                 style="-fx-background-color: #1d4ed8; -fx-text-fill: white;
                         -fx-font-weight: 600; -fx-padding: 10 20;
                         -fx-background-radius: 8; -fx-cursor: hand;" />
       </VBox>

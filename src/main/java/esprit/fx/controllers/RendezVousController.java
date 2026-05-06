@@ -171,34 +171,34 @@ public class RendezVousController implements Initializable {
         String statut = nvl(rdv.getStatut(), "");
 
         if (!"TERMINE".equals(statut)) {
-            Button btnMod = btn("Modifier", "#3b82f6");
+            Button btnMod = btn("Modifier", "#1d4ed8");
             btnMod.setOnAction(e -> ouvrirFormulaireRendezVous(rdv));
             actions.getChildren().add(btnMod);
         }
 
         if ("DEMANDE".equals(statut) && !"PATIENT".equals(currentUserRole)) {
-            Button btnConf = btn("Confirmer", "#10b981");
+            Button btnConf = btn("Confirmer", "#1d4ed8");
             btnConf.setOnAction(e -> confirmerRdv(rdv));
             actions.getChildren().add(btnConf);
         }
 
         if (!"ANNULE".equals(statut) && !"TERMINE".equals(statut)) {
-            Button btnAnn = btn("Annuler", "#ef4444");
+            Button btnAnn = btn("Annuler", "#1d4ed8");
             btnAnn.setOnAction(e -> annulerRdv(rdv));
             actions.getChildren().add(btnAnn);
         }
 
         if ("CONFIRME".equals(statut)) {
-            Button btnGcal = btn("Google Cal", "#4285f4");
+            Button btnGcal = btn("Google Cal", "#1d4ed8");
             btnGcal.setOnAction(e -> ouvrirGoogleCalendar(rdv));
             actions.getChildren().add(btnGcal);
         }
 
-        Button btnHist = btn("Historique", "#7c3aed");
+        Button btnHist = btn("Historique", "#1d4ed8");
         btnHist.setOnAction(e -> ouvrirHistoriqueRdv(rdv));
         actions.getChildren().add(btnHist);
 
-        Button btnSuppr = btn("Supprimer", "#6b7280");
+        Button btnSuppr = btn("Supprimer", "#1d4ed8");
         btnSuppr.setOnAction(e -> supprimerRdv(rdv));
         actions.getChildren().add(btnSuppr);
 
@@ -365,11 +365,11 @@ public class RendezVousController implements Initializable {
         Label badge = new Label(statut != null ? statut : "");
         String bg, fg;
         switch (nvl(statut, "")) {
-            case "DEMANDE"  -> { bg = "#fef3c7"; fg = "#d97706"; }
-            case "CONFIRME" -> { bg = "#d1fae5"; fg = "#059669"; }
-            case "ANNULE"   -> { bg = "#fee2e2"; fg = "#dc2626"; }
+            case "DEMANDE"  -> { bg = "#eff6ff"; fg = "#1d4ed8"; }
+            case "CONFIRME" -> { bg = "#dbeafe"; fg = "#1d4ed8"; }
+            case "ANNULE"   -> { bg = "#eff6ff"; fg = "#1d4ed8"; }
             case "TERMINE"  -> { bg = "#dbeafe"; fg = "#2563eb"; }
-            default         -> { bg = "#f3f4f6"; fg = "#6b7280"; }
+            default         -> { bg = "#eff6ff"; fg = "#1d4ed8"; }
         }
         badge.setStyle(
             "-fx-background-color: " + bg + "; -fx-text-fill: " + fg + ";" +

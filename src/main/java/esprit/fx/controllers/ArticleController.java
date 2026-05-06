@@ -59,8 +59,8 @@ public class ArticleController implements Initializable {
     private int totalPages   = 1;
 
     public void setRole(boolean isDoctor) {
-        this.isDoctor = isDoctor;
-        if (btnAjouter != null) { btnAjouter.setVisible(isDoctor); btnAjouter.setManaged(isDoctor); }
+        this.isDoctor = "DOCTOR".equalsIgnoreCase(UserSession.getCurrentRole());
+        if (btnAjouter != null) { btnAjouter.setVisible(this.isDoctor); btnAjouter.setManaged(this.isDoctor); }
         try { chargerFeed(); } catch (SQLException e) { e.printStackTrace(); }
     }
 
@@ -73,6 +73,7 @@ public class ArticleController implements Initializable {
         moderationService  = new ModerationService();
         specialiteMap      = new HashMap<>();
         loadSpecialites();
+        this.isDoctor = "DOCTOR".equalsIgnoreCase(UserSession.getCurrentRole());
         if (btnAjouter != null) { btnAjouter.setVisible(false); btnAjouter.setManaged(false); }
         try { chargerFeed(); } catch (SQLException e) { throw new RuntimeException(e); }
     }
@@ -463,3 +464,10 @@ public class ArticleController implements Initializable {
         }
     }
 }
+
+
+
+
+
+
+

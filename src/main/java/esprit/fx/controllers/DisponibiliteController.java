@@ -9,6 +9,7 @@ import esprit.fx.services.ServiceUser;
 import esprit.fx.entities.Doctor;
 import esprit.fx.utils.NotificationUtil;
 import esprit.fx.utils.UserSession;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -55,7 +56,7 @@ public class DisponibiliteController implements Initializable {
 
         initializeFilters();
         configureButtonsBasedOnRole();
-        chargerDisponibilites();
+        Platform.runLater(this::chargerDisponibilites);
     }
 
     private void initializeFilters() {
@@ -167,7 +168,7 @@ public class DisponibiliteController implements Initializable {
             containerDisponibilites.getChildren().clear();
 
             if (dispos.isEmpty()) {
-                Label emptyLabel = new Label("Aucune disponibilit├® trouv├®e");
+                Label emptyLabel = new Label("Aucune disponibilite trouvee");
                 emptyLabel.setStyle(
                         "-fx-font-size: 16px; -fx-text-fill: #6b7280; -fx-padding: 40;"
                 );
@@ -180,15 +181,22 @@ public class DisponibiliteController implements Initializable {
             }
 
         } catch (SQLException e) {
-            Stage stage = (Stage) containerDisponibilites.getScene().getWindow();
+            Stage stage = getCurrentStage();
             if (stage != null) {
                 NotificationUtil.showNotification(
                         stage,
-                        "Impossible de charger les disponibilit├®s: " + e.getMessage(),
+                        "Impossible de charger les disponibilites: " + e.getMessage(),
                         NotificationUtil.NotificationType.ERROR
                 );
             }
         }
+    }
+
+    private Stage getCurrentStage() {
+        if (containerDisponibilites == null || containerDisponibilites.getScene() == null) {
+            return null;
+        }
+        return (Stage) containerDisponibilites.getScene().getWindow();
     }
 
     @FXML
@@ -461,7 +469,7 @@ public class DisponibiliteController implements Initializable {
 
         VBox header = new VBox(8);
         header.setStyle(
-                "-fx-background-color: linear-gradient(to right, #667eea 0%, #764ba2 100%);" +
+                "-fx-background-color: linear-gradient(to right, #1d4ed8 0%, #0ea5e9 100%);" +
                         "-fx-padding: 25;" +
                         "-fx-background-radius: 16 16 0 0;"
         );

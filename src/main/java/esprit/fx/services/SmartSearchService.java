@@ -3,6 +3,8 @@ package esprit.fx.services;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import esprit.fx.utils.ConfigLoader;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -11,8 +13,9 @@ import java.util.List;
 
 public class SmartSearchService {
 
-    private final String API_KEY = System.getenv("GROQ_API_KEY");
-    private final String GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+    private final String API_KEY = loadApiKey();
+    private final String GROQ_URL = getConfig("groq.api.url", "https://api.groq.com/openai/v1/chat/completions");
+    private final String MODEL = getConfig("groq.model", "llama-3.3-70b-versatile");
 
     public String askGroq(String userInput, List<String> availableProducts) throws Exception {
         // 1. Préparation du contexte
@@ -25,7 +28,7 @@ public class SmartSearchService {
                      "3. Réponds UNIQUEMENT avec le nom exact du produit trouvé dans la liste. " +
                      "4. Si aucun produit ne correspond logiquement, réponds 'NONE'.";// 2. Construction propre du JSON avec la bibliothèque org.json
         JSONObject jsonBody = new JSONObject();
-        jsonBody.put("model", "llama-3.3-70b-versatile");
+        jsonBody.put("model", MODEL);
         jsonBody.put("temperature", 0.1); // Basse température pour être précis et constant
 
         JSONArray messages = new JSONArray();
@@ -52,6 +55,19 @@ public class SmartSearchService {
         }
 
         return parseResponse(response.body());
+    }
+
+    private String loadApiKey() {
+        String envKey = System.getenv("GROQ_API_KEY");
+        if (envKey != null && !envKey.isBlank()) {
+            return envKey.trim();
+        }
+        return getConfig("groq.api.key", "");
+    }
+
+    private String getConfig(String key, String fallback) {
+        String value = ConfigLoader.getProperty(key);
+        return value == null || value.isBlank() ? fallback : value.trim();
     }
 
     private String parseResponse(String responseBody) {

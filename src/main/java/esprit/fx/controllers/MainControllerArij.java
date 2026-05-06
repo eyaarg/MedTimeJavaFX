@@ -36,8 +36,7 @@ public class MainControllerArij {
     @FXML private StackPane contentArea;
     @FXML private Button btnSideDashboard;
     @FXML private Button btnModuleConsultation;
-    @FXML private Button btnModulePrendreRdv;
-    @FXML private Button btnModuleDisponibilite;
+    @FXML private Button btnModuleRendezVous;
     @FXML private Button btnModuleMarket;
     @FXML private Button btnModuleForum;
     @FXML private Button btnUsers;
@@ -122,8 +121,14 @@ public class MainControllerArij {
     }
 
     @FXML
+    private void showRendezVousHubs() {
+        setModuleActive(btnModuleRendezVous);
+        showHubsView("Rendez-vous", "Selectionnez une fonctionnalite", buildRendezVousHubs());
+    }
+
+    @FXML
     private void showPrendreRdvView() {
-        setModuleActive(btnModulePrendreRdv);
+        setModuleActive(btnModuleRendezVous);
         try {
             loadView("/fxml/RendezVousList.fxml");
         } catch (Exception e) {
@@ -133,7 +138,7 @@ public class MainControllerArij {
 
     @FXML
     private void showDisponibiliteView() {
-        setModuleActive(btnModuleDisponibilite);
+        setModuleActive(btnModuleRendezVous);
         loadView("/fxml/DisponibiliteList.fxml");
     }
 
@@ -290,6 +295,13 @@ public class MainControllerArij {
         );
     }
 
+    private List<HubCard> buildRendezVousHubs() {
+        return Arrays.asList(
+                new HubCard("📅", "Prendre RDV", "Consultez et gerez vos rendez-vous", this::showPrendreRdvView),
+                new HubCard("🕒", "Disponibilites", "Gerez les creneaux des medecins", this::showDisponibiliteView)
+        );
+    }
+
     private List<HubCard> buildMarketHubs() {
         return Arrays.asList(
                 new HubCard("💊", "Liste des produits", "Parcourez le catalogue medical", () -> loadView("/fxml/ListProd.fxml")),
@@ -389,7 +401,7 @@ public class MainControllerArij {
     }
 
     private void setModuleActive(Button active) {
-        for (Button b : Arrays.asList(btnSideDashboard, btnModuleConsultation, btnModulePrendreRdv, btnModuleDisponibilite, btnModuleMarket, btnModuleForum, btnUsers)) {
+        for (Button b : Arrays.asList(btnSideDashboard, btnModuleConsultation, btnModuleRendezVous, btnModuleMarket, btnModuleForum, btnUsers)) {
             if (b != null) {
                 b.getStyleClass().remove("nav-btn-active");
             }

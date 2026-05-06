@@ -193,16 +193,15 @@ public class FormulaireProduitController implements Initializable {
                 txtImage.setText("/images/produits/" + fileName);
                 imgPreview.setImage(new Image(selectedFile.toURI().toString()));
 
-                // --- Préparation de l'IA Gemini ---
-                txtDescription.setText("🤖 Gemini analyse l'image...");
+                // --- Preparation de l'IA Groq ---
+                txtDescription.setText("Groq analyse l'image...");
                 txtDescription.setDisable(true);
 
-                // Redimensionnement et conversion Base64 (propre pour Gemini)
+                // Redimensionnement et conversion Base64 pour Groq Vision
                 String base64Image = encodeAndResizeImage(selectedFile);
 
                 new Thread(() -> {
                     try {
-                        // VisionService utilise maintenant Gemini
                         String description = visionService.genererDescription(base64Image);
                         Platform.runLater(() -> {
                             txtDescription.setText(description);
@@ -211,7 +210,7 @@ public class FormulaireProduitController implements Initializable {
                     } catch (Exception e) {
                         e.printStackTrace();
                         Platform.runLater(() -> {
-                            txtDescription.setText("⚠️ Erreur Gemini : " + e.getMessage());
+                            txtDescription.setText("Erreur Groq : " + e.getMessage());
                             txtDescription.setDisable(false);
                         });
                     }
@@ -360,7 +359,7 @@ public class FormulaireProduitController implements Initializable {
             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
             javax.imageio.ImageIO.write(outputImage, "jpg", baos);
             
-            // On retourne le Base64 pur sans préfixe pour Gemini
+            // On retourne le Base64 pur sans prefixe.
             return Base64.getEncoder().encodeToString(baos.toByteArray());
         } catch (Exception e) {
             try {

@@ -64,7 +64,7 @@ public class ListeProduitController implements Initializable {
             return;
         }
 
-        lblStatus.setText("🤖 Groq réfléchit...");
+        lblStatus.setText("Analyse IA en cours...");
 
         new Thread(() -> {
             try {
@@ -80,15 +80,15 @@ public class ListeProduitController implements Initializable {
                                 .filter(p -> p.getNom().equalsIgnoreCase(suggestedName))
                                 .toList();
                         displayCards(smartResult);
-                        lblStatus.setText("✨ IA a trouvé : " + suggestedName);
+                        lblStatus.setText("IA a trouve : " + suggestedName);
                     } else {
                         displayCards(List.of());
-                        lblStatus.setText("❌ IA n'a rien trouvé pour : " + query);
+                        lblStatus.setText("IA n'a rien trouve pour : " + query);
                     }
                 });
 
             } catch (Exception e) {
-                Platform.runLater(() -> lblStatus.setText("⚠️ Erreur IA : " + e.getMessage()));
+                Platform.runLater(() -> lblStatus.setText("Erreur IA : " + e.getMessage()));
             }
         }).start();
     }
@@ -146,13 +146,13 @@ public class ListeProduitController implements Initializable {
 
         // Nom
         Label nomLabel = new Label(p.getNom());
-        nomLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        nomLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
         nomLabel.setWrapText(true);
         nomLabel.setMaxWidth(200);
 
         // Prix avec réduction éventuelle
         Label prixLabel = new Label(String.format("%.2f €", p.getPrix()));
-        prixLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #27ae60;");
+        prixLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1d4ed8;");
 
         // Vérifier éligibilité réduction
         boolean eligible = false;
@@ -163,11 +163,11 @@ public class ListeProduitController implements Initializable {
 
         if (eligible) {
             Label prixBarre = new Label(String.format("%.2f €", p.getPrix()));
-            prixBarre.setStyle("-fx-font-size: 13px; -fx-text-fill: #e74c3c; -fx-strikethrough: true;");
+            prixBarre.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b; -fx-strikethrough: true;");
             double prixReduit = p.getPrix() * 0.80;
             prixLabel.setText(String.format("%.2f €", prixReduit));
             Label badge = new Label("🏷️ -20% Fidélité");
-            badge.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; " +
+            badge.setStyle("-fx-background-color: #eff6ff; -fx-text-fill: #1d4ed8; " +
                     "-fx-font-size: 10px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 2 6;");
             card.getChildren().addAll(prixBarre, badge);
         }
@@ -178,9 +178,9 @@ public class ListeProduitController implements Initializable {
         int stock = p.getStock() != null ? p.getStock() : 0;
         if (stock < 5) {
             Label stockLabel = new Label("🔴 Stock: " + stock);
-            stockLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #e74c3c; -fx-font-weight: bold;");
+            stockLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #1d4ed8; -fx-font-weight: bold;");
             Label alertLabel = new Label("⚠️ Stock faible !");
-            alertLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: white; -fx-background-color: #e74c3c;" +
+            alertLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: #1d4ed8; -fx-background-color: #eff6ff;" +
                     "-fx-background-radius: 8; -fx-padding: 2 6;");
             stockBox.getChildren().addAll(stockLabel, alertLabel);
         } else {
@@ -192,7 +192,7 @@ public class ListeProduitController implements Initializable {
         // Disponibilité
         Label dispoLabel = new Label(Boolean.TRUE.equals(p.getDisponible()) ? "✅ Disponible" : "❌ Indisponible");
         dispoLabel.setStyle(Boolean.TRUE.equals(p.getDisponible()) ?
-                "-fx-text-fill: #27ae60; -fx-font-size: 11px;" : "-fx-text-fill: #e74c3c; -fx-font-size: 11px;");
+                "-fx-text-fill: #1d4ed8; -fx-font-size: 11px;" : "-fx-text-fill: #64748b; -fx-font-size: 11px;");
 
         // Boutons
         HBox buttonsBox = new HBox(8);
@@ -200,17 +200,17 @@ public class ListeProduitController implements Initializable {
 
         Button detailsBtn = new Button("👁");
         detailsBtn.setTooltip(new Tooltip("Afficher"));
-        detailsBtn.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 16; -fx-padding: 5 10;");
+        detailsBtn.setStyle("-fx-background-color: #eff6ff; -fx-text-fill: #1d4ed8; -fx-border-color: #bfdbfe; -fx-border-width: 1; -fx-border-radius: 16; -fx-font-size: 12px; -fx-background-radius: 16; -fx-padding: 5 10;");
         detailsBtn.setOnAction(e -> handleAfficher(p));
 
         Button modifierBtn = new Button("✏");
         modifierBtn.setTooltip(new Tooltip("Modifier"));
-        modifierBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 16; -fx-padding: 5 10;");
+        modifierBtn.setStyle("-fx-background-color: #eff6ff; -fx-text-fill: #1d4ed8; -fx-border-color: #bfdbfe; -fx-border-width: 1; -fx-border-radius: 16; -fx-font-size: 12px; -fx-background-radius: 16; -fx-padding: 5 10;");
         modifierBtn.setOnAction(e -> handleModifier(p));
 
         Button supprimerBtn = new Button("🗑");
         supprimerBtn.setTooltip(new Tooltip("Supprimer"));
-        supprimerBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 16; -fx-padding: 5 10;");
+        supprimerBtn.setStyle("-fx-background-color: #eff6ff; -fx-text-fill: #1d4ed8; -fx-border-color: #bfdbfe; -fx-border-width: 1; -fx-border-radius: 16; -fx-font-size: 12px; -fx-background-radius: 16; -fx-padding: 5 10;");
         supprimerBtn.setOnAction(e -> {
             try { handleSupprimer(p); } catch (SQLException ex) { throw new RuntimeException(ex); }
         });
@@ -229,7 +229,7 @@ public class ListeProduitController implements Initializable {
 
         Button panierBtn = new Button("🛒");
         panierBtn.setTooltip(new Tooltip("Ajouter au panier"));
-        panierBtn.setStyle("-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 16; -fx-padding: 5 10;");
+        panierBtn.setStyle("-fx-background-color: #eff6ff; -fx-text-fill: #1d4ed8; -fx-border-color: #bfdbfe; -fx-border-width: 1; -fx-border-radius: 16; -fx-font-size: 12px; -fx-background-radius: 16; -fx-padding: 5 10;");
         panierBtn.setOnAction(e -> handleAjouterAuPanier(p));
 
         buttonsBox.getChildren().addAll(detailsBtn, modifierBtn, supprimerBtn, favoriBtn, panierBtn);
@@ -277,7 +277,7 @@ public class ListeProduitController implements Initializable {
     }
 
     private void updateStatus(int count) {
-        lblStatus.setText("📊 " + count + " produit(s)");
+        lblStatus.setText(count + " produit(s)");
     }
 
     @FXML

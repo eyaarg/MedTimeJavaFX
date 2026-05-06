@@ -7,10 +7,10 @@
 <VBox xmlns="http://javafx.com/javafx/23"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="esprit.fx.controllers.RendezVousController"
-      spacing="0" style="-fx-background-color: #f3f4f6;">
+      spacing="0" style="-fx-background-color: #f0f4f8;">
 
    <!-- Header -->
-   <VBox style="-fx-background-color: linear-gradient(to right, #2c3e50 0%, #3498db 100%);
+   <VBox style="-fx-background-color: linear-gradient(to right, #1d4ed8 0%, #0ea5e9 100%);
                 -fx-padding: 24 28;">
       <HBox alignment="CENTER_LEFT" spacing="12">
          <VBox spacing="5">
@@ -22,23 +22,31 @@
          <Region HBox.hgrow="ALWAYS" />
          <Button fx:id="btnAjouter" text="+ Nouveau RDV"
                  onAction="#ajouterRendezVous"
-                 style="-fx-background-color: #27ae60; -fx-text-fill: white;
+                 style="-fx-background-color: #eff6ff; -fx-text-fill: #1d4ed8;
                         -fx-font-weight: bold; -fx-padding: 10 20;
+                        -fx-border-color: #bfdbfe; -fx-border-width: 1;
+                        -fx-border-radius: 8;
                         -fx-background-radius: 8; -fx-cursor: hand;" />
          <Button fx:id="btnSuggestion" text="Suggerer"
                  onAction="#ouvrirSuggestion"
-                 style="-fx-background-color: #7c3aed; -fx-text-fill: white;
+                 style="-fx-background-color: #eff6ff; -fx-text-fill: #1d4ed8;
                         -fx-font-weight: bold; -fx-padding: 10 20;
+                        -fx-border-color: #bfdbfe; -fx-border-width: 1;
+                        -fx-border-radius: 8;
                         -fx-background-radius: 8; -fx-cursor: hand;" />
          <Button fx:id="btnListeAttente" text="Liste d'attente"
                  onAction="#ouvrirListeAttente"
-                 style="-fx-background-color: #d97706; -fx-text-fill: white;
+                 style="-fx-background-color: #eff6ff; -fx-text-fill: #1d4ed8;
                         -fx-font-weight: bold; -fx-padding: 10 20;
+                        -fx-border-color: #bfdbfe; -fx-border-width: 1;
+                        -fx-border-radius: 8;
                         -fx-background-radius: 8; -fx-cursor: hand;" />
          <Button fx:id="btnActualiser" text="Actualiser"
                  onAction="#actualiserListe"
-                 style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white;
+                 style="-fx-background-color: #eff6ff; -fx-text-fill: #1d4ed8;
                         -fx-font-weight: bold; -fx-padding: 10 16;
+                        -fx-border-color: #bfdbfe; -fx-border-width: 1;
+                        -fx-border-radius: 8;
                         -fx-background-radius: 8; -fx-cursor: hand;" />
       </HBox>
    </VBox>
@@ -62,7 +70,7 @@
 
    <!-- Liste des cartes RDV -->
    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
-               style="-fx-background-color: transparent; -fx-background: #f3f4f6;">
+               style="-fx-background-color: transparent; -fx-background: #f0f4f8;">
       <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
       <VBox fx:id="containerRendezVous" spacing="12" />
    </ScrollPane>

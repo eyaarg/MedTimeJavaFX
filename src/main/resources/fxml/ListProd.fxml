@@ -11,68 +11,66 @@
       style="-fx-background-color: #f0f4f8;">
 
     <!-- Header gradient -->
-    <VBox style="-fx-background-color: linear-gradient(to right, #1a252f, #2c3e50);
-                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 3);">
-        <padding><Insets top="20" right="28" bottom="20" left="28"/></padding>
+    <VBox style="-fx-background-color: linear-gradient(to right, #1d4ed8 0%, #0ea5e9 100%);">
+        <padding><Insets top="22" right="32" bottom="18" left="32"/></padding>
         <HBox alignment="CENTER_LEFT" spacing="16">
             <VBox spacing="3" HBox.hgrow="ALWAYS">
-                <Label text="🏥 MedTime Marketplace"
+                <Label text="MedTime Marketplace"
                        style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;"/>
                 <Label text="Découvrez nos produits pharmaceutiques"
-                       style="-fx-font-size: 12px; -fx-text-fill: #bdc3c7;"/>
+                       style="-fx-font-size: 12px; -fx-text-fill: rgba(255,255,255,0.9);"/>
             </VBox>
             <Label fx:id="lblStatus"
-                   style="-fx-font-size: 12px; -fx-text-fill: #2ecc71; -fx-font-weight: bold;
-                          -fx-background-color: rgba(46,204,113,0.15); -fx-background-radius: 20;
+                   style="-fx-font-size: 12px; -fx-text-fill: #1d4ed8; -fx-font-weight: bold;
+                          -fx-background-color: #eff6ff; -fx-background-radius: 20;
                           -fx-padding: 4 12;"/>
         </HBox>
     </VBox>
 
     <!-- Barre de recherche + actions -->
     <HBox spacing="10" alignment="CENTER_LEFT"
-          style="-fx-background-color: white;
-                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 6, 0, 0, 2);">
-        <padding><Insets top="14" right="28" bottom="14" left="28"/></padding>
+          style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
+        <padding><Insets top="12" right="32" bottom="10" left="32"/></padding>
 
         <!-- Champ de recherche -->
         <HBox alignment="CENTER_LEFT" spacing="8" HBox.hgrow="ALWAYS"
               style="-fx-background-color: #f8f9fa; -fx-background-radius: 25;
-                     -fx-border-color: #e9ecef; -fx-border-radius: 25; -fx-border-width: 1.5;
+                     -fx-border-color: #cbd5e1; -fx-border-radius: 25; -fx-border-width: 1.5;
                      -fx-padding: 6 16;">
             <Label text="🔍" style="-fx-font-size: 14px;"/>
             <TextField fx:id="txtSearch" promptText="Rechercher un produit, une marque..."
                        HBox.hgrow="ALWAYS"
                        style="-fx-background-color: transparent; -fx-border-color: transparent;
-                              -fx-font-size: 13px; -fx-text-fill: #2c3e50;"/>
+                              -fx-font-size: 13px; -fx-text-fill: #0f172a;"/>
         </HBox>
 
         <!-- Bouton Analyse IA -->
-        <Button text="🤖 Analyse IA" onAction="#onSmartSearch"
-                style="-fx-background-color: linear-gradient(to right, #2980b9, #3498db);
-                       -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 12px;
-                       -fx-background-radius: 20; -fx-padding: 9 18;
-                       -fx-effect: dropshadow(gaussian, rgba(52,152,219,0.4), 6, 0, 0, 2);"/>
+        <Button text="Analyse IA" onAction="#onSmartSearch"
+                style="-fx-background-color: #eff6ff; -fx-text-fill: #1d4ed8;
+                       -fx-border-color: #bfdbfe; -fx-border-width: 1; -fx-border-radius: 20;
+                       -fx-font-weight: bold; -fx-font-size: 12px;
+                       -fx-background-radius: 20; -fx-padding: 9 18;"/>
 
         <!-- Bouton Ajouter -->
-        <Button text="➕ Ajouter" onAction="#handleAjouter"
-                style="-fx-background-color: linear-gradient(to right, #27ae60, #2ecc71);
-                       -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 12px;
-                       -fx-background-radius: 20; -fx-padding: 9 18;
-                       -fx-effect: dropshadow(gaussian, rgba(39,174,96,0.4), 6, 0, 0, 2);"/>
+        <Button text="+ Ajouter" onAction="#handleAjouter"
+                style="-fx-background-color: #eff6ff; -fx-text-fill: #1d4ed8;
+                       -fx-border-color: #bfdbfe; -fx-border-width: 1; -fx-border-radius: 20;
+                       -fx-font-weight: bold; -fx-font-size: 12px;
+                       -fx-background-radius: 20; -fx-padding: 9 18;"/>
 
         <!-- Bouton Favoris -->
-        <Button text="❤️ Favoris" onAction="#handleMesFavoris"
-                style="-fx-background-color: linear-gradient(to right, #c0392b, #e74c3c);
-                       -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 12px;
-                       -fx-background-radius: 20; -fx-padding: 9 18;
-                       -fx-effect: dropshadow(gaussian, rgba(231,76,60,0.4), 6, 0, 0, 2);"/>
+        <Button text="Favoris" onAction="#handleMesFavoris"
+                style="-fx-background-color: #eff6ff; -fx-text-fill: #1d4ed8;
+                       -fx-border-color: #bfdbfe; -fx-border-width: 1; -fx-border-radius: 20;
+                       -fx-font-weight: bold; -fx-font-size: 12px;
+                       -fx-background-radius: 20; -fx-padding: 9 18;"/>
 
         <!-- Bouton Panier -->
-        <Button text="🛒 Panier" onAction="#handleMonPanier"
-                style="-fx-background-color: linear-gradient(to right, #7d3c98, #8e44ad);
-                       -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 12px;
-                       -fx-background-radius: 20; -fx-padding: 9 18;
-                       -fx-effect: dropshadow(gaussian, rgba(142,68,173,0.4), 6, 0, 0, 2);"/>
+        <Button text="Panier" onAction="#handleMonPanier"
+                style="-fx-background-color: #eff6ff; -fx-text-fill: #1d4ed8;
+                       -fx-border-color: #bfdbfe; -fx-border-width: 1; -fx-border-radius: 20;
+                       -fx-font-weight: bold; -fx-font-size: 12px;
+                       -fx-background-radius: 20; -fx-padding: 9 18;"/>
     </HBox>
 
     <!-- Grille des cartes produits -->

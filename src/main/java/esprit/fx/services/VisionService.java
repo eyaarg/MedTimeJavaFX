@@ -1,55 +1,49 @@
 package esprit.fx.services;
 
+import esprit.fx.utils.ConfigLoader;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-import esprit.fx.utils.ConfigLoader;
-import org.json.JSONObject;
-import org.json.JSONArray;
-
 public class VisionService {
 
-    // On récupère les infos depuis le fichier properties
-    private static final String API_KEY = ConfigLoader.getProperty("gemini.api.key").trim();
-    private static final String BASE_URL = ConfigLoader.getProperty("gemini.url").trim();
-    
-    private static final String FULL_URL = BASE_URL + "?key=" + API_KEY;
-
-    // ... le reste de ta méthode genererDescription reste identique ...
-
+    private static final String API_KEY = getConfig("groq.api.key", "");
+    private static final String API_URL = getConfig("groq.api.url", "https://api.groq.com/openai/v1/chat/completions");
+    private static final String MODEL = getConfig("groq.vision.model", "llama-3.2-90b-vision-preview");
 
     public String genererDescription(String base64Image) throws Exception {
-        // 1. Construction du JSON selon le format Google Gemini
+        if (API_KEY.isBlank()) {
+            return "Cle API Groq non configuree.";
+        }
+
         JSONObject jsonBody = new JSONObject();
-        JSONArray contents = new JSONArray();
-        JSONObject partText = new JSONObject();
-        JSONObject partImage = new JSONObject();
-        JSONObject inlineData = new JSONObject();
+        jsonBody.put("model", MODEL);
+        jsonBody.put("temperature", 0.2);
+        jsonBody.put("max_tokens", 180);
 
-        // Texte du prompt
-        partText.put("text", "Tu es un pharmacien expert. Analyse cette image de produit médical et rédige une description courte (3 phrases max) pour un catalogue. Sois pro et factuel.");
+        JSONArray contentParts = new JSONArray();
+        contentParts.put(new JSONObject()
+                .put("type", "text")
+                .put("text", "Tu es un pharmacien expert. Analyse cette image de produit medical et redige une description courte, professionnelle et factuelle en francais, maximum 3 phrases."));
+        contentParts.put(new JSONObject()
+                .put("type", "image_url")
+                .put("image_url", new JSONObject()
+                        .put("url", "data:image/jpeg;base64," + base64Image)));
 
-        // Données de l'image
-        inlineData.put("mime_type", "image/jpeg");
-        inlineData.put("data", base64Image); // Gemini veut le Base64 pur, sans le préfixe data:image/jpeg
-        partImage.put("inline_data", inlineData);
+        JSONArray messages = new JSONArray();
+        messages.put(new JSONObject()
+                .put("role", "user")
+                .put("content", contentParts));
+        jsonBody.put("messages", messages);
 
-        JSONArray parts = new JSONArray();
-        parts.put(partText);
-        parts.put(partImage);
-
-        JSONObject contentObj = new JSONObject();
-        contentObj.put("parts", parts);
-        contents.put(contentObj);
-
-        jsonBody.put("contents", contents);
-
-        // 2. Envoi de la requête HTTP
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(FULL_URL)) // <--- C'est ici que ça bloquait
+                .uri(URI.create(API_URL))
+                .header("Authorization", "Bearer " + API_KEY)
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody.toString()))
                 .build();
@@ -57,27 +51,47 @@ public class VisionService {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 200) {
-            System.err.println("Erreur Gemini : " + response.body());
-            return "Erreur API Gemini : " + response.statusCode();
+            System.err.println("Erreur Groq Vision - Status: " + response.statusCode());
+            System.err.println("Response body: " + response.body());
+            String errorMsg = extractErrorMessage(response.body());
+            return "Erreur API Groq (" + response.statusCode() + "): " + errorMsg;
         }
 
         return extraireContenu(response.body());
     }
 
+    private static String getConfig(String key, String fallback) {
+        String value = ConfigLoader.getProperty(key);
+        return value == null || value.isBlank() ? fallback : value.trim();
+    }
+
     private String extraireContenu(String responseBody) {
         try {
             JSONObject json = new JSONObject(responseBody);
-            // Gemini renvoie le texte dans candidates[0].content.parts[0].text
-            return json.getJSONArray("candidates")
+            return json.getJSONArray("choices")
                     .getJSONObject(0)
-                    .getJSONObject("content")
-                    .getJSONArray("parts")
-                    .getJSONObject(0)
-                    .getString("text")
+                    .getJSONObject("message")
+                    .getString("content")
                     .trim();
         } catch (Exception e) {
-            System.err.println("Erreur parsing Gemini : " + e.getMessage());
-            return "Erreur d'analyse de la réponse IA.";
+            System.err.println("Erreur parsing Groq Vision : " + e.getMessage());
+            return "Erreur d'analyse de la reponse IA.";
         }
     }
+
+    private String extractErrorMessage(String responseBody) {
+        try {
+            JSONObject json = new JSONObject(responseBody);
+            if (json.has("error")) {
+                JSONObject error = json.getJSONObject("error");
+                if (error.has("message")) {
+                    return error.getString("message");
+                }
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+        return "Erreur inconnue";
+    }
 }
+

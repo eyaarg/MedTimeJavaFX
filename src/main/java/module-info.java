@@ -11,8 +11,8 @@ module MedTimeFX {
     requires jbcrypt;
     requires bcrypt;
 
-    // Apache POI - Export Excel
-    requires org.apache.poi.ooxml;
+    // Apache POI - Export Excel (non-modulaire, accès via classpath)
+    // requires org.apache.poi.ooxml;
 
     // JSON
     requires org.json;

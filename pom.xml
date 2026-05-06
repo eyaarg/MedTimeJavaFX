@@ -88,6 +88,12 @@
                     <compilerArgs>
                         <arg>--add-reads</arg>
                         <arg>MedTimeFX=ALL-UNNAMED</arg>
+                        <arg>--add-exports</arg>
+                        <arg>org.apache.poi.poi/org.apache.poi.ss.usermodel=MedTimeFX</arg>
+                        <arg>--add-exports</arg>
+                        <arg>org.apache.poi.poi/org.apache.poi.ss.util=MedTimeFX</arg>
+                        <arg>--add-exports</arg>
+                        <arg>org.apache.poi.ooxml/org.apache.poi.xssf.usermodel=MedTimeFX</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>

@@ -1,64 +1,35 @@
 package esprit.fx.utils;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Properties;
 
 public class MyDB {
-    private String url;
-    private String user;
-    private String password;
-    private Connection connection;
+    private final String url = "jdbc:mysql://localhost:3306/mediplatform_test_test?connectTimeout=5000&socketTimeout=5000";
+    private final String user = "root";
+    private final String password = "";
     private static MyDB instance;
 
     private MyDB() {
-        loadDatabaseConfig();
-        try {
-            connection = DriverManager.getConnection(url, user, password);
-            System.out.println("Connexion à la base de données 'mediplatform' réussie !");
+        // Validate connection at startup
+        try (Connection test = DriverManager.getConnection(url, user, password)) {
+            System.out.println("Connected to database successfully");
         } catch (SQLException e) {
-            System.err.println("Erreur de connexion à la base de données : " + e.getMessage());
             throw new RuntimeException(e);
         }
     }
 
-    private void loadDatabaseConfig() {
-        Properties props = new Properties();
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
-            if (input != null) {
-                props.load(input);
-                this.url = props.getProperty("db.url", "jdbc:mysql://localhost:3306/mediplatform_test_test");
-                this.user = props.getProperty("db.user", "root");
-                this.password = props.getProperty("db.password", "");
-            } else {
-                // Valeurs par défaut si le fichier n'existe pas
-                this.url = "jdbc:mysql://localhost:3306/mediplatform_test_test";
-                this.user = "root";
-                this.password = "";
-            }
-        } catch (IOException e) {
-            System.err.println("Erreur lors du chargement de la configuration : " + e.getMessage());
-            // Utiliser les valeurs par défaut
-            this.url = "jdbc:mysql://localhost:3306/mediplatform_test_test";
-            this.user = "root";
-            this.password = "";
-        }
-    }
-
+    /**
+     * Returns a fresh connection every time.
+     * Callers are responsible for closing it (use try-with-resources).
+     * This avoids stale result sets from a shared connection.
+     */
     public Connection getConnection() {
         try {
-            // Vérifier si la connexion est toujours valide
-            if (connection == null || connection.isClosed()) {
-                connection = DriverManager.getConnection(url, user, password);
-            }
+            return DriverManager.getConnection(url, user, password);
         } catch (SQLException e) {
-            System.err.println("Erreur lors de la reconnexion : " + e.getMessage());
-            throw new RuntimeException(e);
+            throw new RuntimeException("Impossible de se connecter : " + e.getMessage(), e);
         }
-        return connection;
     }
 
     public static MyDB getInstance() {
@@ -66,16 +37,5 @@ public class MyDB {
             instance = new MyDB();
         }
         return instance;
-    }
-
-    public void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-                System.out.println("Connexion fermée.");
-            }
-        } catch (SQLException e) {
-            System.err.println("Erreur lors de la fermeture de la connexion : " + e.getMessage());
-        }
     }
 }

@@ -2,7 +2,7 @@ package esprit.fx.controllers;
 
 import esprit.fx.entities.LigneOrdonnanceArij;
 import esprit.fx.entities.OrdonnanceArij;
-import esprit.fx.services.QRCodeServiceArij;
+import esprit.fx.services.QrCodeServiceArij;
 import esprit.fx.services.ServiceOrdonnanceArij;
 import esprit.fx.utils.PdfExporterArij;
 import javafx.fxml.FXML;
@@ -245,7 +245,7 @@ public class OrdonnanceDetailControllerArij {
             if (ordonnance.getAccessToken() != null && !ordonnance.getAccessToken().isEmpty()) {
                 // QR Code génération (optionnel)
                 try {
-                    QRCodeServiceArij qrService = new QRCodeServiceArij();
+                    QrCodeServiceArij qrService = new QrCodeServiceArij();
                     String scanUrl = ordonnance.buildScanUrl("http://localhost:8000");
                     
                     if (scanUrl != null && qrService != null) {

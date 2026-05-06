@@ -11,10 +11,11 @@ import java.util.List;
 
 public class ListeAttenteService {
 
-    private Connection conn;
+    private Connection conn() {
+        return MyDB.getInstance().getConnection();
+    }
 
     public ListeAttenteService() {
-        conn = MyDB.getInstance().getConnection();
     }
 
     // =========================================================================
@@ -44,7 +45,7 @@ public class ListeAttenteService {
                      " date_inscription, statut, date_expiration) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, patientId);
             ps.setInt(2, doctorId);
             if (dateSouhaitee != null)
@@ -69,7 +70,7 @@ public class ListeAttenteService {
     public boolean estDejaInscrit(int patientId, int doctorId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM liste_attente " +
                      "WHERE patient_id=? AND doctor_id=? AND statut='EN_ATTENTE'";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, patientId);
             ps.setInt(2, doctorId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -110,7 +111,7 @@ public class ListeAttenteService {
     /** Nombre de patients en attente pour un médecin. */
     public int getNombreEnAttente(int doctorId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM liste_attente WHERE doctor_id=? AND statut='EN_ATTENTE'";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, doctorId);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next() ? rs.getInt(1) : 0;
@@ -124,7 +125,7 @@ public class ListeAttenteService {
 
     public void changerStatut(int id, String nouveauStatut) throws SQLException {
         String sql = "UPDATE liste_attente SET statut=? WHERE id=?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setString(1, nouveauStatut);
             ps.setInt(2, id);
             ps.executeUpdate();
@@ -135,7 +136,7 @@ public class ListeAttenteService {
     public void marquerExpirees() throws SQLException {
         String sql = "UPDATE liste_attente SET statut='EXPIRE' " +
                      "WHERE statut='EN_ATTENTE' AND date_expiration < NOW()";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             int nb = ps.executeUpdate();
             if (nb > 0) System.out.println("✓ " + nb + " inscription(s) expirée(s) marquées.");
         }
@@ -143,7 +144,7 @@ public class ListeAttenteService {
 
     public void supprimer(int id) throws SQLException {
         String sql = "DELETE FROM liste_attente WHERE id=?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();
         }
@@ -155,7 +156,7 @@ public class ListeAttenteService {
 
     private List<ListeAttente> executeQuery(String sql, int param) throws SQLException {
         List<ListeAttente> liste = new ArrayList<>();
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, param);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) liste.add(mapRow(rs, false));
@@ -166,7 +167,7 @@ public class ListeAttenteService {
 
     private List<ListeAttente> executeQueryAvecDoctor(String sql, int param) throws SQLException {
         List<ListeAttente> liste = new ArrayList<>();
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, param);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) liste.add(mapRow(rs, true));

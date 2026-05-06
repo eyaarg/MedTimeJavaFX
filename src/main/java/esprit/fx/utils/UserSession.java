@@ -26,7 +26,7 @@ public final class UserSession {
     }
 
     public static boolean isAdmin() {
-        return "ADMIN".equalsIgnoreCase(currentRole) || "ROLE_ADMIN".equalsIgnoreCase(currentRole);
+        return currentRole != null && currentRole.toUpperCase().contains("ADMIN");
     }
 
     public static void clear() {

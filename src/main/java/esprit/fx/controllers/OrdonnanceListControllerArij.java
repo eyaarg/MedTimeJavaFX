@@ -7,7 +7,7 @@ import esprit.fx.entities.OrdonnanceArij;
 import esprit.fx.services.ServiceConsultationsArij;
 import esprit.fx.services.ServiceFactureArij;
 import esprit.fx.services.ServiceOrdonnanceArij;
-import esprit.fx.services.QRCodeServiceArij;
+import esprit.fx.services.QrCodeServiceArij;
 import esprit.fx.utils.MyDB;
 import esprit.fx.utils.PdfExporterArij;
 import javafx.fxml.FXML;
@@ -46,7 +46,7 @@ public class OrdonnanceListControllerArij {
     private final ServiceConsultationsArij consultationService = new ServiceConsultationsArij();
     private final ServiceOrdonnanceArij ordonnanceService = new ServiceOrdonnanceArij();
     private final ServiceFactureArij factureService = new ServiceFactureArij();
-    private final QRCodeServiceArij qrCodeService = new QRCodeServiceArij();
+    private final QrCodeServiceArij qrCodeService = new QrCodeServiceArij();
 
     private Map<Integer, String[]> patientInfoById = new HashMap<>();
     private Map<Integer, String[]> doctorInfoById  = new HashMap<>();

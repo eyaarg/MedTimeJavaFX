@@ -10,10 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServicePatient implements IService<Patient> {
-    private Connection conn;
+
+    private Connection conn() {
+        return MyDB.getInstance().getConnection();
+    }
 
     public ServicePatient() {
-        conn = MyDB.getInstance().getConnection();
     }
 
     @Override
@@ -27,7 +29,7 @@ public class ServicePatient implements IService<Patient> {
 
         String hashedPassword = BCrypt.hashpw(patient.getPassword(), BCrypt.gensalt());
 
-        try (PreparedStatement ps = conn.prepareStatement(reqUser, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = conn().prepareStatement(reqUser, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, patient.getEmail());
             ps.setString(2, patient.getUsername());
             ps.setString(3, hashedPassword);
@@ -48,7 +50,7 @@ public class ServicePatient implements IService<Patient> {
             String reqPatient = "INSERT INTO `patients` (`region`, `allergies`, `medical_history`, " +
                     "`previous_cancellations`, `birth_date`, `created_at`, `user_id`) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
-            try (PreparedStatement ps2 = conn.prepareStatement(reqPatient)) {
+            try (PreparedStatement ps2 = conn().prepareStatement(reqPatient)) {
                 ps2.setString(1, patient.getRegion());
                 ps2.setString(2, patient.getAllergies());
                 ps2.setString(3, patient.getMedicalHistory());
@@ -72,7 +74,7 @@ public class ServicePatient implements IService<Patient> {
             reqUser = "UPDATE `users` SET `email`=?, `username`=?, `phone_number`=? WHERE `id`=?";
         }
 
-        try (PreparedStatement ps = conn.prepareStatement(reqUser)) {
+        try (PreparedStatement ps = conn().prepareStatement(reqUser)) {
             ps.setString(1, patient.getEmail());
             ps.setString(2, patient.getUsername());
             if (updatePassword) {
@@ -88,7 +90,7 @@ public class ServicePatient implements IService<Patient> {
 
         String reqPatient = "UPDATE `patients` SET `region`=?, `allergies`=?, `medical_history`=?, " +
                 "`previous_cancellations`=?, `birth_date`=? WHERE `user_id`=?";
-        try (PreparedStatement ps2 = conn.prepareStatement(reqPatient)) {
+        try (PreparedStatement ps2 = conn().prepareStatement(reqPatient)) {
             ps2.setString(1, patient.getRegion());
             ps2.setString(2, patient.getAllergies());
             ps2.setString(3, patient.getMedicalHistory());
@@ -101,11 +103,11 @@ public class ServicePatient implements IService<Patient> {
 
     @Override
     public void supprimer(int patientId) throws SQLException {
-        try (PreparedStatement ps = conn.prepareStatement("DELETE FROM `patients` WHERE `user_id`=?")) {
+        try (PreparedStatement ps = conn().prepareStatement("DELETE FROM `patients` WHERE `user_id`=?")) {
             ps.setInt(1, patientId);
             ps.executeUpdate();
         }
-        try (PreparedStatement ps = conn.prepareStatement("DELETE FROM `users` WHERE `id`=?")) {
+        try (PreparedStatement ps = conn().prepareStatement("DELETE FROM `users` WHERE `id`=?")) {
             ps.setInt(1, patientId);
             ps.executeUpdate();
         }
@@ -117,7 +119,7 @@ public class ServicePatient implements IService<Patient> {
                 "p.previous_cancellations, p.birth_date " +
                 "FROM `users` u JOIN `patients` p ON u.id = p.user_id";
         List<Patient> patients = new ArrayList<>();
-        try (Statement stmt = conn.createStatement();
+        try (Statement stmt = conn().createStatement();
              ResultSet rs = stmt.executeQuery(req)) {
             while (rs.next()) {
                 Patient patient = new Patient(
@@ -157,7 +159,7 @@ public class ServicePatient implements IService<Patient> {
         Patient patient = null;
         String sql = "SELECT u.*, p.id as patient_id, p.region, p.allergies, p.medical_history, p.previous_cancellations, p.birth_date " +
                 "FROM users u JOIN patients p ON u.id = p.user_id WHERE u.id=?";
-        PreparedStatement ps = conn.prepareStatement(sql);
+        PreparedStatement ps = conn().prepareStatement(sql);
         ps.setInt(1, id);
         ResultSet rs = ps.executeQuery();
         if (rs.next()) {
@@ -188,3 +190,4 @@ public class ServicePatient implements IService<Patient> {
         return patient;
     }
 }
+

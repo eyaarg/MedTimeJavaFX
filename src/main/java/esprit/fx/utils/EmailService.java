@@ -40,7 +40,7 @@ public class EmailService {
         });
     }
 
-    // ── Public API ───────────────────────────────────────────────────────────
+    // ── Public API ────────────────────────────────────────
 
     public static void sendVerificationEmail(String toEmail, String username, String token)
             throws MessagingException {
@@ -97,6 +97,19 @@ public class EmailService {
                 + "<h1>Bonjour, " + username + "!</h1>"
                 + "<p>Votre compte a été verrouillé après 5 tentatives de connexion échouées.</p>"
                 + "<p>Contactez l'administrateur pour débloquer votre compte.</p>"
+                + "</body></html>";
+        sendEmail(toEmail, subject, content);
+    }
+
+    public static void sendPendingApprovalEmail(String toEmail, String username)
+            throws MessagingException {
+        String subject = "Votre demande de compte médecin est en attente de validation";
+        String content = "<html><body>"
+                + "<h1>Bonjour, Dr. " + username + "!</h1>"
+                + "<p>Votre compte médecin a bien été créé sur MedTimeFX.</p>"
+                + "<p>Votre dossier est en cours d'examen par notre équipe administrative.</p>"
+                + "<p>Vous recevrez un email de confirmation dès que votre compte sera approuvé.</p>"
+                + "<p>Merci de votre patience.</p>"
                 + "</body></html>";
         sendEmail(toEmail, subject, content);
     }

@@ -10,10 +10,11 @@ import java.util.List;
 
 public class HistoriqueService {
 
-    private Connection conn;
+    private Connection conn() {
+        return MyDB.getInstance().getConnection();
+    }
 
     public HistoriqueService() {
-        conn = MyDB.getInstance().getConnection();
     }
 
     /**
@@ -35,7 +36,7 @@ public class HistoriqueService {
         String sql = "INSERT INTO historique_rdv " +
                      "(rdv_id, ancien_statut, nouveau_statut, date_changement, modifie_par, commentaire) " +
                      "VALUES (?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, rdvId);
             ps.setString(2, ancienStatut);
             ps.setString(3, nouveauStatut);
@@ -47,6 +48,7 @@ public class HistoriqueService {
             System.out.println("✓ Historique enregistré : " + ancienStatut + " → " + nouveauStatut);
         } catch (SQLException e) {
             System.err.println("HistoriqueService erreur: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -64,7 +66,7 @@ public class HistoriqueService {
             """;
 
         List<HistoriqueRendezVous> liste = new ArrayList<>();
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, rdvId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -81,7 +83,7 @@ public class HistoriqueService {
      */
     public int getNombreChangements(int rdvId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM historique_rdv WHERE rdv_id = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, rdvId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getInt(1);
@@ -95,7 +97,7 @@ public class HistoriqueService {
      */
     public void supprimerHistorique(int rdvId) throws SQLException {
         String sql = "DELETE FROM historique_rdv WHERE rdv_id = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, rdvId);
             ps.executeUpdate();
         }
@@ -118,3 +120,4 @@ public class HistoriqueService {
         return h;
     }
 }
+

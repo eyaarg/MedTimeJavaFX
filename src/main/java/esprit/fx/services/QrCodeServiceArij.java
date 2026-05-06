@@ -17,7 +17,7 @@ import java.nio.file.Path;
  * Service de génération de QR Code pour les ordonnances.
  * Utilise ZXing (Zebra Crossing) pour générer les codes QR.
  */
-public class QRCodeServiceArij {
+public class QrCodeServiceArij {
 
     private static final int DEFAULT_SIZE = 300;
     private static final String BASE_URL = "http://localhost:8000";

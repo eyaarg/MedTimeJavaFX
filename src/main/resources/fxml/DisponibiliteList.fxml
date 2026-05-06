@@ -4,68 +4,111 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" 
+<VBox xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="esprit.fx.controllers.DisponibiliteController"
       spacing="20" style="-fx-background-color: #f3f4f6;">
-   
+
    <padding>
       <Insets top="20" right="20" bottom="20" left="20" />
    </padding>
 
    <!-- Header moderne avec gradient -->
-   <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: linear-gradient(to right, #667eea 0%, #764ba2 100%); -fx-padding: 30; -fx-background-radius: 16; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 2);">
+   <HBox alignment="CENTER_LEFT" spacing="20"
+         style="-fx-background-color: linear-gradient(to right, #667eea 0%, #764ba2 100%);
+                -fx-padding: 30;
+                -fx-background-radius: 16;
+                -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 2);">
       <VBox spacing="5">
-         <Label text="🕒 Gestion des Disponibilités" 
+         <Label text="🕒 Gestion des Disponibilités"
                 style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;" />
-         <Label text="Gérez les créneaux de disponibilité des médecins" 
+         <Label text="Gérez les créneaux de disponibilité des médecins"
                 style="-fx-font-size: 15px; -fx-text-fill: rgba(255,255,255,0.9);" />
       </VBox>
       <Region HBox.hgrow="ALWAYS" />
-      <Button fx:id="btnActualiser" text="🔄 Actualiser" 
+      <Button fx:id="btnActualiser" text="🔄 Actualiser"
               onAction="#actualiserListe"
-              style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 24; -fx-background-radius: 10; -fx-font-size: 14px; -fx-border-color: rgba(255,255,255,0.3); -fx-border-width: 1; -fx-border-radius: 10; -fx-cursor: hand;" />
+              style="-fx-background-color: rgba(255,255,255,0.2);
+                     -fx-text-fill: white;
+                     -fx-font-weight: bold;
+                     -fx-padding: 12 24;
+                     -fx-background-radius: 10;
+                     -fx-font-size: 14px;
+                     -fx-border-color: rgba(255,255,255,0.3);
+                     -fx-border-width: 1;
+                     -fx-border-radius: 10;
+                     -fx-cursor: hand;" />
    </HBox>
 
-   <!-- Filters et Actions -->
-   <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);">
+   <!-- Filtres et Actions -->
+   <HBox spacing="15" alignment="CENTER_LEFT"
+         style="-fx-background-color: white;
+                -fx-padding: 20;
+                -fx-background-radius: 12;
+                -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);">
+
       <VBox spacing="8">
-         <Label text="Filtres" style="-fx-font-weight: 600; -fx-font-size: 13px; -fx-text-fill: #6b7280;" />
-         <CheckBox fx:id="filterDisponible" text="Seulement disponibles" selected="true" 
+         <Label text="Filtres"
+                style="-fx-font-weight: 600; -fx-font-size: 13px; -fx-text-fill: #6b7280;" />
+         <CheckBox fx:id="filterDisponible"
+                   text="Seulement disponibles"
+                   selected="true"
                    style="-fx-font-size: 13px;" />
       </VBox>
-      
+
       <Separator orientation="VERTICAL" />
-      
+
       <VBox spacing="8">
-         <Label text="Recherche" style="-fx-font-weight: 600; -fx-font-size: 13px; -fx-text-fill: #6b7280;" />
-         <TextField fx:id="searchField" promptText="🔍 Rechercher par ID, médecin..." prefWidth="280"
-                    style="-fx-background-color: #f9fafb; -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10; -fx-font-size: 13px;" />
+         <Label text="Recherche"
+                style="-fx-font-weight: 600; -fx-font-size: 13px; -fx-text-fill: #6b7280;" />
+         <!-- ✅ Corrigé : plus de "par ID" -->
+         <TextField fx:id="searchField"
+                    promptText="🔍 Rechercher par médecin, date, notes..."
+                    prefWidth="300"
+                    style="-fx-background-color: #f9fafb;
+                           -fx-border-color: #e5e7eb;
+                           -fx-border-radius: 8;
+                           -fx-background-radius: 8;
+                           -fx-padding: 10;
+                           -fx-font-size: 13px;" />
       </VBox>
-      
+
       <Separator orientation="VERTICAL" />
-      
+
       <VBox spacing="8">
-         <Label text="Trier par" style="-fx-font-weight: 600; -fx-font-size: 13px; -fx-text-fill: #6b7280;" />
-         <ComboBox fx:id="sortCombo" prefWidth="180"
-                   style="-fx-background-color: #f9fafb; -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-size: 13px;" />
+         <Label text="Trier par"
+                style="-fx-font-weight: 600; -fx-font-size: 13px; -fx-text-fill: #6b7280;" />
+         <!-- ✅ Corrigé : tri par Date et Médecin -->
+         <ComboBox fx:id="sortCombo" prefWidth="200"
+                   style="-fx-background-color: #f9fafb;
+                          -fx-border-color: #e5e7eb;
+                          -fx-border-radius: 8;
+                          -fx-background-radius: 8;
+                          -fx-font-size: 13px;" />
       </VBox>
-      
+
       <Region HBox.hgrow="ALWAYS" />
-      
+
       <VBox spacing="8" alignment="CENTER_RIGHT">
-         <Label text="Actions" style="-fx-font-weight: 600; -fx-font-size: 13px; -fx-text-fill: #6b7280;" />
-         <HBox spacing="10">
-            <Button fx:id="btnAjouter" text="➕ Nouvelle" 
-                    onAction="#ajouterDisponibilite"
-                    style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: 600; -fx-padding: 10 20; -fx-background-radius: 8; -fx-cursor: hand;" />
-         </HBox>
+         <Label text="Actions"
+                style="-fx-font-weight: 600; -fx-font-size: 13px; -fx-text-fill: #6b7280;" />
+         <Button fx:id="btnAjouter" text="➕ Nouvelle Disponibilité"
+                 onAction="#ajouterDisponibilite"
+                 style="-fx-background-color: #10b981;
+                        -fx-text-fill: white;
+                        -fx-font-weight: 600;
+                        -fx-padding: 10 20;
+                        -fx-background-radius: 8;
+                        -fx-cursor: hand;" />
       </VBox>
    </HBox>
 
    <!-- Container pour les cartes -->
    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
-               style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
-      <VBox fx:id="containerDisponibilites" spacing="15" style="-fx-background-color: transparent; -fx-padding: 10;" />
+               style="-fx-background-color: transparent;
+                      -fx-background: transparent;
+                      -fx-border-color: transparent;">
+      <VBox fx:id="containerDisponibilites" spacing="15"
+            style="-fx-background-color: transparent; -fx-padding: 10;" />
    </ScrollPane>
 
 </VBox>

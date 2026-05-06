@@ -9,17 +9,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServiceRendezVous implements IService<RendezVous> {
-    private Connection conn;
+
+    private Connection conn() {
+        return MyDB.getInstance().getConnection();
+    }
 
     public ServiceRendezVous() {
-        conn = MyDB.getInstance().getConnection();
     }
 
     @Override
     public void ajouter(RendezVous rendezVous) throws SQLException {
         String sql = "INSERT INTO rendez_vous (patient_id, doctor_id, appointment_date_time, duration, consultation_type, reason, status, notes, reminder_sent, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
-        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, rendezVous.getPatientId());
             ps.setInt(2, rendezVous.getDoctorId());
             ps.setTimestamp(3, Timestamp.valueOf(rendezVous.getDateHeure()));
@@ -47,7 +49,7 @@ public class ServiceRendezVous implements IService<RendezVous> {
     public void modifier(RendezVous rendezVous) throws SQLException {
         String sql = "UPDATE rendez_vous SET patient_id=?, doctor_id=?, appointment_date_time=?, reason=?, status=?, notes=?, updated_at=? WHERE id=?";
         
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, rendezVous.getPatientId());
             ps.setInt(2, rendezVous.getDoctorId());
             ps.setTimestamp(3, Timestamp.valueOf(rendezVous.getDateHeure()));
@@ -66,7 +68,7 @@ public class ServiceRendezVous implements IService<RendezVous> {
     public void supprimer(int id) throws SQLException {
         String sql = "DELETE FROM rendez_vous WHERE id=?";
         
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();
         }
@@ -74,19 +76,27 @@ public class ServiceRendezVous implements IService<RendezVous> {
 
     @Override
     public List<RendezVous> getAll() throws SQLException {
-        String sql = "SELECT * FROM rendez_vous ORDER BY id DESC";
-        
+        String sql = "SELECT rv.*, " +
+                     "p.username AS patient_nom, " +
+                     "d.username AS doctor_nom " +
+                     "FROM rendez_vous rv " +
+                     "LEFT JOIN users p ON rv.patient_id = p.id " +
+                     "LEFT JOIN users d ON rv.doctor_id  = d.id " +
+                     "ORDER BY rv.id DESC";
+
         List<RendezVous> rendezVousList = new ArrayList<>();
-        
-        try (Statement stmt = conn.createStatement();
+
+        try (Statement stmt = conn().createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-            
             while (rs.next()) {
                 RendezVous rv = mapResultSetToRendezVousSimple(rs);
+                // Override placeholders with real names from JOIN
+                try { String n = rs.getString("patient_nom"); if (n != null) rv.setPatientNom(n); } catch (SQLException ignored) {}
+                try { String n = rs.getString("doctor_nom");  if (n != null) rv.setDoctorNom(n);  } catch (SQLException ignored) {}
                 rendezVousList.add(rv);
             }
         }
-        
+
         return rendezVousList;
     }
 
@@ -102,7 +112,7 @@ public class ServiceRendezVous implements IService<RendezVous> {
             WHERE rv.id = ?
             """;
         
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, id);
             
             try (ResultSet rs = ps.executeQuery()) {
@@ -129,7 +139,7 @@ public class ServiceRendezVous implements IService<RendezVous> {
         
         List<RendezVous> rendezVousList = new ArrayList<>();
         
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, patientId);
             
             try (ResultSet rs = ps.executeQuery()) {
@@ -159,7 +169,7 @@ public class ServiceRendezVous implements IService<RendezVous> {
         
         List<RendezVous> rendezVousList = new ArrayList<>();
         
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, doctorId);
             
             try (ResultSet rs = ps.executeQuery()) {
@@ -176,7 +186,7 @@ public class ServiceRendezVous implements IService<RendezVous> {
     public void changerStatut(int rendezVousId, String nouveauStatut) throws SQLException {
         String sql = "UPDATE rendez_vous SET status=?, updated_at=? WHERE id=?";
         
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setString(1, nouveauStatut);
             ps.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
             ps.setInt(3, rendezVousId);
@@ -279,3 +289,4 @@ public class ServiceRendezVous implements IService<RendezVous> {
         return rv;
     }
 }
+

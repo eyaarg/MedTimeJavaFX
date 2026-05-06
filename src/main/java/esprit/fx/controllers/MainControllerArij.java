@@ -33,6 +33,7 @@ import java.util.Objects;
 
 public class MainControllerArij {
 
+    @FXML private javafx.scene.image.ImageView avatarImageView;
     @FXML private StackPane contentArea;
     @FXML private Button btnSideDashboard;
     @FXML private Button btnModuleConsultation;
@@ -71,6 +72,11 @@ public class MainControllerArij {
             boolean isAdmin = UserSession.isAdmin();
             btnUsers.setVisible(isAdmin);
             btnUsers.setManaged(isAdmin);
+        }
+
+        // Avatar cliquable → ouvre le profil
+        if (avatarLabel != null) {
+            avatarLabel.setStyle(avatarLabel.getStyle() + " -fx-cursor: hand;");
         }
 
         showDashboardView();
@@ -123,17 +129,8 @@ public class MainControllerArij {
 
     @FXML
     private void showPrendreRdvView() {
-        System.out.println("=== PRENDRE RDV - Début ===");
         setModuleActive(btnModulePrendreRdv);
-        
-        try {
-            System.out.println("Chargement de PrendreRendezVous.fxml...");
-            loadView("/fxml/PrendreRendezVous.fxml");
-            System.out.println("✓ PrendreRendezVous.fxml chargé avec succès !");
-        } catch (Exception e) {
-            System.err.println("✗ ERREUR lors du chargement: " + e.getMessage());
-            e.printStackTrace();
-        }
+        loadView("/fxml/RendezVousList.fxml");
     }
 
     @FXML
@@ -157,8 +154,12 @@ public class MainControllerArij {
     @FXML
     private void showNotifications() {
         loadView("/fxml/NotificationListArij.fxml");
-        // Rafraîchir le badge après avoir vu les notifications
         Platform.runLater(() -> updateNotifBadge());
+    }
+
+    @FXML
+    private void showProfile() {
+        ProfileController.showAsStage();
     }
 
     @FXML
@@ -183,6 +184,10 @@ public class MainControllerArij {
             stage.setScene(new Scene(loginRoot));
             stage.setTitle("MedTimeFX - Connexion");
             stage.setMaximized(false);
+            stage.setMinWidth(900);
+            stage.setMinHeight(680);
+            stage.setWidth(980);
+            stage.setHeight(720);
             stage.centerOnScreen();
         } catch (IOException | NullPointerException e) {
             System.err.println("Erreur lors de la deconnexion: " + e.getMessage());
@@ -192,7 +197,6 @@ public class MainControllerArij {
 
     private void applySessionIdentity() {
         User currentUser = UserSession.getCurrentUser();
-        String displayRole = formatRole(UserSession.getCurrentRole());
 
         String displayName;
         if (currentUser != null && currentUser.getUsername() != null && !currentUser.getUsername().isBlank()) {
@@ -203,43 +207,58 @@ public class MainControllerArij {
             displayName = "Utilisateur";
         }
 
-        if (footerNameLabel != null) {
-            footerNameLabel.setText(displayName);
+        String displayRole = formatRoleLabel(UserSession.getCurrentRole());
+
+        if (footerNameLabel != null) footerNameLabel.setText(displayName);
+        if (footerRoleLabel  != null) footerRoleLabel.setText(displayRole);
+        if (avatarLabel      != null) avatarLabel.setText(initialOf(displayName));
+
+        // Charger la photo de profil si disponible
+        if (currentUser != null) {
+            loadSidebarPhoto(currentUser.getId());
         }
-        if (footerRoleLabel != null) {
-            footerRoleLabel.setText(displayRole);
-        }
-        if (avatarLabel != null) {
-            avatarLabel.setText(initialOf(displayName));
+    }
+
+    /** Charge la photo de profil dans l'avatar du sidebar. */
+    private void loadSidebarPhoto(int userId) {
+        try {
+            esprit.fx.services.ServiceProfilePhoto photoService =
+                    new esprit.fx.services.ServiceProfilePhoto();
+            java.io.File photo = photoService.getPhotoFile(userId);
+            if (photo != null && avatarImageView != null) {
+                try (java.io.FileInputStream fis = new java.io.FileInputStream(photo)) {
+                    javafx.scene.image.Image img = new javafx.scene.image.Image(fis);
+                    javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(18, 18, 18);
+                    avatarImageView.setClip(clip);
+                    avatarImageView.setImage(img);
+                    avatarImageView.setVisible(true);
+                    if (avatarLabel != null) avatarLabel.setVisible(false);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("loadSidebarPhoto: " + e.getMessage());
         }
     }
 
     private void applyRoleUi() {
-        if (footerRoleLabel != null) {
-            footerRoleLabel.setText(isDoctor() ? "Medecin" : "Patient");
-        }
         if (avatarLabel != null && (avatarLabel.getText() == null || avatarLabel.getText().isBlank())) {
-            avatarLabel.setText(isDoctor() ? "M" : "P");
+            User currentUser = UserSession.getCurrentUser();
+            String name = currentUser != null ? currentUser.getUsername() : null;
+            avatarLabel.setText(name != null ? initialOf(name) : (isDoctor() ? "M" : "P"));
         }
     }
 
     private void resolveBusinessIds() {
         User currentUser = UserSession.getCurrentUser();
-        if (currentUser == null) {
-            return;
-        }
+        if (currentUser == null) return;
 
         try {
             if (isDoctor()) {
                 Doctor doctor = new ServiceDoctor().afficherParId(currentUser.getId());
-                if (doctor != null) {
-                    doctorId = doctor.getId();
-                }
+                if (doctor != null) doctorId = doctor.getId();
             } else {
                 Patient patient = new ServicePatient().afficherParId(currentUser.getId());
-                if (patient != null) {
-                    patientId = patient.getId();
-                }
+                if (patient != null) patientId = patient.getId();
             }
         } catch (Exception e) {
             System.err.println("Impossible de resoudre les identifiants metier: " + e.getMessage());
@@ -249,25 +268,23 @@ public class MainControllerArij {
     private String normalizeRole(String raw, int patientId, int doctorId) {
         if (raw != null && !raw.isBlank()) {
             String r = raw.trim().toUpperCase();
-            if ("ROLE_DOCTOR".equals(r) || "DOCTOR".equals(r) || "MEDECIN".equals(r)) {
-                return "DOCTOR";
-            }
-            if ("ROLE_PATIENT".equals(r) || "PATIENT".equals(r)) {
-                return "PATIENT";
-            }
+            if (r.contains("ADMIN")) return "ADMIN";
+            if ("ROLE_DOCTOR".equals(r) || "DOCTOR".equals(r) || "MEDECIN".equals(r)) return "DOCTOR";
+            if ("ROLE_PATIENT".equals(r) || "PATIENT".equals(r)) return "PATIENT";
         }
         return doctorId > 0 ? "DOCTOR" : "PATIENT";
     }
 
-    private String formatRole(String role) {
-        String normalized = normalizeRole(role, 0, 0);
-        return "DOCTOR".equals(normalized) ? "Medecin" : "Patient";
+    private String formatRoleLabel(String rawRole) {
+        if (rawRole == null || rawRole.isBlank()) return "Patient";
+        String r = rawRole.trim().toUpperCase();
+        if (r.contains("ADMIN"))  return "Admin";
+        if (r.contains("DOCTOR") || r.contains("MEDECIN")) return "Médecin";
+        return "Patient";
     }
 
     private String initialOf(String text) {
-        if (text == null || text.isBlank()) {
-            return "U";
-        }
+        if (text == null || text.isBlank()) return "U";
         return text.substring(0, 1).toUpperCase();
     }
 
@@ -286,7 +303,6 @@ public class MainControllerArij {
                     new HubCard("📋", "Ordonnances", "Prescriptions medicales", () -> loadView("/fxml/OrdonnanceListArij.fxml"))
             );
         }
-
         return Arrays.asList(
                 new HubCard("🗓", "Mes consultations", "Suivez vos rendez-vous medicaux", () -> loadView("/fxml/ConsultationListArij.fxml")),
                 new HubCard("📋", "Mes ordonnances", "Vos prescriptions medicales", () -> loadView("/fxml/OrdonnanceListArij.fxml")),
@@ -309,14 +325,6 @@ public class MainControllerArij {
                     new HubCard("💬", "Commentaires", "Gerez tous les commentaires", () -> loadView("/fxml/ListerCommentaires.fxml"))
             );
         }
-
-        if (isDoctor()) {
-            return Arrays.asList(
-                    new HubCard("📰", "Articles medicaux", "Consultez et gerez les articles", () -> loadView("/fxml/ListerArticles.fxml")),
-                    new HubCard("💬", "Commentaires", "Gerez tous les commentaires", () -> loadView("/fxml/ListerCommentaires.fxml"))
-            );
-        }
-
         return List.of(new HubCard("📰", "Articles medicaux", "Lisez et commentez les articles", () -> loadView("/fxml/ListerArticles.fxml")));
     }
 
@@ -340,17 +348,13 @@ public class MainControllerArij {
             flow.setHgap(28);
             flow.setVgap(28);
             flow.setPadding(new Insets(0, 60, 60, 60));
-            for (HubCard hub : hubs) {
-                flow.getChildren().add(buildHubCard(hub));
-            }
+            for (HubCard hub : hubs) flow.getChildren().add(buildHubCard(hub));
             page.getChildren().addAll(header, flow);
         } else {
             HBox grid = new HBox(28);
             grid.setAlignment(Pos.CENTER);
             grid.setPadding(new Insets(0, 60, 60, 60));
-            for (HubCard hub : hubs) {
-                grid.getChildren().add(buildHubCard(hub));
-            }
+            for (HubCard hub : hubs) grid.getChildren().add(buildHubCard(hub));
             page.getChildren().addAll(header, grid);
         }
 
@@ -394,10 +398,9 @@ public class MainControllerArij {
     }
 
     private void setModuleActive(Button active) {
-        for (Button b : Arrays.asList(btnSideDashboard, btnModuleConsultation, btnModulePrendreRdv, btnModuleDisponibilite, btnModuleMarket, btnModuleForum, btnUsers)) {
-            if (b != null) {
-                b.getStyleClass().remove("nav-btn-active");
-            }
+        for (Button b : Arrays.asList(btnSideDashboard, btnModuleConsultation, btnModulePrendreRdv,
+                btnModuleDisponibilite, btnModuleMarket, btnModuleForum, btnUsers)) {
+            if (b != null) b.getStyleClass().remove("nav-btn-active");
         }
         if (active != null && !active.getStyleClass().contains("nav-btn-active")) {
             active.getStyleClass().add("nav-btn-active");
@@ -427,9 +430,9 @@ public class MainControllerArij {
             } else if (ctrl instanceof ArticleController c) {
                 c.setRole(isDoctor());
             } else if (ctrl instanceof RendezVousController c) {
-                // Pas de configuration spéciale nécessaire pour l'instant
+                // pas de config spéciale
             } else if (ctrl instanceof DisponibiliteController c) {
-                // Pas de configuration spéciale nécessaire pour l'instant
+                // pas de config spéciale
             }
 
             contentArea.getChildren().setAll(view);
@@ -441,7 +444,7 @@ public class MainControllerArij {
 
     private void loadUsersView() {
         String preferred = "/fxml/UserList.fxml";
-        String legacy = "/fxml/UserListArij.fxml";
+        String legacy    = "/fxml/UserListArij.fxml";
         if (MainControllerArij.class.getResource(preferred) != null) {
             loadView(preferred);
             return;
@@ -452,7 +455,6 @@ public class MainControllerArij {
         }
         System.err.println("Aucune vue Users trouvee (UserList.fxml / UserListArij.fxml)");
     }
-
 
     private record HubCard(String icon, String name, String description, Runnable action) {}
 }

@@ -16,9 +16,9 @@ public class ForgotPasswordController {
 
     public void showAsStage() {
         Stage stage = new Stage();
-        stage.setTitle("R├®initialisation du mot de passe");
+        stage.setTitle("Réinitialisation du mot de passe");
 
-        // ├ëtape 1: Entrer l'email
+        // Étape 1: Entrer l'email
         VBox step1 = new VBox(10);
         step1.setPadding(new Insets(15));
         step1.setAlignment(Pos.CENTER);
@@ -30,7 +30,7 @@ public class ForgotPasswordController {
 
         step1.getChildren().addAll(emailLabel, emailField, sendButton);
 
-        // ├ëtape 2: Entrer le token et le nouveau mot de passe
+        // Étape 2: Entrer le token et le nouveau mot de passe
         VBox step2 = new VBox(10);
         step2.setPadding(new Insets(15));
         step2.setAlignment(Pos.CENTER);
@@ -48,7 +48,7 @@ public class ForgotPasswordController {
         PasswordField confirmPasswordField = new PasswordField();
         confirmPasswordField.setPromptText("Confirmez le mot de passe");
 
-        Button resetButton = new Button("R├®initialiser");
+        Button resetButton = new Button("Réinitialiser");
 
         step2.getChildren().addAll(tokenLabel, tokenField, newPasswordLabel, newPasswordField, confirmPasswordLabel, confirmPasswordField, resetButton);
 
@@ -56,15 +56,15 @@ public class ForgotPasswordController {
         sendButton.setOnAction(event -> {
             String email = emailField.getText().trim();
             if (email.isEmpty()) {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "L'email ne peut pas ├¬tre vide.");
+                showAlert(Alert.AlertType.ERROR, "Erreur", "L'email ne peut pas être vide.");
                 return;
             }
             try {
                 serviceUser.requestPasswordReset(email);
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Succ├¿s");
+                alert.setTitle("Succès");
                 alert.setHeaderText(null);
-                alert.setContentText("Un email de r├®initialisation a ├®t├® envoy├® ├á " + email);
+                alert.setContentText("Un email de réinitialisation a été envoyé à " + email);
                 alert.showAndWait();
                 step1.setVisible(false);
                 step2.setVisible(true);
@@ -72,7 +72,7 @@ public class ForgotPasswordController {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Erreur");
                 alert.setHeaderText(null);
-                alert.setContentText("Une erreur s'est produite lors de l'envoi de l'email de r├®initialisation.");
+                alert.setContentText("Une erreur s'est produite lors de l'envoi de l'email de réinitialisation.");
                 alert.showAndWait();
                 e.printStackTrace();
             }
@@ -84,7 +84,7 @@ public class ForgotPasswordController {
             String confirmPassword = confirmPasswordField.getText();
 
             if (token.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "Tous les champs doivent ├¬tre remplis.");
+                showAlert(Alert.AlertType.ERROR, "Erreur", "Tous les champs doivent être remplis.");
                 return;
             }
 
@@ -97,14 +97,14 @@ public class ForgotPasswordController {
             try {
                 success = serviceUser.resetPassword(token, newPassword);
             } catch (SQLException e) {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "Une erreur s'est produite lors de la r├®initialisation du mot de passe.");
+                showAlert(Alert.AlertType.ERROR, "Erreur", "Une erreur s'est produite lors de la réinitialisation du mot de passe.");
                 return;
             }
             if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Succ├¿s", "Mot de passe r├®initialis├® avec succ├¿s.");
+                showAlert(Alert.AlertType.INFORMATION, "Succès", "Mot de passe réinitialisé avec succès.");
                 stage.close();
             } else {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "├ëchec de la r├®initialisation du mot de passe.");
+                showAlert(Alert.AlertType.ERROR, "Erreur", "Échec de la réinitialisation du mot de passe.");
             }
         });
 

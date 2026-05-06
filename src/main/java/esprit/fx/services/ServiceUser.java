@@ -615,30 +615,3 @@ public class ServiceUser implements IService<User> {
             }
         }
         return "ROLE_PATIENT";
-    }
-
-    /**
-     * Récupère tous les utilisateurs ayant le rôle médecin.
-     */
-    public List<User> getAllDoctors() throws SQLException {
-        List<User> doctors = new ArrayList<>();
-        String sql = "SELECT u.*, r.id as role_id, r.name as role_name FROM users u " +
-                "JOIN user_roles ur ON u.id = ur.user_id " +
-                "JOIN roles r ON ur.role_id = r.id " +
-                "WHERE UPPER(r.name) IN ('ROLE_PHYSICIAN','ROLE_DOCTOR','DOCTOR','MEDECIN','PHYSICIAN')";
-        try (PreparedStatement ps = conn().prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                User user = new User(
-                        rs.getInt("id"), rs.getString("email"), rs.getString("username"),
-                        rs.getString("password"), null, rs.getBoolean("is_active"),
-                        rs.getString("phone_number"), rs.getBoolean("is_verified"),
-                        null, null, null, null, rs.getInt("failed_attempts")
-                );
-                doctors.add(user);
-            }
-        }
-        return doctors;
-    }
-}
-

@@ -14,7 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Service séparé pour la gestion des photos de profil.
+ * Service s├®par├® pour la gestion des photos de profil.
  * Stockage local : uploads/profile_photos/{userId}.{ext}
  */
 public class ServiceProfilePhoto {
@@ -27,24 +27,24 @@ public class ServiceProfilePhoto {
 
     /**
      * Upload une photo de profil pour un utilisateur.
-     * Copie le fichier dans uploads/profile_photos/ et met à jour la DB.
+     * Copie le fichier dans uploads/profile_photos/ et met ├á jour la DB.
      *
      * @param userId       id de l'utilisateur
-     * @param selectedFile fichier image sélectionné (jpg/png)
-     * @return chemin relatif du fichier stocké
+     * @param selectedFile fichier image s├®lectionn├® (jpg/png)
+     * @return chemin relatif du fichier stock├®
      */
     public String uploadProfilePhoto(int userId, File selectedFile) throws SQLException, IOException {
-        // Créer le dossier si nécessaire
+        // Cr├®er le dossier si n├®cessaire
         Path dir = Paths.get(UPLOADS_DIR);
         Files.createDirectories(dir);
 
-        // Déterminer l'extension
+        // D├®terminer l'extension
         String originalName = selectedFile.getName();
         String ext = originalName.contains(".")
                 ? originalName.substring(originalName.lastIndexOf('.'))
                 : ".jpg";
 
-        // Nom de fichier : userId.ext (écrase l'ancienne photo)
+        // Nom de fichier : userId.ext (├®crase l'ancienne photo)
         String storedName = userId + ext;
         Path destination = dir.resolve(storedName);
 
@@ -59,8 +59,8 @@ public class ServiceProfilePhoto {
     }
 
     /**
-     * Récupère le chemin de la photo de profil depuis la DB.
-     * Retourne null si aucune photo n'est définie.
+     * R├®cup├¿re le chemin de la photo de profil depuis la DB.
+     * Retourne null si aucune photo n'est d├®finie.
      */
     public String getPhotoPath(int userId) throws SQLException {
         String sql = "SELECT profile_photo FROM users WHERE id = ?";
@@ -76,7 +76,7 @@ public class ServiceProfilePhoto {
     }
 
     /**
-     * Met à jour le chemin de la photo dans la DB.
+     * Met ├á jour le chemin de la photo dans la DB.
      */
     private void savePhotoPath(int userId, String path) throws SQLException {
         String sql = "UPDATE users SET profile_photo = ? WHERE id = ?";

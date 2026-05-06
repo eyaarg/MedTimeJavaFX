@@ -18,8 +18,12 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 public class RegisterController {
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^(\\d{8}|\\+[1-9]\\d{6,14})$");
+    private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).+$");
 
     @FXML
     private TextField usernameField;
@@ -50,7 +54,7 @@ public class RegisterController {
 
     private final ServiceUser serviceUser = new ServiceUser();
 
-    // Initialisation (optionnel, car les items sont déjà dans le FXML)
+    // Initialisation (optionnel, car les items sont d├®j├á dans le FXML)
     @FXML
     public void initialize() {
         roleComboBox.setValue("Patient");
@@ -77,18 +81,74 @@ public class RegisterController {
             return;
         }
 
+        if (!EMAIL_PATTERN.matcher(email.trim()).matches()) {
+            showAlert("Erreur", "Email invalide (format attendu: exemple@domaine.com).");
+            return;
+        }
+
+        if (phone == null || phone.isBlank()) {
+            showAlert("Erreur", "Veuillez entrer votre numero de telephone");
+            return;
+        }
+
+        if (!PHONE_PATTERN.matcher(phone.trim()).matches()) {
+            showAlert("Erreur", "Le num├®ro de t├®l├®phone doit contenir 8 chiffres ou ├¬tre au format international (ex: +21629110800).");
+            return;
+        }
+
         if (password == null || password.isBlank()) {
             showAlert("Erreur", "Veuillez entrer votre mot de passe");
             return;
         }
 
+        if (password.length() < 8) {
+            showAlert("Erreur", "Le mot de passe doit contenir au moins 8 caract├¿res.");
+            return;
+        }
+
+        if (!PASSWORD_PATTERN.matcher(password).matches()) {
+            showAlert("Erreur", "Le mot de passe doit contenir des lettres et des chiffres.");
+            return;
+        }
+
+        if (username.trim().length() < 3 || username.trim().length() > 80
+                || !username.trim().matches("^[\\p{L}0-9_.\\-]+$")) {
+            showAlert("Erreur", "Le username doit contenir entre 3 et 80 caract├¿res (lettres, chiffres, point, tiret, underscore).");
+            return;
+        }
+
         if (role == null) {
-            showAlert("Erreur", "Veuillez sélectionner un rôle");
+            showAlert("Erreur", "Veuillez s├®lectionner un r├┤le");
             return;
         }
 
         if (!termsAccepted) {
             showAlert("Erreur", "Veuillez accepter les conditions d'utilisation");
+            return;
+        }
+        if (role != null && (role.equalsIgnoreCase("Doctor") ||
+                role.equalsIgnoreCase("Medecin"))) {
+            try {
+                User userToCreate = new User();
+                userToCreate.setUsername(username.trim());
+                userToCreate.setEmail(email.trim());
+                userToCreate.setPhoneNumber(phone == null ? null : phone.trim());
+                userToCreate.setPassword(password);
+                userToCreate.setRequestedRole(role);
+                userToCreate.setCreatedAt(LocalDateTime.now());
+                userToCreate.setActive(false);
+                userToCreate.setVerified(true);
+                userToCreate.setFailedAttempts(0);
+
+                User createdUser = serviceUser.registerUser(userToCreate, role);
+                DoctorRegistrationController.showAsStage(createdUser);
+                Stage stage = (Stage) createAccountBtn.getScene().getWindow();
+                stage.close();
+            } catch (SQLException e) {
+                showAlert("Erreur", "Impossible de cr├®er le compte : " + e.getMessage());
+            } catch (Exception e) {
+                showAlert("Erreur", "Une erreur inattendue est survenue : " + e.getMessage());
+            }
             return;
         }
 
@@ -100,19 +160,20 @@ public class RegisterController {
             userToCreate.setPassword(password);
             userToCreate.setRequestedRole(role);
             userToCreate.setCreatedAt(LocalDateTime.now());
-            userToCreate.setActive(true);
-            userToCreate.setVerified(true);
+            userToCreate.setActive(false);
+            userToCreate.setVerified(false);
             userToCreate.setFailedAttempts(0);
 
             User createdUser = serviceUser.registerUser(userToCreate, role);
 
-            UserSession.setCurrentUser(createdUser);
-            UserSession.setCurrentRole(extractPrimaryRole(createdUser));
-
-            showInfo("Succès", "Compte créé avec succès. Bienvenue " + createdUser.getUsername() + " !");
-            openMainView();
+            showInfo("Inscription r├®ussie",
+                    "Un email de v├®rification a ├®t├® envoy├® ├á " + createdUser.getEmail() +
+                    ".\nVeuillez saisir le code re├ºu pour activer votre compte.");
+            EmailVerificationController.showAsStage(createdUser.getEmail());
+            Stage stage = (Stage) createAccountBtn.getScene().getWindow();
+            stage.close();
         } catch (SQLException e) {
-            showAlert("Erreur", "Impossible de créer le compte : " + e.getMessage());
+            showAlert("Erreur", "Impossible de cr├®er le compte : " + e.getMessage());
         } catch (Exception e) {
             showAlert("Erreur", "Une erreur inattendue est survenue : " + e.getMessage());
         }
@@ -140,8 +201,12 @@ public class RegisterController {
                     RegisterController.class.getResource("/Login.fxml")));
             Stage stage = (Stage) signInLink.getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.setTitle("MedTimeFX — Login");
+            stage.setTitle("MedTimeFX ÔÇö Login");
             stage.setMaximized(false);
+            stage.setMinWidth(900);
+            stage.setMinHeight(680);
+            stage.setWidth(980);
+            stage.setHeight(720);
             stage.centerOnScreen();
         } catch (IOException e) {
             showAlert("Erreur", "Impossible d'ouvrir la page Login : " + e.getMessage());

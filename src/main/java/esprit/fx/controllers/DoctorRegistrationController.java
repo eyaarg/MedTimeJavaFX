@@ -32,14 +32,14 @@ public class DoctorRegistrationController {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Attention");
             alert.setHeaderText(null);
-            alert.setContentText("Veuillez d'abord créer un compte via le formulaire d'inscription avant de compléter votre profil médecin.");
+            alert.setContentText("Veuillez d'abord cr├®er un compte via le formulaire d'inscription avant de compl├®ter votre profil m├®decin.");
             alert.showAndWait();
             return;
         }
         DoctorRegistrationController controller = new DoctorRegistrationController();
         controller.receivedUser = user;
         Stage stage = new Stage();
-        stage.setTitle("Inscription Médecin");
+        stage.setTitle("Inscription M├®decin");
         controller.initialize(stage);
         stage.show();
     }
@@ -52,7 +52,7 @@ public class DoctorRegistrationController {
         licenseCodeField = new TextField();
         licenseCodeField.setPromptText("Code de licence");
 
-        pdfLabel = new Label("Aucun fichier sélectionné");
+        pdfLabel = new Label("Aucun fichier s├®lectionn├®");
         Button choosePdfButton = new Button("Choisir un fichier PDF");
         choosePdfButton.setOnAction(event -> choosePdf());
 
@@ -72,7 +72,7 @@ public class DoctorRegistrationController {
         if (selectedPdf != null) {
             pdfLabel.setText(selectedPdf.getName());
         } else {
-            pdfLabel.setText("Aucun fichier sélectionné");
+            pdfLabel.setText("Aucun fichier s├®lectionn├®");
         }
     }
 
@@ -93,7 +93,7 @@ public class DoctorRegistrationController {
             serviceDoctor.ajouter(doctor);
             serviceDoctorDocument.uploadDocument(doctor.getId(), selectedPdf);
 
-            showInfo("Succès", "Inscription réussie ! Votre dossier est en attente de validation par un administrateur.");
+            showInfo("Succ├¿s", "Inscription r├®ussie ! Votre dossier est en attente de validation par un administrateur.");
             stage.close();
 
             // Retour au login
@@ -102,7 +102,7 @@ public class DoctorRegistrationController {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/Login.fxml"));
                     Parent root = loader.load();
                     Stage loginStage = new Stage();
-                    loginStage.setTitle("MedTimeFX — Connexion");
+                    loginStage.setTitle("MedTimeFX ÔÇö Connexion");
                     loginStage.setScene(new Scene(root, 980, 720));
                     loginStage.show();
                 } catch (Exception ex) {

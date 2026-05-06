@@ -19,7 +19,7 @@ public class EmailService {
     private static final String SMTP_PASSWORD = "nqgakpndluzejkyw";
     private static final String FROM_ADDRESS  = "no-reply@medtimefx.com";
 
-    // ── Session ──────────────────────────────────────────────────────────────
+    // ÔöÇÔöÇ Session ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
     private static Session getSession() {
         Properties props = new Properties();
@@ -40,14 +40,14 @@ public class EmailService {
         });
     }
 
-    // ── Public API ───────────────────────────────────────────────────────────
+    // ÔöÇÔöÇ Public API ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
     public static void sendVerificationEmail(String toEmail, String username, String token)
             throws MessagingException {
-        String subject = "Vérification de votre compte MedTimeFX";
+        String subject = "V├®rification de votre compte MedTimeFX";
         String content = "<html><body>"
                 + "<h1>Bonjour, " + username + "!</h1>"
-                + "<p>Merci de vous être inscrit. Voici votre code de vérification :</p>"
+                + "<p>Merci de vous ├¬tre inscrit. Voici votre code de v├®rification :</p>"
                 + "<h2 style='color:blue;'>" + token + "</h2>"
                 + "<p>Saisissez ce code dans l'application pour activer votre compte.</p>"
                 + "<p>Ce code expire dans 24h.</p>"
@@ -57,10 +57,10 @@ public class EmailService {
 
     public static void sendPasswordResetEmail(String toEmail, String username, String token)
             throws MessagingException {
-        String subject = "Réinitialisation de votre mot de passe MedTimeFX";
+        String subject = "R├®initialisation de votre mot de passe MedTimeFX";
         String content = "<html><body>"
                 + "<h1>Bonjour, " + username + "!</h1>"
-                + "<p>Voici votre code de réinitialisation :</p>"
+                + "<p>Voici votre code de r├®initialisation :</p>"
                 + "<h2 style='color:red;'>" + token + "</h2>"
                 + "<p>Saisissez ce code dans l'application. Il expire dans 1h.</p>"
                 + "</body></html>";
@@ -69,21 +69,21 @@ public class EmailService {
 
     public static void sendDoctorApprovedEmail(String toEmail, String username)
             throws MessagingException {
-        String subject = "Votre compte médecin a été approuvé";
+        String subject = "Votre compte m├®decin a ├®t├® approuv├®";
         String content = "<html><body>"
-                + "<h1>Félicitations, Dr. " + username + "!</h1>"
-                + "<p>Votre compte médecin a été approuvé par l'administrateur.</p>"
-                + "<p>Vous pouvez maintenant vous connecter à MedTimeFX.</p>"
+                + "<h1>F├®licitations, Dr. " + username + "!</h1>"
+                + "<p>Votre compte m├®decin a ├®t├® approuv├® par l'administrateur.</p>"
+                + "<p>Vous pouvez maintenant vous connecter ├á MedTimeFX.</p>"
                 + "</body></html>";
         sendEmail(toEmail, subject, content);
     }
 
     public static void sendDoctorRejectedEmail(String toEmail, String username, String rejectionReason)
             throws MessagingException {
-        String subject = "Votre compte médecin a été refusé";
+        String subject = "Votre compte m├®decin a ├®t├® refus├®";
         String content = "<html><body>"
                 + "<h1>Bonjour, " + username + "!</h1>"
-                + "<p>Votre demande a été refusée pour la raison suivante :</p>"
+                + "<p>Votre demande a ├®t├® refus├®e pour la raison suivante :</p>"
                 + "<p><strong>" + rejectionReason + "</strong></p>"
                 + "<p>Vous pouvez re-soumettre un nouveau document depuis l'application.</p>"
                 + "</body></html>";
@@ -92,30 +92,30 @@ public class EmailService {
 
     public static void sendAccountLockedEmail(String toEmail, String username)
             throws MessagingException {
-        String subject = "Votre compte a été verrouillé";
+        String subject = "Votre compte a ├®t├® verrouill├®";
         String content = "<html><body>"
                 + "<h1>Bonjour, " + username + "!</h1>"
-                + "<p>Votre compte a été verrouillé après 5 tentatives de connexion échouées.</p>"
-                + "<p>Contactez l'administrateur pour débloquer votre compte.</p>"
+                + "<p>Votre compte a ├®t├® verrouill├® apr├¿s 5 tentatives de connexion ├®chou├®es.</p>"
+                + "<p>Contactez l'administrateur pour d├®bloquer votre compte.</p>"
                 + "</body></html>";
         sendEmail(toEmail, subject, content);
     }
 
-    // ── Test de connexion ────────────────────────────────────────────────────
+    // ÔöÇÔöÇ Test de connexion ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
     public static void testConnection() throws MessagingException {
         System.out.println("[EmailService] Lancement du test de connexion Mailtrap...");
         System.out.println("[EmailService] Host=" + SMTP_HOST + " Port=" + SMTP_PORT
                 + " User=" + SMTP_USERNAME);
         sendVerificationEmail("test@example.com", "TestUser", "TOKEN-TEST-123");
-        System.out.println("[EmailService] TEST EMAIL RÉUSSI — vérifiez Mailtrap inbox.");
+        System.out.println("[EmailService] TEST EMAIL R├ëUSSI ÔÇö v├®rifiez Mailtrap inbox.");
     }
 
-    // ── Core send ────────────────────────────────────────────────────────────
+    // ÔöÇÔöÇ Core send ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
     private static void sendEmail(String toEmail, String subject, String content)
             throws MessagingException {
-        System.out.println("[EmailService] Tentative d'envoi email à : " + toEmail
+        System.out.println("[EmailService] Tentative d'envoi email ├á : " + toEmail
                 + " | Sujet : " + subject);
         try {
             Session session = getSession();
@@ -125,11 +125,11 @@ public class EmailService {
             message.setSubject(subject);
             message.setContent(content, "text/html; charset=utf-8");
             Transport.send(message);
-            System.out.println("[EmailService] Email envoyé avec succès à : " + toEmail);
+            System.out.println("[EmailService] Email envoy├® avec succ├¿s ├á : " + toEmail);
         } catch (MessagingException e) {
-            System.err.println("[EmailService] ERREUR EMAIL DÉTAILLÉE : " + e.getMessage());
+            System.err.println("[EmailService] ERREUR EMAIL D├ëTAILL├ëE : " + e.getMessage());
             e.printStackTrace();
-            throw e; // re-lancer pour que l'appelant soit informé
+            throw e; // re-lancer pour que l'appelant soit inform├®
         }
     }
 }

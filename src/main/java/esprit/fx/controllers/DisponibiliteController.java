@@ -213,73 +213,50 @@ public class DisponibiliteController implements Initializable {
         HBox header = new HBox(15);
         header.setAlignment(Pos.CENTER_LEFT);
 
-        Label iconLabel = new Label("­ƒæ¿ÔÇìÔÜò´©Å");
-        iconLabel.setStyle("-fx-font-size: 32px;");
-
         VBox infoBox = new VBox(5);
         Label nomLabel = new Label("Dr. " + dispo.getDoctorNom());
-        nomLabel.setStyle(
-                "-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1f2937;"
-        );
+        nomLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1f2937;");
         infoBox.getChildren().add(nomLabel);
         HBox.setHgrow(infoBox, Priority.ALWAYS);
 
         // Badge statut
         Label statutBadge = new Label();
         if (dispo.isEstDisponible()) {
-            statutBadge.setText("Ô£ô Disponible");
+            statutBadge.setText("Disponible");
             statutBadge.setStyle(
-                    "-fx-background-color: #d1fae5;" +
-                            "-fx-text-fill: #065f46;" +
-                            "-fx-padding: 6 12;" +
-                            "-fx-background-radius: 20;" +
-                            "-fx-font-size: 12px;" +
-                            "-fx-font-weight: bold;"
+                    "-fx-background-color: #d1fae5; -fx-text-fill: #065f46;" +
+                    "-fx-padding: 6 12; -fx-background-radius: 20;" +
+                    "-fx-font-size: 12px; -fx-font-weight: bold;"
             );
         } else {
-            statutBadge.setText("Ô£ù Occup├®");
+            statutBadge.setText("Occupe");
             statutBadge.setStyle(
-                    "-fx-background-color: #fee2e2;" +
-                            "-fx-text-fill: #991b1b;" +
-                            "-fx-padding: 6 12;" +
-                            "-fx-background-radius: 20;" +
-                            "-fx-font-size: 12px;" +
-                            "-fx-font-weight: bold;"
+                    "-fx-background-color: #fee2e2; -fx-text-fill: #991b1b;" +
+                    "-fx-padding: 6 12; -fx-background-radius: 20;" +
+                    "-fx-font-size: 12px; -fx-font-weight: bold;"
             );
         }
 
-        header.getChildren().addAll(iconLabel, infoBox, statutBadge);
+        header.getChildren().addAll(infoBox, statutBadge);
 
         // Dates
         HBox datesBox = new HBox(20);
-        datesBox.setStyle(
-                "-fx-background-color: #f9fafb; -fx-padding: 12; -fx-background-radius: 8;"
-        );
+        datesBox.setStyle("-fx-background-color: #f9fafb; -fx-padding: 12; -fx-background-radius: 8;");
 
         VBox debutBox = new VBox(4);
-        Label debutTitle = new Label("­ƒôà D├®but");
-        debutTitle.setStyle(
-                "-fx-font-size: 11px; -fx-text-fill: #6b7280; -fx-font-weight: 600;"
-        );
+        Label debutTitle = new Label("Debut");
+        debutTitle.setStyle("-fx-font-size: 11px; -fx-text-fill: #6b7280; -fx-font-weight: 600;");
         Label debutValue = new Label(dispo.getDateDebut() != null ?
-                dispo.getDateDebut().format(
-                        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "N/A");
-        debutValue.setStyle(
-                "-fx-font-size: 14px; -fx-text-fill: #374151; -fx-font-weight: 600;"
-        );
+                dispo.getDateDebut().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "N/A");
+        debutValue.setStyle("-fx-font-size: 14px; -fx-text-fill: #374151; -fx-font-weight: 600;");
         debutBox.getChildren().addAll(debutTitle, debutValue);
 
         VBox finBox = new VBox(4);
-        Label finTitle = new Label("­ƒòÉ Fin");
-        finTitle.setStyle(
-                "-fx-font-size: 11px; -fx-text-fill: #6b7280; -fx-font-weight: 600;"
-        );
+        Label finTitle = new Label("Fin");
+        finTitle.setStyle("-fx-font-size: 11px; -fx-text-fill: #6b7280; -fx-font-weight: 600;");
         Label finValue = new Label(dispo.getDateFin() != null ?
-                dispo.getDateFin().format(
-                        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "N/A");
-        finValue.setStyle(
-                "-fx-font-size: 14px; -fx-text-fill: #374151; -fx-font-weight: 600;"
-        );
+                dispo.getDateFin().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "N/A");
+        finValue.setStyle("-fx-font-size: 14px; -fx-text-fill: #374151; -fx-font-weight: 600;");
         finBox.getChildren().addAll(finTitle, finValue);
 
         datesBox.getChildren().addAll(debutBox, finBox);
@@ -287,65 +264,52 @@ public class DisponibiliteController implements Initializable {
 
         // Notes
         if (dispo.getNotes() != null && !dispo.getNotes().isEmpty()) {
-            Label notesLabel = new Label("­ƒôØ " + dispo.getNotes());
+            Label notesLabel = new Label(dispo.getNotes());
             notesLabel.setWrapText(true);
             notesLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #6b7280;");
             card.getChildren().add(notesLabel);
         }
 
-        // Boutons d'action (seulement pour m├®decins/admins)
+        // Boutons
         if (!"PATIENT".equals(currentUserRole)) {
             HBox actionsBox = new HBox(10);
             actionsBox.setAlignment(Pos.CENTER_RIGHT);
 
-            Button btnLocalisation = new Button("­ƒôì Localisation");
+            Button btnLocalisation = new Button("Localisation");
             btnLocalisation.setStyle(
-                    "-fx-background-color: #10b981;" +
-                            "-fx-text-fill: white;" +
-                            "-fx-font-weight: 600;" +
-                            "-fx-padding: 10 20;" +
-                            "-fx-background-radius: 8;" +
-                            "-fx-cursor: hand;"
+                    "-fx-background-color: #10b981; -fx-text-fill: white;" +
+                    "-fx-font-weight: 600; -fx-padding: 10 20;" +
+                    "-fx-background-radius: 8; -fx-cursor: hand;"
             );
             btnLocalisation.setOnAction(e -> ouvrirCarte(dispo));
 
-            Button btnModifier = new Button("Ô£Å´©Å Modifier");
+            Button btnModifier = new Button("Modifier");
             btnModifier.setStyle(
-                    "-fx-background-color: #3b82f6;" +
-                            "-fx-text-fill: white;" +
-                            "-fx-font-weight: 600;" +
-                            "-fx-padding: 10 20;" +
-                            "-fx-background-radius: 8;" +
-                            "-fx-cursor: hand;"
+                    "-fx-background-color: #3b82f6; -fx-text-fill: white;" +
+                    "-fx-font-weight: 600; -fx-padding: 10 20;" +
+                    "-fx-background-radius: 8; -fx-cursor: hand;"
             );
             btnModifier.setOnAction(e -> modifierDisponibilite(dispo));
 
-            Button btnSupprimer = new Button("­ƒùæ´©Å Supprimer");
+            Button btnSupprimer = new Button("Supprimer");
             btnSupprimer.setStyle(
-                    "-fx-background-color: #ef4444;" +
-                            "-fx-text-fill: white;" +
-                            "-fx-font-weight: 600;" +
-                            "-fx-padding: 10 20;" +
-                            "-fx-background-radius: 8;" +
-                            "-fx-cursor: hand;"
+                    "-fx-background-color: #ef4444; -fx-text-fill: white;" +
+                    "-fx-font-weight: 600; -fx-padding: 10 20;" +
+                    "-fx-background-radius: 8; -fx-cursor: hand;"
             );
             btnSupprimer.setOnAction(e -> supprimerDisponibilite(dispo));
 
             actionsBox.getChildren().addAll(btnLocalisation, btnModifier, btnSupprimer);
             card.getChildren().add(actionsBox);
         } else {
-            // PATIENT : bouton localisation uniquement
             HBox patientActionsBox = new HBox(10);
             patientActionsBox.setAlignment(Pos.CENTER_RIGHT);
 
-            Button btnLocalisationPatient = new Button("­ƒôì Voir le cabinet");
+            Button btnLocalisationPatient = new Button("Voir le cabinet");
             btnLocalisationPatient.setStyle(
-                    "-fx-background-color: #10b981;" +
-                            "-fx-text-fill: white;" +
-                            "-fx-font-weight: 600;" +
-                            "-fx-padding: 10 20;" +
-                            "-fx-background-radius: 8;" +
-                            "-fx-cursor: hand;"
+                    "-fx-background-color: #10b981; -fx-text-fill: white;" +
+                    "-fx-font-weight: 600; -fx-padding: 10 20;" +
+                    "-fx-background-radius: 8; -fx-cursor: hand;"
             );
             btnLocalisationPatient.setOnAction(e -> ouvrirCarte(dispo));
             patientActionsBox.getChildren().add(btnLocalisationPatient);

@@ -95,7 +95,6 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>esprit.fx.Main</mainClass>
-                    <executable>C:\Users\LENOVO\.jdks\corretto-23.0.2\bin\java.exe</executable>
                 </configuration>
             </plugin>
             <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.0.0-M9</version></plugin>

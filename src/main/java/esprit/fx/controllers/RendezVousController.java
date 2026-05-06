@@ -30,7 +30,6 @@ import java.util.ResourceBundle;
 
 public class RendezVousController implements Initializable {
 
-    // FXML ÔÇö nouveau design cartes
     @FXML private VBox    containerRendezVous;
     @FXML private Button  btnAjouter;
     @FXML private Button  btnSuggestion;
@@ -67,13 +66,6 @@ public class RendezVousController implements Initializable {
         filterStatut.setOnAction(e -> chargerRendezVous());
         searchField.textProperty().addListener((obs, o, n) -> chargerRendezVous());
 
-        // Masquer "Nouveau RDV" pour les patients (ils prennent RDV via disponibilit├®s)
-        if ("PATIENT".equals(currentUserRole)) {
-            // Patient peut aussi cr├®er un RDV directement
-            btnAjouter.setVisible(true);
-            btnAjouter.setManaged(true);
-        }
-
         chargerRendezVous();
     }
 
@@ -92,13 +84,11 @@ public class RendezVousController implements Initializable {
                 rdvs = serviceRendezVous.getAll();
             }
 
-            // Filtre statut
             String filtre = filterStatut.getValue();
             if (!"Tous".equals(filtre)) {
                 rdvs = rdvs.stream().filter(r -> filtre.equals(r.getStatut())).toList();
             }
 
-            // Recherche
             String q = searchField.getText().toLowerCase().trim();
             if (!q.isEmpty()) {
                 rdvs = rdvs.stream().filter(r ->
@@ -111,7 +101,7 @@ public class RendezVousController implements Initializable {
             containerRendezVous.getChildren().clear();
 
             if (rdvs.isEmpty()) {
-                Label vide = new Label("Aucun rendez-vous trouv├®");
+                Label vide = new Label("Aucun rendez-vous trouve");
                 vide.setStyle("-fx-font-size: 16px; -fx-text-fill: #6b7280; -fx-padding: 40;");
                 containerRendezVous.getChildren().add(vide);
             } else {
@@ -133,16 +123,17 @@ public class RendezVousController implements Initializable {
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);"
         );
 
-        // ÔöÇÔöÇ Header : ic├┤ne + noms + badge statut ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+        // Header
         HBox header = new HBox(14);
         header.setAlignment(Pos.CENTER_LEFT);
 
-        Label icon = new Label("­ƒ®║");
-        icon.setStyle("-fx-font-size: 30px;");
+        Label icon = new Label("RDV");
+        icon.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #6b7280;" +
+                      "-fx-background-color: #e5e7eb; -fx-padding: 6 10; -fx-background-radius: 6;");
 
         VBox names = new VBox(4);
         HBox.setHgrow(names, Priority.ALWAYS);
-        Label doctorLabel = new Label("Dr. " + nvl(rdv.getDoctorNom(), "M├®decin"));
+        Label doctorLabel = new Label("Dr. " + nvl(rdv.getDoctorNom(), "Medecin"));
         doctorLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: 700; -fx-text-fill: #1f2937;");
         Label patientLabel = new Label("Patient : " + nvl(rdv.getPatientNom(), "Patient"));
         patientLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #6b7280;");
@@ -151,21 +142,19 @@ public class RendezVousController implements Initializable {
         Label badge = buildBadge(rdv.getStatut());
         header.getChildren().addAll(icon, names, badge);
 
-        // ÔöÇÔöÇ D├®tails : date + motif ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+        // Details
         HBox details = new HBox(24);
-        details.setStyle("-fx-background-color: #f9fafb; -fx-padding: 10 14;" +
-                         "-fx-background-radius: 8;");
+        details.setStyle("-fx-background-color: #f9fafb; -fx-padding: 10 14; -fx-background-radius: 8;");
 
         VBox dateBox = new VBox(3);
-        Label dateTitle = new Label("­ƒôà Date & Heure");
+        Label dateTitle = new Label("Date & Heure");
         dateTitle.setStyle("-fx-font-size: 11px; -fx-text-fill: #9ca3af; -fx-font-weight: 600;");
-        Label dateVal = new Label(rdv.getDateHeure() != null ?
-                rdv.getDateHeure().format(FMT) : "N/A");
+        Label dateVal = new Label(rdv.getDateHeure() != null ? rdv.getDateHeure().format(FMT) : "N/A");
         dateVal.setStyle("-fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #374151;");
         dateBox.getChildren().addAll(dateTitle, dateVal);
 
         VBox motifBox = new VBox(3);
-        Label motifTitle = new Label("­ƒôï Motif");
+        Label motifTitle = new Label("Motif");
         motifTitle.setStyle("-fx-font-size: 11px; -fx-text-fill: #9ca3af; -fx-font-weight: 600;");
         Label motifVal = new Label(nvl(rdv.getMotif(), "Consultation"));
         motifVal.setStyle("-fx-font-size: 13px; -fx-text-fill: #374151;");
@@ -175,47 +164,41 @@ public class RendezVousController implements Initializable {
 
         details.getChildren().addAll(dateBox, motifBox);
 
-        // ÔöÇÔöÇ Boutons d'action ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+        // Boutons
         HBox actions = new HBox(8);
         actions.setAlignment(Pos.CENTER_RIGHT);
 
         String statut = nvl(rdv.getStatut(), "");
 
-        // Modifier (toujours visible sauf TERMINE)
         if (!"TERMINE".equals(statut)) {
-            Button btnMod = btn("Ô£Å´©Å Modifier", "#3b82f6");
+            Button btnMod = btn("Modifier", "#3b82f6");
             btnMod.setOnAction(e -> ouvrirFormulaireRendezVous(rdv));
             actions.getChildren().add(btnMod);
         }
 
-        // Confirmer (seulement si DEMANDE et r├┤le DOCTOR/ADMIN)
         if ("DEMANDE".equals(statut) && !"PATIENT".equals(currentUserRole)) {
-            Button btnConf = btn("Ô£à Confirmer", "#10b981");
+            Button btnConf = btn("Confirmer", "#10b981");
             btnConf.setOnAction(e -> confirmerRdv(rdv));
             actions.getChildren().add(btnConf);
         }
 
-        // Annuler (si pas d├®j├á annul├®/termin├®)
         if (!"ANNULE".equals(statut) && !"TERMINE".equals(statut)) {
-            Button btnAnn = btn("ÔØî Annuler", "#ef4444");
+            Button btnAnn = btn("Annuler", "#ef4444");
             btnAnn.setOnAction(e -> annulerRdv(rdv));
             actions.getChildren().add(btnAnn);
         }
 
-        // Google Calendar (si CONFIRME)
         if ("CONFIRME".equals(statut)) {
-            Button btnGcal = btn("­ƒôà Google Cal", "#4285f4");
+            Button btnGcal = btn("Google Cal", "#4285f4");
             btnGcal.setOnAction(e -> ouvrirGoogleCalendar(rdv));
             actions.getChildren().add(btnGcal);
         }
 
-        // Historique (toujours)
-        Button btnHist = btn("­ƒôï Historique", "#7c3aed");
+        Button btnHist = btn("Historique", "#7c3aed");
         btnHist.setOnAction(e -> ouvrirHistoriqueRdv(rdv));
         actions.getChildren().add(btnHist);
 
-        // Supprimer
-        Button btnSuppr = btn("­ƒùæ´©Å", "#6b7280");
+        Button btnSuppr = btn("Supprimer", "#6b7280");
         btnSuppr.setOnAction(e -> supprimerRdv(rdv));
         actions.getChildren().add(btnSuppr);
 
@@ -239,11 +222,11 @@ public class RendezVousController implements Initializable {
 
             Alert ask = new Alert(Alert.AlertType.CONFIRMATION);
             ask.setTitle("Google Calendar");
-            ask.setHeaderText("­ƒôà Ajouter ├á Google Calendar ?");
-            ask.setContentText("RDV confirm├® ! Voulez-vous l'ajouter ├á votre calendrier ?");
+            ask.setHeaderText("Ajouter a Google Calendar ?");
+            ask.setContentText("RDV confirme ! Voulez-vous l'ajouter a votre calendrier ?");
             ask.getButtonTypes().setAll(
-                new ButtonType("­ƒôà Oui", ButtonBar.ButtonData.YES),
-                new ButtonType("Non",    ButtonBar.ButtonData.NO)
+                new ButtonType("Oui", ButtonBar.ButtonData.YES),
+                new ButtonType("Non", ButtonBar.ButtonData.NO)
             );
             ask.showAndWait().ifPresent(b -> {
                 if (b.getButtonData() == ButtonBar.ButtonData.YES) {
@@ -260,7 +243,7 @@ public class RendezVousController implements Initializable {
         Alert conf = new Alert(Alert.AlertType.CONFIRMATION);
         conf.setTitle("Annuler RDV");
         conf.setHeaderText("Annuler ce rendez-vous ?");
-        conf.setContentText("Dr. " + rdv.getDoctorNom() + " ÔÇö " +
+        conf.setContentText("Dr. " + rdv.getDoctorNom() + " - " +
                 (rdv.getDateHeure() != null ? rdv.getDateHeure().format(FMT) : ""));
         if (conf.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             try {
@@ -271,7 +254,7 @@ public class RendezVousController implements Initializable {
                         listeAttenteNotifService.verifierEtNotifier(rdv);
                 chargerRendezVous();
                 if (notif != null) {
-                    showInfo("RDV Annul├®", "­ƒöö " + notif.message);
+                    showInfo("RDV Annule", notif.message);
                 }
             } catch (SQLException e) {
                 showAlert("Erreur", "Impossible d'annuler : " + e.getMessage());
@@ -283,7 +266,7 @@ public class RendezVousController implements Initializable {
         Alert conf = new Alert(Alert.AlertType.CONFIRMATION);
         conf.setTitle("Supprimer");
         conf.setHeaderText("Supprimer ce rendez-vous ?");
-        conf.setContentText("Cette action est irr├®versible.");
+        conf.setContentText("Cette action est irreversible.");
         if (conf.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             try {
                 serviceRendezVous.supprimer(rdv.getId());
@@ -315,7 +298,7 @@ public class RendezVousController implements Initializable {
             ctrl.initHistorique(rdv);
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle("­ƒôï Historique RDV");
+            stage.setTitle("Historique RDV");
             stage.setScene(new Scene(root));
             stage.show();
         } catch (IOException e) {
@@ -332,7 +315,7 @@ public class RendezVousController implements Initializable {
             ctrl.setParentController(this);
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle("­ƒÆí Suggestion de Cr├®neaux");
+            stage.setTitle("Suggestion de Creneaux");
             stage.setScene(new Scene(root));
             stage.show();
         } catch (IOException e) {
@@ -347,7 +330,7 @@ public class RendezVousController implements Initializable {
             Parent root = loader.load();
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle("ÔÅ│ Liste d'Attente");
+            stage.setTitle("Liste d'Attente");
             stage.setScene(new Scene(root));
             stage.show();
         } catch (IOException e) {

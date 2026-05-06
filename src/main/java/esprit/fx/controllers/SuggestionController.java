@@ -3,7 +3,7 @@ package esprit.fx.controllers;
 import esprit.fx.entities.RendezVous;
 import esprit.fx.entities.User;
 import esprit.fx.services.ServiceRendezVous;
-import esprit.fx.services.ServiceUser;
+import esprit.fx.services.ServiceRendezVous;
 import esprit.fx.services.SuggestionService;
 import esprit.fx.utils.UserSession;
 import javafx.application.Platform;
@@ -35,7 +35,6 @@ public class SuggestionController implements Initializable {
     @FXML private Label            labelStatus;
 
     private SuggestionService    suggestionService;
-    private ServiceUser          serviceUser;
     private ServiceRendezVous    serviceRendezVous;
     private RendezVousController parentController;
 
@@ -48,7 +47,6 @@ public class SuggestionController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         suggestionService = new SuggestionService();
-        serviceUser       = new ServiceUser();
         serviceRendezVous = new ServiceRendezVous();
 
         comboPlage.getItems().addAll("Tous", "Matin", "Après-midi", "Soir");

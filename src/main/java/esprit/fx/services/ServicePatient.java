@@ -150,4 +150,31 @@ public class ServicePatient implements IService<Patient> {
         }
         return patients;
     }
+
+    @Override
+    public Patient afficherParId(int id) throws SQLException {
+        String sql = "SELECT u.*, p.id as patient_id, p.region, p.allergies, " +
+                     "p.medical_history, p.previous_cancellations, p.birth_date " +
+                     "FROM users u JOIN patients p ON u.id = p.user_id WHERE u.id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Patient patient = new Patient();
+                    patient.setId(rs.getInt("patient_id"));
+                    patient.setUserId(rs.getInt("id"));
+                    patient.setUsername(rs.getString("username"));
+                    patient.setEmail(rs.getString("email"));
+                    patient.setPhoneNumber(rs.getString("phone_number"));
+                    patient.setActive(rs.getBoolean("is_active"));
+                    try {
+                        java.sql.Date bd = rs.getDate("birth_date");
+                        if (bd != null) patient.setBirthDate(bd.toLocalDate());
+                    } catch (Exception ignored) {}
+                    return patient;
+                }
+            }
+        }
+        return null;
+    }
 }

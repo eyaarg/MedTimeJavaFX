@@ -63,7 +63,7 @@ public class SuggestionController implements Initializable {
 
     private void chargerMedecins() {
         try {
-            doctorsList = serviceUser.getAllDoctors();
+            doctorsList = serviceRendezVous.getAllDoctors();
             for (User d : doctorsList) {
                 comboDocteur.getItems().add("Dr. " + d.getUsername());
             }

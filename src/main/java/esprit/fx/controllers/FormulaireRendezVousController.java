@@ -5,7 +5,9 @@ import esprit.fx.entities.User;
 import esprit.fx.services.ServiceRendezVous;
 import esprit.fx.services.ServiceUser;
 import esprit.fx.services.ServiceDisponibilite;
+import esprit.fx.services.WeatherService;
 import esprit.fx.utils.UserSession;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -25,6 +27,7 @@ public class FormulaireRendezVousController implements Initializable {
     @FXML private ComboBox<User> comboPatient;
     @FXML private ComboBox<User> comboDocteur;
     @FXML private DatePicker datePickerRdv;
+    @FXML private Label labelMeteo;
     @FXML private ComboBox<String> comboHeure;
     @FXML private TextArea textAreaMotif;
     @FXML private TextArea textAreaNotes;
@@ -35,6 +38,7 @@ public class FormulaireRendezVousController implements Initializable {
     private ServiceRendezVous serviceRendezVous;
     private ServiceUser serviceUser;
     private ServiceDisponibilite serviceDisponibilite;
+    private WeatherService weatherService;
     private RendezVous rendezVousActuel;
     private RendezVousController parentController;
     private String currentUserRole;
@@ -45,6 +49,7 @@ public class FormulaireRendezVousController implements Initializable {
         serviceRendezVous = new ServiceRendezVous();
         serviceUser = new ServiceUser();
         serviceDisponibilite = new ServiceDisponibilite();
+        weatherService = new WeatherService();
         
         User currentUser = UserSession.getCurrentUser();
         currentUserRole = UserSession.getCurrentRole();
@@ -52,10 +57,67 @@ public class FormulaireRendezVousController implements Initializable {
         
         initializeComboBoxes();
         configureBasedOnRole();
+        setupWeatherListener();
+    }
+
+    /** ├ëcoute le DatePicker et d├®clenche l'appel m├®t├®o dans un thread s├®par├®. */
+    private void setupWeatherListener() {
+        datePickerRdv.valueProperty().addListener((obs, oldDate, newDate) -> {
+            if (newDate == null) {
+                labelMeteo.setVisible(false);
+                labelMeteo.setManaged(false);
+                return;
+            }
+            // Afficher un message de chargement imm├®diatement
+            labelMeteo.setText("ÔÅ│ Chargement de la m├®t├®o...");
+            labelMeteo.setStyle(
+                    "-fx-font-size: 12px; -fx-text-fill: #6b7280;" +
+                    "-fx-background-color: #f3f4f6; -fx-background-radius: 6;" +
+                    "-fx-padding: 6 10; -fx-border-color: #e5e7eb; -fx-border-radius: 6;");
+            labelMeteo.setVisible(true);
+            labelMeteo.setManaged(true);
+
+            // Appel API en arri├¿re-plan pour ne pas bloquer l'UI
+            Thread thread = new Thread(() -> {
+                WeatherService.MeteoResult result = weatherService.getMeteo(newDate);
+                Platform.runLater(() -> afficherMeteo(newDate, result));
+            });
+            thread.setDaemon(true);
+            thread.start();
+        });
+    }
+
+    /** Met ├á jour le label m├®t├®o avec le r├®sultat de l'API. */
+    private void afficherMeteo(LocalDate date, WeatherService.MeteoResult result) {
+        if (result == null) {
+            labelMeteo.setText("ÔÜá´©Å M├®t├®o indisponible pour cette date (hors plage 5 jours)");
+            labelMeteo.setStyle(
+                    "-fx-font-size: 12px; -fx-text-fill: #92400e;" +
+                    "-fx-background-color: #fef3c7; -fx-background-radius: 6;" +
+                    "-fx-padding: 6 10; -fx-border-color: #fde68a; -fx-border-radius: 6;");
+        } else {
+            labelMeteo.setText(result.toDisplayString(date));
+            // Couleur selon la m├®t├®o
+            boolean isBad = result.icone.startsWith("09") || result.icone.startsWith("10")
+                         || result.icone.startsWith("11") || result.icone.startsWith("13");
+            if (isBad) {
+                labelMeteo.setStyle(
+                        "-fx-font-size: 12px; -fx-text-fill: #1e40af;" +
+                        "-fx-background-color: #dbeafe; -fx-background-radius: 6;" +
+                        "-fx-padding: 6 10; -fx-border-color: #93c5fd; -fx-border-radius: 6;");
+            } else {
+                labelMeteo.setStyle(
+                        "-fx-font-size: 12px; -fx-text-fill: #065f46;" +
+                        "-fx-background-color: #d1fae5; -fx-background-radius: 6;" +
+                        "-fx-padding: 6 10; -fx-border-color: #6ee7b7; -fx-border-radius: 6;");
+            }
+        }
+        labelMeteo.setVisible(true);
+        labelMeteo.setManaged(true);
     }
 
     private void initializeComboBoxes() {
-        // Heures disponibles (de 8h à 18h par créneaux de 30 minutes)
+        // Heures disponibles (de 8h ├á 18h par cr├®neaux de 30 minutes)
         for (int hour = 8; hour <= 18; hour++) {
             comboHeure.getItems().add(String.format("%02d:00", hour));
             if (hour < 18) {
@@ -80,7 +142,7 @@ public class FormulaireRendezVousController implements Initializable {
             // Ils ne peuvent pas changer le statut
             comboStatut.setDisable(true);
         } else if ("DOCTOR".equals(currentUserRole)) {
-            // Les médecins ne peuvent pas changer le médecin (c'est eux)
+            // Les m├®decins ne peuvent pas changer le m├®decin (c'est eux)
             comboDocteur.setDisable(true);
         }
     }
@@ -89,7 +151,7 @@ public class FormulaireRendezVousController implements Initializable {
         try {
             List<User> users = serviceUser.getAll();
             
-            // Séparer patients et médecins
+            // S├®parer patients et m├®decins
             List<User> patients = users.stream()
                 .filter(user -> user.getRoles().stream()
                     .anyMatch(role -> "PATIENT".equals(role.getName())))
@@ -152,7 +214,7 @@ public class FormulaireRendezVousController implements Initializable {
                 }
             });
             
-            // Pré-sélectionner l'utilisateur actuel selon son rôle
+            // Pr├®-s├®lectionner l'utilisateur actuel selon son r├┤le
             if ("PATIENT".equals(currentUserRole)) {
                 User currentUser = UserSession.getCurrentUser();
                 comboPatient.setValue(currentUser);
@@ -181,13 +243,13 @@ public class FormulaireRendezVousController implements Initializable {
 
     private void remplirFormulaire(RendezVous rdv) {
         try {
-            // Trouver et sélectionner le patient
+            // Trouver et s├®lectionner le patient
             User patient = serviceUser.afficherParId(rdv.getPatientId());
             if (patient != null) {
                 comboPatient.setValue(patient);
             }
             
-            // Trouver et sélectionner le médecin
+            // Trouver et s├®lectionner le m├®decin
             User doctor = serviceUser.afficherParId(rdv.getDoctorId());
             if (doctor != null) {
                 comboDocteur.setValue(doctor);
@@ -208,7 +270,7 @@ public class FormulaireRendezVousController implements Initializable {
             comboStatut.setValue(rdv.getStatut());
             
         } catch (SQLException e) {
-            showAlert("Erreur", "Erreur lors du chargement des données : " + e.getMessage());
+            showAlert("Erreur", "Erreur lors du chargement des donn├®es : " + e.getMessage());
         }
     }
 
@@ -221,7 +283,7 @@ public class FormulaireRendezVousController implements Initializable {
         try {
             RendezVous rdv = rendezVousActuel != null ? rendezVousActuel : new RendezVous();
             
-            // Remplir les données
+            // Remplir les donn├®es
             rdv.setPatientId(comboPatient.getValue().getId());
             rdv.setDoctorId(comboDocteur.getValue().getId());
             
@@ -238,14 +300,14 @@ public class FormulaireRendezVousController implements Initializable {
             // Sauvegarder
             if (rendezVousActuel == null) {
                 serviceRendezVous.ajouter(rdv);
-                showInfo("Succès", "Rendez-vous créé avec succès.");
+                showInfo("Succ├¿s", "Rendez-vous cr├®├® avec succ├¿s.");
             } else {
                 rdv.setDateModification(LocalDateTime.now());
                 serviceRendezVous.modifier(rdv);
-                showInfo("Succès", "Rendez-vous modifié avec succès.");
+                showInfo("Succ├¿s", "Rendez-vous modifi├® avec succ├¿s.");
             }
             
-            // Rafraîchir la liste parent et fermer
+            // Rafra├«chir la liste parent et fermer
             if (parentController != null) {
                 parentController.rafraichir();
             }
@@ -265,22 +327,22 @@ public class FormulaireRendezVousController implements Initializable {
 
     private boolean validerFormulaire() {
         if (comboPatient.getValue() == null) {
-            showAlert("Validation", "Veuillez sélectionner un patient.");
+            showAlert("Validation", "Veuillez s├®lectionner un patient.");
             return false;
         }
         
         if (comboDocteur.getValue() == null) {
-            showAlert("Validation", "Veuillez sélectionner un médecin.");
+            showAlert("Validation", "Veuillez s├®lectionner un m├®decin.");
             return false;
         }
         
         if (datePickerRdv.getValue() == null) {
-            showAlert("Validation", "Veuillez sélectionner une date.");
+            showAlert("Validation", "Veuillez s├®lectionner une date.");
             return false;
         }
         
         if (comboHeure.getValue() == null) {
-            showAlert("Validation", "Veuillez sélectionner une heure.");
+            showAlert("Validation", "Veuillez s├®lectionner une heure.");
             return false;
         }
         
@@ -289,10 +351,10 @@ public class FormulaireRendezVousController implements Initializable {
             return false;
         }
         
-        // Vérifier que la date n'est pas dans le passé
+        // V├®rifier que la date n'est pas dans le pass├®
         LocalDate selectedDate = datePickerRdv.getValue();
         if (selectedDate.isBefore(LocalDate.now())) {
-            showAlert("Validation", "La date ne peut pas être dans le passé.");
+            showAlert("Validation", "La date ne peut pas ├¬tre dans le pass├®.");
             return false;
         }
         

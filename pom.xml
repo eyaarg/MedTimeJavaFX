@@ -44,11 +44,6 @@
 
         <!-- jBCrypt pour le hashage de mots de passe -->
         <dependency>
-            <groupId>at.favre.lib</groupId>
-            <artifactId>bcrypt</artifactId>
-            <version>0.10.2</version>
-        </dependency>
-        <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>0.4</version>
@@ -99,7 +94,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>MedTimeFX/esprit.fx.Main</mainClass>
+                    <mainClass>esprit.fx.Main</mainClass>
                     <executable>C:\Users\LENOVO\.jdks\corretto-23.0.2\bin\java.exe</executable>
                 </configuration>
             </plugin>

@@ -61,12 +61,11 @@ public class DisponibiliteController implements Initializable {
     private void initializeFilters() {
         filterDisponible.setSelected(true);
 
-        // Ô£à Tri par Date et M├®decin (plus par ID)
         sortCombo.getItems().addAll(
                 "Date (Croissant)",
-                "Date (D├®croissant)",
-                "M├®decin (A-Z)",
-                "M├®decin (Z-A)"
+                "Date (Decroissant)",
+                "Medecin (A-Z)",
+                "Medecin (Z-A)"
         );
         sortCombo.setValue("Date (Croissant)");
 
@@ -127,7 +126,6 @@ public class DisponibiliteController implements Initializable {
                         .toList();
             }
 
-            // Ô£à Tri par Date et M├®decin (plus par ID)
             String sortOption = sortCombo.getValue();
             if (sortOption != null) {
                 switch (sortOption) {
@@ -139,7 +137,7 @@ public class DisponibiliteController implements Initializable {
                                     return d1.getDateDebut().compareTo(d2.getDateDebut());
                                 }).toList();
                         break;
-                    case "Date (D├®croissant)":
+                    case "Date (Decroissant)":
                         dispos = dispos.stream()
                                 .sorted((d1, d2) -> {
                                     if (d1.getDateDebut() == null) return 1;
@@ -147,22 +145,20 @@ public class DisponibiliteController implements Initializable {
                                     return d2.getDateDebut().compareTo(d1.getDateDebut());
                                 }).toList();
                         break;
-                    case "M├®decin (A-Z)":
+                    case "Medecin (A-Z)":
                         dispos = dispos.stream()
                                 .sorted((d1, d2) -> {
                                     if (d1.getDoctorNom() == null) return 1;
                                     if (d2.getDoctorNom() == null) return -1;
-                                    return d1.getDoctorNom()
-                                            .compareToIgnoreCase(d2.getDoctorNom());
+                                    return d1.getDoctorNom().compareToIgnoreCase(d2.getDoctorNom());
                                 }).toList();
                         break;
-                    case "M├®decin (Z-A)":
+                    case "Medecin (Z-A)":
                         dispos = dispos.stream()
                                 .sorted((d1, d2) -> {
                                     if (d1.getDoctorNom() == null) return 1;
                                     if (d2.getDoctorNom() == null) return -1;
-                                    return d2.getDoctorNom()
-                                            .compareToIgnoreCase(d1.getDoctorNom());
+                                    return d2.getDoctorNom().compareToIgnoreCase(d1.getDoctorNom());
                                 }).toList();
                         break;
                 }

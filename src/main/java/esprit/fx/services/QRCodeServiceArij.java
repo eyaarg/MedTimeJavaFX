@@ -13,22 +13,30 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
-/**
- * Service de g├®n├®ration de QR Code pour les ordonnances.
- * Utilise ZXing (Zebra Crossing) pour g├®n├®rer les codes QR.
- */
 public class QRCodeServiceArij {
 
     private static final int DEFAULT_SIZE = 300;
     private static final String BASE_URL = "http://localhost:8000";
 
-    /**
-     * G├®n├¿re un QR Code pour une ordonnance et le retourne en tant qu'Image JavaFX.
-     *
-     * @param ordonnanceId ID de l'ordonnance
-     * @param accessToken  token d'acc├¿s unique
-     * @return Image JavaFX du QR Code, ou null si token manquant ou erreur
-     */
+    public Image generateQRCodeImage(String text) throws WriterException {
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, DEFAULT_SIZE, DEFAULT_SIZE);
+        BufferedImage bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
+        return SwingFXUtils.toFXImage(bufferedImage, null);
+    }
+
+    public Image genererQRCodeImage(String data, int size) {
+        try {
+            QRCodeWriter writer = new QRCodeWriter();
+            BitMatrix bitMatrix = writer.encode(data, BarcodeFormat.QR_CODE, size, size);
+            BufferedImage bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
+            return SwingFXUtils.toFXImage(bufferedImage, null);
+        } catch (WriterException e) {
+            System.err.println("[QRCodeServiceArij] Erreur generation QR Code : " + e.getMessage());
+            return null;
+        }
+    }
+
     public Image genererQRCodeOrdonnance(int ordonnanceId, String accessToken) {
         if (accessToken == null || accessToken.isBlank()) {
             return null;
@@ -37,44 +45,27 @@ public class QRCodeServiceArij {
         return genererQRCodeImage(scanUrl, DEFAULT_SIZE);
     }
 
-    /**
-     * G├®n├¿re un QR Code ├á partir d'une URL et le retourne en tant qu'Image JavaFX.
-     *
-     * @param data donn├®es ├á encoder
-     * @param size taille du QR Code en pixels
-     * @return Image JavaFX du QR Code, ou null si erreur
-     */
-    public Image genererQRCodeImage(String data, int size) {
+    public boolean genererQRCodeFichier(String data, String filePath, int size) {
         try {
-            QRCodeWriter writer = new QRCodeWriter();
-            BitMatrix bitMatrix = writer.encode(data, BarcodeFormat.QR_CODE, size, size);
-            BufferedImage bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
-            return SwingFXUtils.toFXImage(bufferedImage, null);
-        } catch (WriterException e) {
-            System.err.println("[QRCodeServiceArij] Erreur g├®n├®ration QR Code : " + e.getMessage());
-            return null;
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            BitMatrix bitMatrix = qrCodeWriter.encode(data, BarcodeFormat.QR_CODE, size, size);
+            Path path = FileSystems.getDefault().getPath(filePath);
+            MatrixToImageWriter.writeToPath(bitMatrix, "PNG", path);
+            return true;
+        } catch (Exception e) {
+            System.err.println("[QRCodeServiceArij] Erreur generation QR Code fichier : " + e.getMessage());
+            return false;
         }
     }
 
-    /**
-     * G├®n├¿re un QR Code et le sauvegarde en fichier PNG.
-     *
-     * @param data     donn├®es ├á encoder
-     * @param filePath chemin du fichier de sortie
-     * @param size     taille du QR Code
-     * @return true si succ├¿s, false sinon
-     */
-    public boolean genererQRCodeFichier(String data, String filePath, int size) {
-        try {
-            QRCodeWriter writer = new QRCodeWriter();
-            BitMatrix bitMatrix = writer.encode(data, BarcodeFormat.QR_CODE, size, size);
-            Path path = FileSystems.getDefault().getPath(filePath);
-            MatrixToImageWriter.writeToPath(bitMatrix, "PNG", path);
-            System.out.println("[QRCodeServiceArij] QR Code g├®n├®r├® : " + filePath);
-            return true;
-        } catch (WriterException | IOException e) {
-            System.err.println("[QRCodeServiceArij] Erreur sauvegarde QR Code : " + e.getMessage());
-            return false;
-        }
+    public void generateQRCodeFile(String text, String filePath) throws WriterException, IOException {
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, DEFAULT_SIZE, DEFAULT_SIZE);
+        Path path = FileSystems.getDefault().getPath(filePath);
+        MatrixToImageWriter.writeToPath(bitMatrix, "PNG", path);
+    }
+
+    public String buildOrdonnanceUrl(int ordonnanceId) {
+        return BASE_URL + "/ordonnances/" + ordonnanceId;
     }
 }

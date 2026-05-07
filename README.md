@@ -1,130 +1,133 @@
-# 🏷️ MedTimeFX
+# MedTimeFX
 
-![Java](https://img.shields.io/badge/Java-23-blue?style=for-the-badge&logo=openjdk)
-![JavaFX](https://img.shields.io/badge/JavaFX-23.0.2-0ea5e9?style=for-the-badge)
-![Maven](https://img.shields.io/badge/Maven-Build-c71a36?style=for-the-badge&logo=apachemaven)
-![MySQL](https://img.shields.io/badge/MySQL-Database-4479a1?style=for-the-badge&logo=mysql&logoColor=white)
-![JDBC](https://img.shields.io/badge/JDBC-Connexion-2563eb?style=for-the-badge)
-![Projet](https://img.shields.io/badge/Projet-Acad%C3%A9mique-16a34a?style=for-the-badge)
+MedTimeFX est une application desktop développée en JavaFX et connectée à une base de données MySQL.
 
-**MedTimeFX** est une application desktop médicale développée avec **JavaFX**, connectée à une base de données **MySQL** via **JDBC**.  
-Elle centralise la gestion des utilisateurs, des rendez-vous, des consultations en ligne, des ordonnances, des factures, du marketplace pharmaceutique et du forum médical.
+Le projet permet de gérer une plateforme médicale avec plusieurs espaces : patient, médecin et administrateur.
 
-## 📸 Aperçu
+## Aperçu
 
-> Ajouter ici les captures d’écran principales du projet.
+Ajouter ici les captures d’écran du projet :
 
-| Connexion | Tableau de bord | Consultations |
-|---|---|---|
-| `docs/screenshots/login.png` | `docs/screenshots/dashboard.png` | `docs/screenshots/consultations.png` |
+```text
+docs/screenshots/login.png
+docs/screenshots/dashboard.png
+docs/screenshots/consultations.png
+```
 
----
+## Table des matières
 
-## 📋 Table des matières
+- Description
+- Fonctionnalités
+- Stack technique
+- Prérequis
+- Installation
+- Configuration de la base de données
+- Lancement
+- Structure du projet
+- Compilation
+- Contribution
 
-- [🎯 Fonctionnalités](#-fonctionnalités)
-- [🛠️ Stack technique](#️-stack-technique)
-- [⚙️ Prérequis](#️-prérequis)
-- [🚀 Installation et lancement](#-installation-et-lancement)
-- [🗄️ Configuration de la base de données](#️-configuration-de-la-base-de-données)
-- [📁 Structure du projet](#-structure-du-projet)
-- [🧪 Compilation](#-compilation)
-- [🤝 Contribution](#-contribution)
+## Description
 
----
+MedTimeFX est un projet académique réalisé avec JavaFX.
 
-## 🎯 Fonctionnalités
+L’application permet de centraliser plusieurs fonctionnalités médicales dans une seule interface desktop :
 
-### 👤 Authentification et gestion des comptes
-- Inscription et connexion des utilisateurs.
-- Gestion des rôles : patient, médecin et administrateur.
-- Vérification par email pour les comptes patients.
-- Validation administrative des comptes médecins.
+- gestion des utilisateurs
+- gestion des rendez-vous
+- gestion des consultations en ligne
+- gestion des ordonnances
+- gestion des factures
+- gestion des produits pharmaceutiques
+- gestion du forum médical
+- gestion des notifications
+
+## Fonctionnalités
+
+### Authentification et comptes
+
+- Inscription des patients et médecins.
+- Connexion des utilisateurs.
+- Gestion des rôles.
+- Vérification des comptes.
 - Gestion du profil utilisateur.
 
-### 🛡️ Espace administrateur
-- Tableau de bord administrateur.
-- Gestion des utilisateurs et des rôles.
-- Validation ou refus des médecins.
-- Consultation des statistiques globales.
+### Administration
 
-### 🩺 Consultations en ligne
-- Création et suivi des consultations.
-- Gestion des consultations côté patient et côté médecin.
-- Génération de liens de consultation en ligne.
-- Notifications liées aux consultations.
+- Gestion des utilisateurs.
+- Validation des médecins.
+- Consultation des statistiques.
+- Suivi des comptes actifs et en attente.
+
+### Consultations en ligne
+
+- Création des consultations.
+- Suivi des consultations par patient et médecin.
+- Gestion des liens de consultation.
 - Historique des consultations.
 
-### 📅 Rendez-vous et disponibilités
-- Gestion des rendez-vous médicaux.
-- Consultation des disponibilités des médecins.
-- Liste d’attente.
-- Suggestions de créneaux.
-- Historique des rendez-vous.
+### Rendez-vous
 
-### 💊 Ordonnances
-- Création et consultation des ordonnances.
-- Génération de PDF.
-- Génération de QR Code pour accéder à l’ordonnance.
-- Suppression et visualisation des ordonnances.
+- Création des rendez-vous.
+- Gestion des disponibilités des médecins.
+- Gestion de la liste d’attente.
+- Consultation de l’historique.
 
-### 🧾 Factures et paiements
-- Génération et consultation des factures.
-- Gestion de l’état de paiement.
-- Paiement en ligne.
-- Export PDF selon les besoins du module.
+### Ordonnances
 
-### 🛒 Marketplace pharmaceutique
-- Gestion des produits pharmaceutiques.
-- Ajout, modification, suppression et consultation des produits.
+- Création des ordonnances.
+- Consultation des ordonnances.
+- Génération de fichiers PDF.
+- Génération de QR Code.
+
+### Factures et paiements
+
+- Consultation des factures.
+- Suivi de l’état de paiement.
+- Paiement des factures.
+
+### Produits pharmaceutiques
+
+- Ajout des produits.
+- Modification des produits.
+- Suppression des produits.
 - Gestion du panier.
 - Gestion des favoris.
-- Paiement de commandes.
 
-### 💬 Forum médical
-- Publication d’articles.
-- Ajout et gestion des commentaires.
-- Modération du contenu.
-- Consultation des articles médicaux.
+### Forum médical
 
-### 🔔 Notifications
-- Notifications internes.
-- Support WebSocket pour les notifications en temps réel.
-- Notifications liées aux consultations, rendez-vous et actions importantes.
+- Publication des articles.
+- Gestion des commentaires.
+- Consultation du contenu médical.
 
-### 📊 Tableaux de bord et statistiques
-- Indicateurs de suivi.
-- Statistiques des consultations.
-- Statistiques administrateur.
-- Visualisation des informations importantes par rôle.
+### Notifications
 
----
+- Affichage des notifications.
+- Notifications liées aux actions importantes du système.
 
-## 🛠️ Stack technique
+## Stack technique
 
-| Couche | Technologie |
+| Partie | Technologie |
 |---|---|
-| Frontend | JavaFX |
-| Backend | Java 23 |
+| Interface | JavaFX |
+| Langage | Java 23 |
 | Base de données | MySQL |
-| Build Tool | Maven |
-| ORM / Connexion | JDBC |
-| UI Design | Scene Builder |
+| Gestion du projet | Maven |
+| Connexion base de données | JDBC |
+| Design des interfaces | Scene Builder |
 
----
-
-## ⚙️ Prérequis
+## Prérequis
 
 Avant de lancer le projet, installer :
 
-- **Java 23**
-- **Maven**
-- **MySQL Server**
-- **JavaFX SDK**
-- **Scene Builder**
-- Un IDE Java recommandé : **IntelliJ IDEA**
+- Java 23
+- Maven
+- MySQL Server
+- JavaFX SDK
+- Scene Builder
+- IntelliJ IDEA ou un autre IDE Java
 
-Vérifier l’installation :
+Vérifier les installations :
 
 ```bash
 java --version
@@ -132,9 +135,7 @@ mvn --version
 mysql --version
 ```
 
----
-
-## 🚀 Installation et lancement
+## Installation
 
 ### 1. Cloner le projet
 
@@ -145,23 +146,23 @@ cd MedTimeJavaFX
 
 ### 2. Ouvrir le projet
 
-Ouvrir le dossier du projet dans **IntelliJ IDEA**.
+Ouvrir le dossier du projet dans IntelliJ IDEA.
 
-Vérifier que Maven détecte correctement le fichier :
+Vérifier que le fichier suivant est bien détecté par Maven :
 
 ```text
 pom.xml
 ```
 
-### 3. Configurer Java 23
+### 3. Configurer Java
 
-Dans IntelliJ IDEA :
+Configurer le projet avec Java 23 :
 
 ```text
 File > Project Structure > Project SDK > Java 23
 ```
 
-### 4. Configurer la base de données MySQL
+## Configuration de la base de données
 
 Créer une base de données MySQL :
 
@@ -169,21 +170,19 @@ Créer une base de données MySQL :
 CREATE DATABASE mediplatform_test_test;
 ```
 
-Importer ensuite le script SQL du projet si un dump est fourni par l’équipe :
+Importer le script SQL du projet si un dump est disponible :
 
 ```bash
 mysql -u root -p mediplatform_test_test < database/mediplatform_test_test.sql
 ```
 
-### 5. Configurer la connexion JDBC
-
-Vérifier le fichier :
+Vérifier le fichier de configuration :
 
 ```text
 src/main/resources/config.properties
 ```
 
-Exemple de configuration :
+Exemple :
 
 ```properties
 db.url=jdbc:mysql://localhost:3306/mediplatform_test_test
@@ -191,92 +190,63 @@ db.user=root
 db.password=
 ```
 
-Vérifier aussi la classe de connexion si nécessaire :
+Vérifier aussi la classe de connexion :
 
 ```text
 src/main/java/esprit/fx/utils/MyDB.java
 ```
 
-### 6. Installer les dépendances Maven
+## Lancement
+
+Installer les dépendances :
 
 ```bash
 mvn clean install
 ```
 
-### 7. Lancer l’application
+Lancer l’application :
 
 ```bash
 mvn javafx:run
 ```
 
-Ou depuis IntelliJ IDEA :
+Depuis IntelliJ IDEA :
 
 ```text
 Maven > Plugins > javafx > javafx:run
 ```
 
----
-
-## 🗄️ Configuration de la base de données
-
-Le projet utilise une base MySQL avec plusieurs tables fonctionnelles, notamment :
-
-- `users`
-- `roles`
-- `user_roles`
-- `patients`
-- `doctors`
-- `doctor_documents`
-- `consultations`
-- `disponibilite_medecin`
-- `rendez_vous`
-- `ordonnances`
-- `factures`
-- `product`
-- `panier`
-- `article`
-- `commentaire`
-- `notifications`
-
-Certaines tables ou colonnes peuvent être initialisées automatiquement au lancement, mais il est recommandé d’utiliser le dump SQL commun du projet pour garantir un environnement complet.
-
----
-
-## 📁 Structure du projet
+## Structure du projet
 
 ```text
 MedTimeJavaFX/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── esprit/fx/
-│   │   │       ├── controllers/
-│   │   │       ├── entities/
-│   │   │       ├── services/
-│   │   │       ├── utils/
-│   │   │       └── Main.java
-│   │   └── resources/
-│   │       ├── fxml/
-│   │       ├── css/
-│   │       ├── images/
-│   │       └── config.properties
-│   └── test/
-├── uploads/
-├── pom.xml
-└── README.md
+src/
+  main/
+    java/
+      esprit/fx/
+        controllers/
+        entities/
+        services/
+        utils/
+        Main.java
+    resources/
+      fxml/
+      css/
+      images/
+      config.properties
+pom.xml
+README.md
 ```
 
----
+## Compilation
 
-## 🧪 Compilation
-
-Compiler le projet sans lancer l’interface :
+Compiler le projet :
 
 ```bash
 mvn clean compile
 ```
 
-Lancer les tests si disponibles :
+Lancer les tests :
 
 ```bash
 mvn test
@@ -288,21 +258,17 @@ Nettoyer le projet :
 mvn clean
 ```
 
----
+## Bonnes pratiques
 
-## 🔐 Sécurité et bonnes pratiques
+- Ne pas publier les clés API.
+- Ne pas publier les mots de passe.
+- Utiliser un fichier de configuration local pour la base de données.
+- Garder le dump SQL du projet à jour.
+- Faire un pull avant de commencer une modification.
 
-- Ne pas publier les clés API dans GitHub.
-- Ne pas versionner les mots de passe réels.
-- Utiliser `config.properties` pour la configuration locale.
-- Ajouter les fichiers sensibles dans `.gitignore`.
-- Garder un dump SQL partagé et à jour pour toute l’équipe.
+## Contribution
 
----
-
-## 🤝 Contribution
-
-Workflow recommandé :
+Créer une branche :
 
 ```bash
 git checkout master
@@ -310,25 +276,16 @@ git pull origin master
 git checkout -b nom-de-branche
 ```
 
-Après modification :
+Ajouter les modifications :
 
 ```bash
 git add .
-git commit -m "Description claire de la modification"
+git commit -m "Description de la modification"
 git push origin nom-de-branche
 ```
 
-Créer ensuite une Pull Request vers `master`.
+Créer ensuite une Pull Request vers la branche principale.
 
----
+## Statut du projet
 
-## 👥 Équipe
-
-Projet académique réalisé dans le cadre d’un module Java / JavaFX.
-
----
-
-## 📌 Statut
-
-Projet en développement académique.  
-Les fonctionnalités peuvent évoluer selon les besoins de l’équipe et les corrections d’intégration.
+Projet académique en cours de développement.

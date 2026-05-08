@@ -9,10 +9,10 @@ public class Doctor extends User {
     private boolean isCertified;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    // Issue #8 — location fields (city/lat/lng only, no country)
     private String city;
     private Double latitude;
     private Double longitude;
-    private String adresse;
 
     public Doctor() {
     }
@@ -60,6 +60,6 @@ public class Doctor extends User {
     public Double getLongitude() { return longitude; }
     public void setLongitude(Double longitude) { this.longitude = longitude; }
 
-    public String getAdresse() { return adresse; }
-    public void setAdresse(String adresse) { this.adresse = adresse; }
+    public String getAdresse() { return city; }
+    public void setAdresse(String adresse) { this.city = adresse; }
 }

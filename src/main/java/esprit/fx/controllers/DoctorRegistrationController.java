@@ -24,22 +24,29 @@ public class DoctorRegistrationController {
 
     private TextField licenseCodeField;
     private Label pdfLabel;
+    private Button registerButton;
     private File selectedPdf;
     private User receivedUser;
+    private String receivedRegion;
 
     public static void showAsStage(User user) {
+        showAsStage(user, null);
+    }
+
+    public static void showAsStage(User user, String region) {
         if (user == null) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Attention");
             alert.setHeaderText(null);
-            alert.setContentText("Veuillez d'abord cr├®er un compte via le formulaire d'inscription avant de compl├®ter votre profil m├®decin.");
+            alert.setContentText("Veuillez d'abord créer un compte via le formulaire d'inscription avant de compléter votre profil médecin.");
             alert.showAndWait();
             return;
         }
         DoctorRegistrationController controller = new DoctorRegistrationController();
         controller.receivedUser = user;
+        controller.receivedRegion = normalizeRegion(region);
         Stage stage = new Stage();
-        stage.setTitle("Inscription M├®decin");
+        stage.setTitle("Inscription Médecin");
         controller.initialize(stage);
         stage.show();
     }
@@ -52,11 +59,11 @@ public class DoctorRegistrationController {
         licenseCodeField = new TextField();
         licenseCodeField.setPromptText("Code de licence");
 
-        pdfLabel = new Label("Aucun fichier s├®lectionn├®");
+        pdfLabel = new Label("Aucun fichier sélectionné");
         Button choosePdfButton = new Button("Choisir un fichier PDF");
         choosePdfButton.setOnAction(event -> choosePdf());
 
-        Button registerButton = new Button("S'inscrire");
+        registerButton = new Button("S'inscrire");
         registerButton.setOnAction(event -> handleRegister(stage));
 
         root.getChildren().addAll(licenseCodeField, pdfLabel, choosePdfButton, registerButton);
@@ -72,16 +79,22 @@ public class DoctorRegistrationController {
         if (selectedPdf != null) {
             pdfLabel.setText(selectedPdf.getName());
         } else {
-            pdfLabel.setText("Aucun fichier s├®lectionn├®");
+            pdfLabel.setText("Aucun fichier sélectionné");
         }
     }
 
     private void handleRegister(Stage stage) {
         try {
+            if (registerButton != null) {
+                registerButton.setDisable(true);
+            }
             String licenseCode = licenseCodeField.getText().trim();
 
             if (licenseCode.isEmpty() || selectedPdf == null) {
                 showAlert("Erreur", "Tous les champs sont obligatoires.");
+                if (registerButton != null) {
+                    registerButton.setDisable(false);
+                }
                 return;
             }
 
@@ -89,11 +102,12 @@ public class DoctorRegistrationController {
             doctor.setUserId(receivedUser.getId());
             doctor.setLicenseCode(licenseCode);
             doctor.setCertified(false);
+            doctor.setCity(receivedRegion);
 
             serviceDoctor.ajouter(doctor);
             serviceDoctorDocument.uploadDocument(doctor.getId(), selectedPdf);
 
-            showInfo("Succ├¿s", "Inscription r├®ussie ! Votre dossier est en attente de validation par un administrateur.");
+            showInfo("Succès", "Inscription réussie ! Votre dossier est en attente de validation par un administrateur.");
             stage.close();
 
             // Retour au login
@@ -102,7 +116,7 @@ public class DoctorRegistrationController {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/Login.fxml"));
                     Parent root = loader.load();
                     Stage loginStage = new Stage();
-                    loginStage.setTitle("MedTimeFX ÔÇö Connexion");
+                    loginStage.setTitle("MedTimeFX — Connexion");
                     loginStage.setScene(new Scene(root, 980, 720));
                     loginStage.show();
                 } catch (Exception ex) {
@@ -111,6 +125,9 @@ public class DoctorRegistrationController {
             });
         } catch (Exception e) {
             showAlert("Erreur", "Une erreur s'est produite : " + e.getMessage());
+            if (registerButton != null) {
+                registerButton.setDisable(false);
+            }
         }
     }
 
@@ -128,5 +145,12 @@ public class DoctorRegistrationController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private static String normalizeRegion(String region) {
+        if (region == null || region.isBlank()) {
+            return "Tunis";
+        }
+        return region.trim();
     }
 }

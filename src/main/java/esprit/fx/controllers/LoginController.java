@@ -40,7 +40,7 @@ public class LoginController {
     private void initialize() {
         signInButton.setOnAction(event -> handleLogin());
 
-        Hyperlink forgotPasswordLink = new Hyperlink("Mot de passe oubli├® ?");
+        Hyperlink forgotPasswordLink = new Hyperlink("Mot de passe oublié ?");
         forgotPasswordLink.setOnAction(event -> new ForgotPasswordController().showAsStage());
 
         ((VBox) signInButton.getParent()).getChildren().add(forgotPasswordLink);
@@ -61,40 +61,40 @@ public class LoginController {
 
             // Identifiant ou mot de passe incorrect
             if (user == null) {
-                showAlert(Alert.AlertType.ERROR, "Connexion ├®chou├®e", "Identifiant ou mot de passe incorrect.");
+                showAlert(Alert.AlertType.ERROR, "Connexion échouée", "Identifiant ou mot de passe incorrect.");
                 return;
             }
 
             String role = extractPrimaryRole(user);
             boolean isDoctor = role.contains("DOCTOR") || role.contains("MEDECIN");
 
-            // CAS 1 ÔÇö Email non v├®rifi├®
+            // CAS 1 — Email non vérifié
             if (!user.isVerified()) {
-                showAlert(Alert.AlertType.WARNING, "Compte non activ├®",
-                        "Votre compte n'est pas encore activ├®. Un email de v├®rification a ├®t├® envoy├® ├á votre adresse. " +
-                        "Veuillez v├®rifier votre bo├«te mail et saisir le code de confirmation.");
+                showAlert(Alert.AlertType.WARNING, "Compte non activé",
+                        "Votre compte n'est pas encore activé. Un email de vérification a été envoyé à votre adresse. " +
+                        "Veuillez vérifier votre boîte mail et saisir le code de confirmation.");
                 EmailVerificationController.showAsStage(user.getEmail());
                 return;
             }
 
-            // CAS 2 ÔÇö M├®decin en attente de validation admin
+            // CAS 2 — Médecin en attente de validation admin
             if (!user.isActive() && isDoctor) {
-                showAlert(Alert.AlertType.WARNING, "Compte en cours de v├®rification",
-                        "Votre compte m├®decin est en cours de v├®rification. Un administrateur doit examiner votre dossier " +
-                        "et valider votre dipl├┤me avant que vous puissiez acc├®der ├á la plateforme. " +
-                        "Vous recevrez un email d├¿s que votre compte sera approuv├®.");
+                showAlert(Alert.AlertType.WARNING, "Compte en cours de vérification",
+                        "Votre compte médecin est en cours de vérification. Un administrateur doit examiner votre dossier " +
+                        "et valider votre diplôme avant que vous puissiez accéder à la plateforme. " +
+                        "Vous recevrez un email dès que votre compte sera approuvé.");
                 return;
             }
 
-            // CAS 3 ÔÇö Compte bloqu├® (non m├®decin)
+            // CAS 3 — Compte bloqué (non médecin)
             if (!user.isActive()) {
                 showAlert(Alert.AlertType.ERROR, "Compte suspendu",
-                        "Votre compte a ├®t├® suspendu suite ├á plusieurs tentatives de connexion ├®chou├®es. " +
-                        "Veuillez contacter l'administrateur pour d├®bloquer votre acc├¿s.");
+                        "Votre compte a été suspendu suite à plusieurs tentatives de connexion échouées. " +
+                        "Veuillez contacter l'administrateur pour débloquer votre accès.");
                 return;
             }
 
-            // CAS 4 ÔÇö Login r├®ussi
+            // CAS 4 — Login réussi
             UserSession.setCurrentUser(user);
             UserSession.setCurrentRole(role);
             openMainView();
@@ -147,7 +147,7 @@ public class LoginController {
                     LoginController.class.getResource("/Register.fxml")));
             Stage stage = (Stage) signInButton.getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.setTitle("MedTimeFX ÔÇö Register");
+            stage.setTitle("MedTimeFX — Register");
             stage.setMaximized(false);
             stage.setMinWidth(560);
             stage.setMinHeight(760);

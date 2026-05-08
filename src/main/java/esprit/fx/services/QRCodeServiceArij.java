@@ -13,10 +13,17 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
+import esprit.fx.utils.ConfigLoader;
+
 public class QRCodeServiceArij {
 
     private static final int DEFAULT_SIZE = 300;
-    private static final String BASE_URL = "http://localhost:8000";
+    private static final String BASE_URL = getConfig("app.base.url", "http://localhost:8000");
+
+    private static String getConfig(String key, String fallback) {
+        String value = ConfigLoader.getProperty(key);
+        return value == null || value.isBlank() ? fallback : value.trim();
+    }
 
     public Image generateQRCodeImage(String text) throws WriterException {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
@@ -27,21 +34,30 @@ public class QRCodeServiceArij {
 
     public Image genererQRCodeImage(String data, int size) {
         try {
+            if (data == null || data.isBlank()) {
+                System.err.println("[QRCodeServiceArij] Donnees vides pour generation QR Code");
+                return null;
+            }
             QRCodeWriter writer = new QRCodeWriter();
             BitMatrix bitMatrix = writer.encode(data, BarcodeFormat.QR_CODE, size, size);
             BufferedImage bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
-            return SwingFXUtils.toFXImage(bufferedImage, null);
+            Image fxImage = SwingFXUtils.toFXImage(bufferedImage, null);
+            System.out.println("[QRCodeServiceArij] QR Code genere avec succes (" + size + "x" + size + ")");
+            return fxImage;
         } catch (WriterException e) {
             System.err.println("[QRCodeServiceArij] Erreur generation QR Code : " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
 
     public Image genererQRCodeOrdonnance(int ordonnanceId, String accessToken) {
         if (accessToken == null || accessToken.isBlank()) {
+            System.err.println("[QRCodeServiceArij] Access token vide pour ordonnance #" + ordonnanceId);
             return null;
         }
         String scanUrl = BASE_URL + "/ordonnance/scan/" + accessToken;
+        System.out.println("[QRCodeServiceArij] Generation QR Code pour URL: " + scanUrl);
         return genererQRCodeImage(scanUrl, DEFAULT_SIZE);
     }
 

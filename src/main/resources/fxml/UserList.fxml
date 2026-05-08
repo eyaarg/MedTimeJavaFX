@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -29,28 +28,18 @@
         <padding><Insets top="18" right="32" bottom="24" left="32"/></padding>
         <content>
             <VBox spacing="12">
-                <HBox alignment="CENTER_LEFT" spacing="10">
+                <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color:white; -fx-background-radius:10; -fx-padding:14; -fx-border-color:#e5e7eb; -fx-border-radius:10;">
                     <Label text="Rechercher" styleClass="filter-label"/>
-                    <TextField fx:id="searchField" promptText="Username, email, role..." styleClass="search-field" HBox.hgrow="ALWAYS"/>
+                    <TextField fx:id="searchField" promptText="Username, email, role..." styleClass="search-field" prefWidth="360"/>
+                    <Label text="Role" styleClass="filter-label"/>
+                    <ComboBox fx:id="roleFilterComboBox" prefWidth="140" styleClass="filter-combo"/>
+                    <Label text="Statut" styleClass="filter-label"/>
+                    <ComboBox fx:id="statusFilterComboBox" prefWidth="140" styleClass="filter-combo"/>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Label fx:id="resultCountLabel" text="0 user(s)" styleClass="muted"/>
                 </HBox>
 
-                <TableView fx:id="usersTable" prefHeight="520">
-                    <columns>
-                        <TableColumn fx:id="usernameColumn" text="Username" prefWidth="170"/>
-                        <TableColumn fx:id="emailColumn" text="Email" prefWidth="230"/>
-                        <TableColumn fx:id="phoneColumn" text="Telephone" prefWidth="130"/>
-                        <TableColumn fx:id="roleColumn" text="Role" prefWidth="140"/>
-                        <TableColumn fx:id="activeColumn" text="Actif" prefWidth="90"/>
-                        <TableColumn fx:id="verifiedColumn" text="Verifie" prefWidth="90"/>
-                        <TableColumn fx:id="createdAtColumn" text="Cree le" prefWidth="160"/>
-                        <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="120"/>
-                    </columns>
-                    <columnResizePolicy>
-                        <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY"/>
-                    </columnResizePolicy>
-                </TableView>
+                <VBox fx:id="cardsContainer" spacing="12"/>
             </VBox>
         </content>
     </ScrollPane>

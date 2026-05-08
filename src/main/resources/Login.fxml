@@ -12,9 +12,9 @@
             <Pane HBox.hgrow="ALWAYS" />
             <HBox spacing="25">
                 <Button style="-fx-background-color: transparent; -fx-text-fill: #1e4468;" text="Accueil" />
-                <Button style="-fx-background-color: transparent; -fx-text-fill: #1e4468;" text="├Ç propos" />
+                <Button style="-fx-background-color: transparent; -fx-text-fill: #1e4468;" text="À propos" />
                 <Button style="-fx-background-color: transparent; -fx-text-fill: #1e4468;" text="Services" />
-                <Button style="-fx-background-color: transparent; -fx-text-fill: #1e4468;" text="M├®decins" />
+                <Button style="-fx-background-color: transparent; -fx-text-fill: #1e4468;" text="Médecins" />
                 <Button style="-fx-background-color: transparent; -fx-text-fill: #1e4468;" text="Contact" />
             </HBox>
         </HBox>
@@ -26,7 +26,7 @@
                 <VBox alignment="CENTER" prefWidth="420" spacing="12" style="-fx-background-color: white; -fx-padding: 40 60;                              -fx-background-radius: 12;                              -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 12, 0, 0, 4);">
 
                     <Text style="-fx-font-size: 26px; -fx-font-weight: bold;" text="Welcome Back" />
-                    <Text fill="#777" text="Connectez-vous ├á votre compte pour continuer" />
+                    <Text fill="#777" text="Connectez-vous à votre compte pour continuer" />
 
                     <Label style="-fx-font-weight: bold; -fx-font-size: 12px;" text="Username" />
                     <TextField fx:id="usernameField" maxWidth="Infinity" promptText="Write your username" style="-fx-background-color: #edf2ff; -fx-background-radius: 25; -fx-padding: 8 15;" />

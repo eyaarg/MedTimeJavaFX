@@ -26,7 +26,9 @@ import javafx.stage.Stage;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.Normalizer;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -35,6 +37,8 @@ public class ListeProduitController implements Initializable {
     @FXML private FlowPane cardsContainer;
     @FXML private TextField txtSearch;
     @FXML private Label lblStatus;
+    @FXML private Button btnAjouter;
+    @FXML private Button btnAnalyse;
 
     private ServiceProduit serviceProduit;
     private Connection connection;
@@ -47,6 +51,7 @@ public class ListeProduitController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         connectToDatabase();
+        configureRoleUi();
         try {
             loadProduits();
         } catch (SQLException e) {
@@ -57,14 +62,37 @@ public class ListeProduitController implements Initializable {
 
     @FXML
     private void onSmartSearch() {
-        String query = txtSearch.getText();
+        if (produitsList == null || produitsList.isEmpty()) {
+            showAlert("Aucun produit disponible pour l'analyse.");
+            return;
+        }
 
-        if (query == null || query.trim().isEmpty()) {
-            displayCards(produitsList);
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Analyse produit");
+        dialog.setHeaderText("Décrire le symptôme");
+        dialog.setContentText("Symptôme :");
+        dialog.getEditor().setPromptText("Exemple : j'ai mal à la tête");
+
+        String currentSearch = txtSearch.getText();
+        if (currentSearch != null && !currentSearch.isBlank()) {
+            dialog.getEditor().setText(currentSearch.trim());
+        }
+
+        Optional<String> input = dialog.showAndWait();
+        if (input.isEmpty()) {
+            return;
+        }
+
+        String query = input.get().trim();
+        if (query.isEmpty()) {
+            showAlert("Veuillez saisir un symptôme.");
             return;
         }
 
         lblStatus.setText("Analyse IA en cours...");
+        if (btnAnalyse != null) {
+            btnAnalyse.setDisable(true);
+        }
 
         new Thread(() -> {
             try {
@@ -75,22 +103,40 @@ public class ListeProduitController implements Initializable {
                 String suggestedName = aiService.askGroq(query, productNames);
 
                 Platform.runLater(() -> {
-                    if (suggestedName != null && !suggestedName.equalsIgnoreCase("NONE")) {
-                        List<Produit> smartResult = produitsList.stream()
-                                .filter(p -> p.getNom().equalsIgnoreCase(suggestedName))
-                                .toList();
+                    if (btnAnalyse != null) {
+                        btnAnalyse.setDisable(false);
+                    }
+
+                    List<Produit> smartResult = findSuggestedProducts(suggestedName);
+                    if (!smartResult.isEmpty()) {
                         displayCards(smartResult);
-                        lblStatus.setText("IA a trouve : " + suggestedName);
+                        lblStatus.setText("Produit conseillé : " + smartResult.get(0).getNom());
+                        showAlert("Produit conseillé : " + smartResult.get(0).getNom());
                     } else {
                         displayCards(List.of());
-                        lblStatus.setText("IA n'a rien trouve pour : " + query);
+                        lblStatus.setText("Aucun produit conseillé pour : " + query);
+                        showAlert("Aucun produit adapté n'a été trouvé dans la liste.");
                     }
                 });
 
             } catch (Exception e) {
-                Platform.runLater(() -> lblStatus.setText("Erreur IA : " + e.getMessage()));
+                Platform.runLater(() -> {
+                    if (btnAnalyse != null) {
+                        btnAnalyse.setDisable(false);
+                    }
+                    lblStatus.setText("Erreur analyse : " + e.getMessage());
+                    showAlert("Erreur analyse : " + e.getMessage());
+                });
             }
         }).start();
+    }
+
+    private void configureRoleUi() {
+        boolean patient = isPatient();
+        if (btnAjouter != null) {
+            btnAjouter.setVisible(!patient);
+            btnAjouter.setManaged(!patient);
+        }
     }
 
     private void connectToDatabase() {
@@ -215,15 +261,18 @@ public class ListeProduitController implements Initializable {
             try { handleSupprimer(p); } catch (SQLException ex) { throw new RuntimeException(ex); }
         });
 
-        Button favoriBtn = new Button(serviceFavoris.estFavori(p) ? "❤️" : "🤍");
-        favoriBtn.setStyle("-fx-background-color: transparent; -fx-font-size: 14px; -fx-padding: 5 6;");
+        Button favoriBtn = new Button(serviceFavoris.estFavori(p) ? "♥" : "♡");
+        favoriBtn.setTooltip(new Tooltip("Favori"));
+        favoriBtn.setStyle(favoriteButtonStyle(serviceFavoris.estFavori(p)));
         favoriBtn.setOnAction(e -> {
             if (serviceFavoris.estFavori(p)) {
                 serviceFavoris.supprimerFavori(p);
-                favoriBtn.setText("🤍");
+                favoriBtn.setText("♡");
+                favoriBtn.setStyle(favoriteButtonStyle(false));
             } else {
                 serviceFavoris.ajouterFavori(p);
-                favoriBtn.setText("❤️");
+                favoriBtn.setText("♥");
+                favoriBtn.setStyle(favoriteButtonStyle(true));
             }
         });
 
@@ -232,10 +281,29 @@ public class ListeProduitController implements Initializable {
         panierBtn.setStyle("-fx-background-color: #eff6ff; -fx-text-fill: #1d4ed8; -fx-border-color: #bfdbfe; -fx-border-width: 1; -fx-border-radius: 16; -fx-font-size: 12px; -fx-background-radius: 16; -fx-padding: 5 10;");
         panierBtn.setOnAction(e -> handleAjouterAuPanier(p));
 
-        buttonsBox.getChildren().addAll(detailsBtn, modifierBtn, supprimerBtn, favoriBtn, panierBtn);
+        if (isPatient()) {
+            buttonsBox.getChildren().addAll(detailsBtn, favoriBtn, panierBtn);
+        } else {
+            buttonsBox.getChildren().addAll(detailsBtn, modifierBtn, supprimerBtn, favoriBtn, panierBtn);
+        }
         card.getChildren().addAll(nomLabel, prixLabel, stockBox, dispoLabel, buttonsBox);
 
         return card;
+    }
+
+    private String favoriteButtonStyle(boolean selected) {
+        String textColor = selected ? "#dc2626" : "#1d4ed8";
+        String background = selected ? "#fff1f2" : "#eff6ff";
+        String border = selected ? "#fecdd3" : "#bfdbfe";
+        return "-fx-background-color: " + background + "; " +
+                "-fx-text-fill: " + textColor + "; " +
+                "-fx-border-color: " + border + "; " +
+                "-fx-border-width: 1; " +
+                "-fx-border-radius: 16; " +
+                "-fx-font-size: 15px; " +
+                "-fx-font-weight: bold; " +
+                "-fx-background-radius: 16; " +
+                "-fx-padding: 4 10;";
     }
 
     private Label makeIconLabel(Produit p) {
@@ -278,6 +346,46 @@ public class ListeProduitController implements Initializable {
 
     private void updateStatus(int count) {
         lblStatus.setText(count + " produit(s)");
+    }
+
+    private List<Produit> findSuggestedProducts(String suggestedName) {
+        if (suggestedName == null || suggestedName.isBlank() || suggestedName.equalsIgnoreCase("NONE")) {
+            return List.of();
+        }
+
+        String normalizedSuggestion = normalizeProductName(suggestedName);
+        List<Produit> exactMatches = produitsList.stream()
+                .filter(p -> normalizeProductName(p.getNom()).equals(normalizedSuggestion))
+                .toList();
+        if (!exactMatches.isEmpty()) {
+            return exactMatches;
+        }
+
+        return produitsList.stream()
+                .filter(p -> {
+                    String normalizedProduct = normalizeProductName(p.getNom());
+                    return normalizedSuggestion.contains(normalizedProduct)
+                            || normalizedProduct.contains(normalizedSuggestion);
+                })
+                .toList();
+    }
+
+    private String normalizeProductName(String value) {
+        if (value == null) {
+            return "";
+        }
+        String normalized = Normalizer.normalize(value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .replaceAll("[^A-Za-z0-9 ]", " ")
+                .replaceAll("\\s+", " ")
+                .trim()
+                .toLowerCase(Locale.ROOT);
+        return normalized;
+    }
+
+    private boolean isPatient() {
+        String role = UserSession.getCurrentRole();
+        return role == null || role.equalsIgnoreCase("PATIENT") || role.equalsIgnoreCase("ROLE_PATIENT");
     }
 
     @FXML

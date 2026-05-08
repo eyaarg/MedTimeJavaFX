@@ -20,6 +20,7 @@ import javafx.scene.text.FontWeight;
 
 import java.awt.Desktop;
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -28,36 +29,36 @@ import java.util.stream.Collectors;
 
 public class UserListController {
 
-    // ÔöÇÔöÇ Patterns ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ── Patterns ──────────────────────────────────────────────────────────────
     private static final Pattern EMAIL_PATTERN    = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
     private static final Pattern PHONE_PATTERN    = Pattern.compile("^(\\d{8}|\\+[1-9]\\d{6,14})$");
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).+$");
 
-    // ÔöÇÔöÇ FXML bindings (barre du haut ÔÇö d├®finis dans UserList.fxml) ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ── FXML bindings (barre du haut — définis dans UserList.fxml) ────────────
     @FXML private TextField        searchField;
     @FXML private ComboBox<String> roleFilterComboBox;
     @FXML private ComboBox<String> statusFilterComboBox;
     @FXML private Label            resultCountLabel;
     @FXML private VBox             cardsContainer;   // remplace usersTable
 
-    // ÔöÇÔöÇ Services ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ── Services ──────────────────────────────────────────────────────────────
     private final ServiceUser          serviceUser          = new ServiceUser();
     private final ServiceDoctor        serviceDoctor        = new ServiceDoctor();
     private final ServiceDoctorDocument serviceDoctorDoc    = new ServiceDoctorDocument();
 
-    // ÔöÇÔöÇ Donn├®es ma├«tres ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ── Données maîtres ───────────────────────────────────────────────────────
     private List<User>   masterData   = new ArrayList<>();
     private List<Doctor> doctorData   = new ArrayList<>();
 
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
     // INIT
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
     @FXML
     private void initialize() {
         roleFilterComboBox.getItems().setAll("Tous", "ADMIN", "DOCTOR", "PATIENT");
         roleFilterComboBox.setValue("Tous");
 
-        statusFilterComboBox.getItems().setAll("Tous", "Actif", "En attente", "Bloqu├®");
+        statusFilterComboBox.getItems().setAll("Tous", "Actif", "En attente", "Bloqué");
         statusFilterComboBox.setValue("Tous");
 
         searchField.textProperty().addListener((o, ov, nv) -> rebuildCards());
@@ -67,9 +68,9 @@ public class UserListController {
         refreshUsers();
     }
 
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    // CHARGEMENT DONN├ëES
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
+    // CHARGEMENT DONNÉES
+    // ─────────────────────────────────────────────────────────────────────────
     @FXML
     private void refreshUsers() {
         try {
@@ -83,16 +84,16 @@ public class UserListController {
         rebuildCards();
     }
 
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
     // REBUILD CARTES
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
     private void rebuildCards() {
         cardsContainer.getChildren().clear();
 
         List<User> filtered = applyFilters(masterData);
         resultCountLabel.setText(filtered.size() + " utilisateur(s)");
 
-        // S├®parer en 3 groupes
+        // Séparer en 3 groupes
         List<User> pending  = new ArrayList<>();
         List<User> active   = new ArrayList<>();
         List<User> blocked  = new ArrayList<>();
@@ -104,29 +105,29 @@ public class UserListController {
         }
 
         if (!pending.isEmpty()) {
-            cardsContainer.getChildren().add(sectionLabel("ÔÅ│  M├®decins en attente de validation", "#E65100"));
+            cardsContainer.getChildren().add(sectionLabel("⏳  Médecins en attente de validation", "#E65100"));
             for (User u : pending) cardsContainer.getChildren().add(buildCard(u));
         }
         if (!active.isEmpty()) {
-            cardsContainer.getChildren().add(sectionLabel("Ô£à  Utilisateurs actifs", "#2E7D32"));
+            cardsContainer.getChildren().add(sectionLabel("✅  Utilisateurs actifs", "#2E7D32"));
             for (User u : active) cardsContainer.getChildren().add(buildCard(u));
         }
         if (!blocked.isEmpty()) {
-            cardsContainer.getChildren().add(sectionLabel("­ƒöÆ  Comptes bloqu├®s", "#C62828"));
+            cardsContainer.getChildren().add(sectionLabel("🔒  Comptes bloqués", "#C62828"));
             for (User u : blocked) cardsContainer.getChildren().add(buildCard(u));
         }
 
         if (filtered.isEmpty()) {
-            Label empty = new Label("Aucun utilisateur trouv├®.");
+            Label empty = new Label("Aucun utilisateur trouvé.");
             empty.setStyle("-fx-text-fill:#9E9E9E; -fx-font-size:14px;");
             empty.setPadding(new Insets(30));
             cardsContainer.getChildren().add(empty);
         }
     }
 
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
     // CONSTRUCTION D'UNE CARTE
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
     private HBox buildCard(User user) {
         HBox card = new HBox(16);
         card.setPadding(new Insets(14, 18, 14, 18));
@@ -156,8 +157,8 @@ public class UserListController {
         emailLabel.setStyle("-fx-text-fill: #757575; -fx-font-size: 12px;");
 
         String phone = user.getPhoneNumber() != null && !user.getPhoneNumber().isBlank()
-                ? user.getPhoneNumber() : "ÔÇö";
-        Label phoneLabel = new Label("­ƒô× " + phone);
+                ? user.getPhoneNumber() : "—";
+        Label phoneLabel = new Label("📞 " + phone);
         phoneLabel.setStyle("-fx-text-fill: #9E9E9E; -fx-font-size: 11px;");
 
         HBox badges = new HBox(6);
@@ -175,9 +176,9 @@ public class UserListController {
         return card;
     }
 
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
     // AVATAR
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
     private StackPane buildAvatar(User user) {
         String initials = initials(user.getUsername());
         String roleKey  = primaryRoleKey(user);
@@ -200,14 +201,14 @@ public class UserListController {
         return sp;
     }
 
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
     // BADGES
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
     private Label roleBadge(User user) {
         String roleKey = primaryRoleKey(user);
         String text; String bg; String fg;
         switch (roleKey) {
-            case "DOCTOR" -> { text = "M├ëDECIN"; bg = "#E6F1FB"; fg = "#0C447C"; }
+            case "DOCTOR" -> { text = "MÉDECIN"; bg = "#E6F1FB"; fg = "#0C447C"; }
             case "ADMIN"  -> { text = "ADMIN";   bg = "#EEEDFE"; fg = "#3C3489"; }
             default       -> { text = "PATIENT"; bg = "#E1F5EE"; fg = "#085041"; }
         }
@@ -215,9 +216,9 @@ public class UserListController {
     }
 
     private Label statusBadge(User user) {
-        if (isBlocked(user))      return badge("Bloqu├®",     "#FCEBEB", "#791F1F");
+        if (isBlocked(user))      return badge("Bloqué",     "#FCEBEB", "#791F1F");
         if (isPending(user))      return badge("En attente", "#FAEEDA", "#633806");
-        if (!user.isVerified())   return badge("Non v├®rifi├®","#FFF8E1", "#E65100");
+        if (!user.isVerified())   return badge("Non vérifié","#FFF8E1", "#E65100");
         return badge("Actif", "#EAF3DE", "#27500A");
     }
 
@@ -234,9 +235,9 @@ public class UserListController {
         return l;
     }
 
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
     // BOUTONS D'ACTION
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
     private HBox buildActions(User user) {
         HBox box = new HBox(6);
         box.setAlignment(Pos.CENTER_RIGHT);
@@ -248,18 +249,18 @@ public class UserListController {
         boolean isCertified = isDoctor && isDoctorCertified(user);
 
         if (isDoctor && isPending) {
-            // M├®decin en attente
+            // Médecin en attente
             box.getChildren().add(actionBtn("Approuver", "#EAF3DE", "#27500A", e -> approveDoctor(user)));
             box.getChildren().add(actionBtn("Refuser",   "#FCEBEB", "#791F1F", e -> rejectDoctor(user)));
         } else if (isDoctor && isCertified) {
-            // M├®decin actif certifi├®
-            box.getChildren().add(actionBtn("R├®voquer",  "#FAEEDA", "#633806", e -> revokeDoctor(user)));
+            // Médecin actif certifié
+            box.getChildren().add(actionBtn("Révoquer",  "#FAEEDA", "#633806", e -> revokeDoctor(user)));
         } else if (isBlocked) {
-            // Compte bloqu├®
-            box.getChildren().add(actionBtn("D├®bloquer", "#E6F1FB", "#0C447C", e -> unlockUser(user)));
+            // Compte bloqué
+            box.getChildren().add(actionBtn("Débloquer", "#E6F1FB", "#0C447C", e -> unlockUser(user)));
         }
 
-        // Voir PDF pour TOUS les m├®decins (actifs ET en attente)
+        // Voir PDF pour TOUS les médecins (actifs ET en attente)
         if (isDoctor) {
             box.getChildren().add(pdfBtn(user));
         }
@@ -271,7 +272,7 @@ public class UserListController {
         return box;
     }
 
-    /** Bouton "Voir PDF" avec le style demand├® */
+    /** Bouton "Voir PDF" avec le style demandé */
     private Button pdfBtn(User user) {
         Button b = new Button("Voir PDF");
         b.setStyle(
@@ -306,9 +307,9 @@ public class UserListController {
         return b;
     }
 
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
     // SECTION LABEL
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
     private Label sectionLabel(String text, String color) {
         Label l = new Label(text);
         l.setFont(Font.font("Arial", FontWeight.BOLD, 13));
@@ -316,24 +317,24 @@ public class UserListController {
         return l;
     }
 
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    // ACTIONS M├ëTIER
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
+    // ACTIONS MÉTIER
+    // ─────────────────────────────────────────────────────────────────────────
 
     private void viewPdf(User user) {
-        // 1. R├®cup├®rer le doctor_id via SELECT id FROM doctors WHERE user_id = ?
+        // 1. Récupérer le doctor_id via SELECT id FROM doctors WHERE user_id = ?
         int doctorId = getDoctorIdByUserId(user.getId());
         if (doctorId <= 0) {
-            showError("Erreur", "M├®decin introuvable en base de donn├®es.");
+            showError("Erreur", "Médecin introuvable en base de données.");
             return;
         }
 
-        // 2. R├®cup├®rer le dernier document
+        // 2. Récupérer le dernier document
         Doctor_documents dd;
         try {
             dd = serviceDoctorDoc.getLatestDocumentByDoctorId(doctorId);
         } catch (SQLException e) {
-            showError("Erreur", "Erreur lors de la r├®cup├®ration du document : " + e.getMessage());
+            showError("Erreur", "Erreur lors de la récupération du document : " + e.getMessage());
             return;
         }
 
@@ -341,36 +342,39 @@ public class UserListController {
             Alert a = new Alert(Alert.AlertType.INFORMATION);
             a.setTitle("Aucun document");
             a.setHeaderText(null);
-            a.setContentText("Ce m├®decin n'a pas encore upload├® de document.");
+            a.setContentText("Ce médecin n'a pas encore uploadé de document.");
             a.showAndWait();
             return;
         }
 
         // 3. Construire le chemin
-        File pdfFile = new File(dd.getFolder_name() + "/" + dd.getStored_name());
-        if (!pdfFile.exists()) {
-            showError("Fichier introuvable", "Fichier PDF introuvable sur le serveur.");
+        File pdfFile;
+        try {
+            pdfFile = serviceDoctorDoc.getOpenableDocumentFile(dd);
+        } catch (IOException e) {
+            showError("Fichier introuvable", "Fichier PDF introuvable sur le serveur : " + e.getMessage());
             return;
         }
         if (!Desktop.isDesktopSupported()) {
-            showError("Non support├®", "Impossible d'ouvrir le PDF sur ce syst├¿me.");
+            showError("Non supporté", "Impossible d'ouvrir le PDF sur ce système.");
             return;
         }
 
-        // 4. Copier avec extension .pdf si elle manque, puis ouvrir via browse()
         try {
-            File fileToOpen = pdfFile;
-            if (!pdfFile.getName().toLowerCase().endsWith(".pdf")) {
-                fileToOpen = new File(pdfFile.getParent(), pdfFile.getName() + ".pdf");
-                java.nio.file.Files.copy(
-                    pdfFile.toPath(),
-                    fileToOpen.toPath(),
-                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
-                );
-            }
-            Desktop.getDesktop().browse(fileToOpen.toURI());
-        } catch (Exception e) {
+            openPdfFile(pdfFile);
+        } catch (IOException e) {
             showError("Erreur", "Impossible d'ouvrir le fichier PDF : " + e.getMessage());
+        }
+    }
+
+    private void openPdfFile(File fileToOpen) throws IOException {
+        Desktop desktop = Desktop.getDesktop();
+        if (desktop.isSupported(Desktop.Action.OPEN)) {
+            desktop.open(fileToOpen);
+        } else if (desktop.isSupported(Desktop.Action.BROWSE)) {
+            desktop.browse(fileToOpen.toURI());
+        } else {
+            throw new IOException("Ouverture de fichier non supportee sur ce systeme.");
         }
     }
 
@@ -391,14 +395,14 @@ public class UserListController {
 
     private void approveDoctor(User user) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Approuver le m├®decin");
+        confirm.setTitle("Approuver le médecin");
         confirm.setHeaderText(null);
         confirm.setContentText("Approuver le compte de " + safe(user.getUsername()) + " ?");
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
         try {
             serviceDoctor.approveDoctorCertification(user.getId());
             refreshUsers();
-            showInfo("Succ├¿s", "M├®decin approuv├®. Un email de confirmation a ├®t├® envoy├®.");
+            showInfo("Succès", "Médecin approuvé. Un email de confirmation a été envoyé.");
         } catch (SQLException e) {
             showError("Erreur", "Impossible d'approuver : " + e.getMessage());
         }
@@ -406,7 +410,7 @@ public class UserListController {
 
     private void rejectDoctor(User user) {
         Dialog<String> dialog = new Dialog<>();
-        dialog.setTitle("Refuser le m├®decin");
+        dialog.setTitle("Refuser le médecin");
         dialog.setHeaderText("Motif du refus pour " + safe(user.getUsername()));
         TextArea reason = new TextArea();
         reason.setPromptText("Saisissez le motif...");
@@ -420,7 +424,7 @@ public class UserListController {
         try {
             serviceDoctor.rejectDoctorCertification(user.getId(), motif);
             refreshUsers();
-            showInfo("Refus enregistr├®", "Le m├®decin a ├®t├® notifi├® par email.");
+            showInfo("Refus enregistré", "Le médecin a été notifié par email.");
         } catch (SQLException e) {
             showError("Erreur", "Impossible de refuser : " + e.getMessage());
         }
@@ -428,12 +432,12 @@ public class UserListController {
 
     private void revokeDoctor(User user) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("R├®voquer le m├®decin");
+        confirm.setTitle("Révoquer le médecin");
         confirm.setHeaderText(null);
-        confirm.setContentText("R├®voquer la certification de " + safe(user.getUsername()) + " ?");
+        confirm.setContentText("Révoquer la certification de " + safe(user.getUsername()) + " ?");
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
         try {
-            serviceDoctor.rejectDoctorCertification(user.getId(), "Certification r├®voqu├®e par l'administrateur.");
+            serviceDoctor.rejectDoctorCertification(user.getId(), "Certification révoquée par l'administrateur.");
             // Remettre is_active=false et is_certified=false
             try (java.sql.Connection conn = esprit.fx.utils.MyDB.getInstance().getConnection()) {
                 java.sql.PreparedStatement ps = conn.prepareStatement(
@@ -447,21 +451,21 @@ public class UserListController {
             }
             refreshUsers();
         } catch (Exception e) {
-            showError("Erreur", "Impossible de r├®voquer : " + e.getMessage());
+            showError("Erreur", "Impossible de révoquer : " + e.getMessage());
         }
     }
 
     private void unlockUser(User user) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("D├®bloquer le compte");
+        confirm.setTitle("Débloquer le compte");
         confirm.setHeaderText(null);
-        confirm.setContentText("D├®bloquer " + safe(user.getUsername()) + " ?");
+        confirm.setContentText("Débloquer " + safe(user.getUsername()) + " ?");
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
         try {
             serviceUser.unlockAccount(user.getId());
             refreshUsers();
         } catch (SQLException e) {
-            showError("D├®blocage impossible", e.getMessage());
+            showError("Déblocage impossible", e.getMessage());
         }
     }
 
@@ -469,7 +473,7 @@ public class UserListController {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Supprimer utilisateur");
         confirm.setHeaderText("Supprimer " + safe(user.getUsername()) + " ?");
-        confirm.setContentText("Cette action est irr├®versible.");
+        confirm.setContentText("Cette action est irréversible.");
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
         try {
             serviceUser.supprimer(user.getId());
@@ -479,9 +483,9 @@ public class UserListController {
         }
     }
 
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    // DIALOG MODIFIER (logique existante conserv├®e)
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
+    // DIALOG MODIFIER (logique existante conservée)
+    // ─────────────────────────────────────────────────────────────────────────
 
     @FXML
     private void openAddUserDialog() {
@@ -548,14 +552,14 @@ public class UserListController {
         if (defRole != null && roleBox.getItems().contains(defRole)) roleBox.setValue(defRole);
         else if (!roleBox.getItems().isEmpty()) roleBox.setValue(roleBox.getItems().get(0));
         CheckBox activeBox   = new CheckBox("Actif");   activeBox.setSelected(existing == null || existing.isActive());
-        CheckBox verifiedBox = new CheckBox("V├®rifi├®"); verifiedBox.setSelected(existing != null && existing.isVerified());
+        CheckBox verifiedBox = new CheckBox("Vérifié"); verifiedBox.setSelected(existing != null && existing.isVerified());
 
         javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
         grid.setHgap(10); grid.setVgap(10); grid.setPadding(new Insets(10));
         grid.add(new Label("Username"),  0, 0); grid.add(usernameField, 1, 0);
         grid.add(new Label("Email"),     0, 1); grid.add(emailField,    1, 1);
-        grid.add(new Label("T├®l├®phone"), 0, 2); grid.add(phoneField,    1, 2);
-        grid.add(new Label("R├┤le"),      0, 3); grid.add(roleBox,       1, 3);
+        grid.add(new Label("Téléphone"), 0, 2); grid.add(phoneField,    1, 2);
+        grid.add(new Label("Rôle"),      0, 3); grid.add(roleBox,       1, 3);
         grid.add(new Label("Password"),  0, 4); grid.add(pwField,       1, 4);
         grid.add(activeBox,   1, 5);
         grid.add(verifiedBox, 1, 6);
@@ -567,13 +571,13 @@ public class UserListController {
             String em = emailField.getText().trim();
             String ph = phoneField.getText().trim();
             String pw = pwField.getText().trim();
-            if (u.length() < 3 || u.length() > 80 || !u.matches("^[\\p{L}0-9_.\\-]+$")) { showError("Validation", "Username : 3-80 caract├¿res (lettres, chiffres, point, tiret, underscore)."); ev.consume(); return; }
+            if (u.length() < 3 || u.length() > 80 || !u.matches("^[\\p{L}0-9_.\\-]+$")) { showError("Validation", "Username : 3-80 caractères (lettres, chiffres, point, tiret, underscore)."); ev.consume(); return; }
             if (!EMAIL_PATTERN.matcher(em).matches())                    { showError("Validation", "Email invalide."); ev.consume(); return; }
-            if (!PHONE_PATTERN.matcher(ph).matches())                    { showError("Validation", "T├®l├®phone : 8 chiffres locaux ou format international (ex: +21629110800)."); ev.consume(); return; }
+            if (!PHONE_PATTERN.matcher(ph).matches())                    { showError("Validation", "Téléphone : 8 chiffres locaux ou format international (ex: +21629110800)."); ev.consume(); return; }
             if (existing == null && pw.isEmpty())                        { showError("Validation", "Mot de passe obligatoire."); ev.consume(); return; }
-            if (!pw.isEmpty() && pw.length() < 8)                        { showError("Validation", "Mot de passe : 8 caract├¿res minimum."); ev.consume(); return; }
+            if (!pw.isEmpty() && pw.length() < 8)                        { showError("Validation", "Mot de passe : 8 caractères minimum."); ev.consume(); return; }
             if (!pw.isEmpty() && !PASSWORD_PATTERN.matcher(pw).matches()){ showError("Validation", "Mot de passe : lettres + chiffres."); ev.consume(); return; }
-            if (roleBox.getValue() == null || roleBox.getValue().isBlank()){ showError("Validation", "S├®lectionnez un r├┤le."); ev.consume(); }
+            if (roleBox.getValue() == null || roleBox.getValue().isBlank()){ showError("Validation", "Sélectionnez un rôle."); ev.consume(); }
         });
         dialog.setResultConverter(b -> b != saveType ? null :
             new UserFormData(usernameField.getText().trim(), emailField.getText().trim(),
@@ -582,9 +586,9 @@ public class UserListController {
         return dialog.showAndWait();
     }
 
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
     // FILTRES
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
 
     private List<User> applyFilters(List<User> all) {
         String q      = searchField.getText() == null ? "" : searchField.getText().trim().toLowerCase(Locale.ROOT);
@@ -614,17 +618,17 @@ public class UserListController {
         return switch (selected) {
             case "Actif"       -> u.isActive() && u.isVerified() && !isBlocked(u);
             case "En attente"  -> isPending(u);
-            case "Bloqu├®"      -> isBlocked(u);
+            case "Bloqué"      -> isBlocked(u);
             default            -> true;
         };
     }
 
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    // HELPERS ├ëTAT
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
+    // HELPERS ÉTAT
+    // ─────────────────────────────────────────────────────────────────────────
 
     private boolean isPending(User u) {
-        // M├®decin en attente : is_verified=true, is_active=false, is_certified=false
+        // Médecin en attente : is_verified=true, is_active=false, is_certified=false
         if (!"DOCTOR".equals(primaryRoleKey(u))) return false;
         if (u.isActive()) return false;
         if (!u.isVerified()) return false;
@@ -633,7 +637,7 @@ public class UserListController {
     }
 
     private boolean isBlocked(User u) {
-        // Bloqu├® : is_active=false ET failed_attempts >= 5 (pas un m├®decin en attente)
+        // Bloqué : is_active=false ET failed_attempts >= 5 (pas un médecin en attente)
         return !u.isActive() && u.getFailedAttempts() >= 5;
     }
 
@@ -648,9 +652,9 @@ public class UserListController {
             .findFirst().orElse(null);
     }
 
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    // HELPERS R├öLE / TEXTE
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
+    // HELPERS RÔLE / TEXTE
+    // ─────────────────────────────────────────────────────────────────────────
 
     private String primaryRoleKey(User u) {
         if (u.getRoles() == null || u.getRoles().isEmpty()) return "PATIENT";
@@ -696,7 +700,7 @@ public class UserListController {
     private void showError(String title, String msg) {
         Alert a = new Alert(Alert.AlertType.ERROR);
         a.setTitle(title); a.setHeaderText(null);
-        a.setContentText(msg == null || msg.isBlank() ? "Op├®ration invalide." : msg);
+        a.setContentText(msg == null || msg.isBlank() ? "Opération invalide." : msg);
         a.showAndWait();
     }
 
@@ -707,9 +711,9 @@ public class UserListController {
         a.showAndWait();
     }
 
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    // UserFormData (inchang├®)
-    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─────────────────────────────────────────────────────────────────────────
+    // UserFormData (inchangé)
+    // ─────────────────────────────────────────────────────────────────────────
 
     private static class UserFormData {
         final String username, email, phone, password, roleName;

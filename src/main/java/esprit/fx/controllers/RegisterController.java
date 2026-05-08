@@ -2,6 +2,7 @@ package esprit.fx.controllers;
 
 import esprit.fx.entities.Role;
 import esprit.fx.entities.User;
+import esprit.fx.services.ServicePatient;
 import esprit.fx.services.ServiceUser;
 import esprit.fx.utils.UserSession;
 import javafx.fxml.FXML;
@@ -53,8 +54,9 @@ public class RegisterController {
     private Text signInLink;
 
     private final ServiceUser serviceUser = new ServiceUser();
+    private final ServicePatient servicePatient = new ServicePatient();
 
-    // Initialisation (optionnel, car les items sont d├®j├á dans le FXML)
+    // Initialisation (optionnel, car les items sont déjà dans le FXML)
     @FXML
     public void initialize() {
         roleComboBox.setValue("Patient");
@@ -69,6 +71,7 @@ public class RegisterController {
         String phone = phoneField.getText();
         String password = passwordField.getText();
         String role = roleComboBox.getValue();
+        String region = regionComboBox.getValue();
         boolean termsAccepted = termsCheckBox.isSelected();
 
         if (username == null || username.isBlank()) {
@@ -92,7 +95,7 @@ public class RegisterController {
         }
 
         if (!PHONE_PATTERN.matcher(phone.trim()).matches()) {
-            showAlert("Erreur", "Le num├®ro de t├®l├®phone doit contenir 8 chiffres ou ├¬tre au format international (ex: +21629110800).");
+            showAlert("Erreur", "Le numéro de téléphone doit contenir 8 chiffres ou être au format international (ex: +21629110800).");
             return;
         }
 
@@ -102,7 +105,7 @@ public class RegisterController {
         }
 
         if (password.length() < 8) {
-            showAlert("Erreur", "Le mot de passe doit contenir au moins 8 caract├¿res.");
+            showAlert("Erreur", "Le mot de passe doit contenir au moins 8 caractères.");
             return;
         }
 
@@ -113,12 +116,12 @@ public class RegisterController {
 
         if (username.trim().length() < 3 || username.trim().length() > 80
                 || !username.trim().matches("^[\\p{L}0-9_.\\-]+$")) {
-            showAlert("Erreur", "Le username doit contenir entre 3 et 80 caract├¿res (lettres, chiffres, point, tiret, underscore).");
+            showAlert("Erreur", "Le username doit contenir entre 3 et 80 caractères (lettres, chiffres, point, tiret, underscore).");
             return;
         }
 
         if (role == null) {
-            showAlert("Erreur", "Veuillez s├®lectionner un r├┤le");
+            showAlert("Erreur", "Veuillez sélectionner un rôle");
             return;
         }
 
@@ -141,11 +144,11 @@ public class RegisterController {
                 userToCreate.setFailedAttempts(0);
 
                 User createdUser = serviceUser.registerUser(userToCreate, role);
-                DoctorRegistrationController.showAsStage(createdUser);
+                DoctorRegistrationController.showAsStage(createdUser, normalizeRegion(region));
                 Stage stage = (Stage) createAccountBtn.getScene().getWindow();
                 stage.close();
             } catch (SQLException e) {
-                showAlert("Erreur", "Impossible de cr├®er le compte : " + e.getMessage());
+                showAlert("Erreur", "Impossible de créer le compte : " + e.getMessage());
             } catch (Exception e) {
                 showAlert("Erreur", "Une erreur inattendue est survenue : " + e.getMessage());
             }
@@ -165,15 +168,16 @@ public class RegisterController {
             userToCreate.setFailedAttempts(0);
 
             User createdUser = serviceUser.registerUser(userToCreate, role);
+            servicePatient.ensurePatientProfile(createdUser.getId(), region);
 
-            showInfo("Inscription r├®ussie",
-                    "Un email de v├®rification a ├®t├® envoy├® ├á " + createdUser.getEmail() +
-                    ".\nVeuillez saisir le code re├ºu pour activer votre compte.");
+            showInfo("Inscription réussie",
+                    "Un email de vérification a été envoyé à " + createdUser.getEmail() +
+                    ".\nVeuillez saisir le code reçu pour activer votre compte.");
             EmailVerificationController.showAsStage(createdUser.getEmail());
             Stage stage = (Stage) createAccountBtn.getScene().getWindow();
             stage.close();
         } catch (SQLException e) {
-            showAlert("Erreur", "Impossible de cr├®er le compte : " + e.getMessage());
+            showAlert("Erreur", "Impossible de créer le compte : " + e.getMessage());
         } catch (Exception e) {
             showAlert("Erreur", "Une erreur inattendue est survenue : " + e.getMessage());
         }
@@ -201,7 +205,7 @@ public class RegisterController {
                     RegisterController.class.getResource("/Login.fxml")));
             Stage stage = (Stage) signInLink.getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.setTitle("MedTimeFX ÔÇö Login");
+            stage.setTitle("MedTimeFX — Login");
             stage.setMaximized(false);
             stage.setMinWidth(900);
             stage.setMinHeight(680);
@@ -240,5 +244,12 @@ public class RegisterController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private String normalizeRegion(String region) {
+        if (region == null || region.isBlank()) {
+            return "Tunis";
+        }
+        return region.trim();
     }
 }

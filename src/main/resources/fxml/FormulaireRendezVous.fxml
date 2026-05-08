@@ -27,7 +27,7 @@
       </columnConstraints>
 
       <!-- Patient -->
-      <Label text="Patient :" GridPane.columnIndex="0" GridPane.rowIndex="0"
+      <Label fx:id="labelPatient" text="Patient :" GridPane.columnIndex="0" GridPane.rowIndex="0"
              style="-fx-font-weight: bold;" />
       <ComboBox fx:id="comboPatient" GridPane.columnIndex="1" GridPane.rowIndex="0"
                 maxWidth="Infinity" promptText="Selectionner un patient" />
@@ -72,10 +72,10 @@
 
       <!-- Notes -->
       <Label text="Notes :" GridPane.columnIndex="0" GridPane.rowIndex="6"
-             style="-fx-font-weight: bold;" />
+             style="-fx-font-weight: bold;" visible="false" managed="false" />
       <TextArea fx:id="textAreaNotes" GridPane.columnIndex="1" GridPane.rowIndex="6"
                 prefRowCount="2" promptText="Notes additionnelles (optionnel)..."
-                wrapText="true" />
+                wrapText="true" visible="false" managed="false" />
    </GridPane>
 
    <!-- Spacer -->

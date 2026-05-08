@@ -14,6 +14,47 @@ public class ServicePatient implements IService<Patient> {
 
     public ServicePatient() {
         conn = MyDB.getInstance().getConnection();
+        ensureCompatibleSchema();
+    }
+
+    public void ensurePatientProfile(int userId, String region) throws SQLException {
+        if (userId <= 0) {
+            throw new SQLException("Utilisateur patient invalide.");
+        }
+
+        ensureCompatibleSchema();
+        String normalizedRegion = normalizeRegion(region);
+        Connection activeConn = MyDB.getInstance().getConnection();
+
+        try (PreparedStatement existingPs = activeConn.prepareStatement(
+                "SELECT id FROM `patients` WHERE `user_id` = ? LIMIT 1")) {
+            existingPs.setInt(1, userId);
+            try (ResultSet rs = existingPs.executeQuery()) {
+                if (rs.next()) {
+                    try (PreparedStatement updatePs = activeConn.prepareStatement(
+                            "UPDATE `patients` SET `region` = ? WHERE `id` = ?")) {
+                        updatePs.setString(1, normalizedRegion);
+                        updatePs.setInt(2, rs.getInt("id"));
+                        updatePs.executeUpdate();
+                    }
+                    return;
+                }
+            }
+        }
+
+        String reqPatient = "INSERT INTO `patients` (`region`, `allergies`, `medical_history`, " +
+                "`previous_cancellations`, `birth_date`, `created_at`, `user_id`) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = activeConn.prepareStatement(reqPatient)) {
+            ps.setString(1, normalizedRegion);
+            ps.setString(2, "");
+            ps.setString(3, "");
+            ps.setInt(4, 0);
+            ps.setDate(5, null);
+            ps.setTimestamp(6, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setInt(7, userId);
+            ps.executeUpdate();
+        }
     }
 
     @Override
@@ -153,28 +194,98 @@ public class ServicePatient implements IService<Patient> {
 
     @Override
     public Patient afficherParId(int id) throws SQLException {
-        String sql = "SELECT u.*, p.id as patient_id, p.region, p.allergies, " +
-                     "p.medical_history, p.previous_cancellations, p.birth_date " +
-                     "FROM users u JOIN patients p ON u.id = p.user_id WHERE u.id = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        String req = "SELECT u.*, p.id as patient_id, p.region, p.allergies, p.medical_history, " +
+                "p.previous_cancellations, p.birth_date " +
+                "FROM `users` u JOIN `patients` p ON u.id = p.user_id " +
+                "WHERE u.id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(req)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Patient patient = new Patient();
-                    patient.setId(rs.getInt("patient_id"));
-                    patient.setUserId(rs.getInt("id"));
-                    patient.setUsername(rs.getString("username"));
-                    patient.setEmail(rs.getString("email"));
-                    patient.setPhoneNumber(rs.getString("phone_number"));
-                    patient.setActive(rs.getBoolean("is_active"));
-                    try {
-                        java.sql.Date bd = rs.getDate("birth_date");
-                        if (bd != null) patient.setBirthDate(bd.toLocalDate());
-                    } catch (Exception ignored) {}
-                    return patient;
+                    return new Patient(
+                            rs.getInt("id"),
+                            rs.getString("email"),
+                            rs.getString("username"),
+                            rs.getString("password"),
+                            (Object) null,
+                            rs.getBoolean("is_active"),
+                            rs.getString("phone_number"),
+                            rs.getBoolean("is_verified"),
+                            (String) null,
+                            (LocalDateTime) null,
+                            (String) null,
+                            (LocalDateTime) null,
+                            rs.getInt("failed_attempts"),
+                            rs.getInt("patient_id"),
+                            rs.getInt("id"),
+                            rs.getString("region"),
+                            rs.getString("allergies"),
+                            rs.getString("medical_history"),
+                            rs.getInt("previous_cancellations"),
+                            rs.getDate("birth_date") != null ? rs.getDate("birth_date").toLocalDate() : null,
+                            rs.getTimestamp("created_at") != null
+                                    ? rs.getTimestamp("created_at").toLocalDateTime()
+                                    : LocalDateTime.now()
+                    );
                 }
             }
         }
         return null;
+    }
+
+    private String normalizeRegion(String region) {
+        if (region == null || region.isBlank()) {
+            return "Tunis";
+        }
+        return region.trim();
+    }
+
+    private void ensureCompatibleSchema() {
+        try {
+            Connection activeConn = MyDB.getInstance().getConnection();
+            try (Statement stmt = activeConn.createStatement()) {
+                stmt.executeUpdate(
+                        "CREATE TABLE IF NOT EXISTS `patients` (" +
+                                "`id` INT AUTO_INCREMENT PRIMARY KEY, " +
+                                "`region` VARCHAR(100) NULL, " +
+                                "`allergies` TEXT NULL, " +
+                                "`medical_history` TEXT NULL, " +
+                                "`previous_cancellations` INT NOT NULL DEFAULT 0, " +
+                                "`birth_date` DATE NULL, " +
+                                "`created_at` DATETIME NULL DEFAULT CURRENT_TIMESTAMP, " +
+                                "`user_id` INT NOT NULL, " +
+                                "UNIQUE KEY `uk_patients_user_id` (`user_id`), " +
+                                "CONSTRAINT `fk_patients_user` FOREIGN KEY (`user_id`) " +
+                                "REFERENCES `users` (`id`) ON DELETE CASCADE" +
+                                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+                );
+            }
+
+            addColumnIfMissing(activeConn, "patients", "region", "VARCHAR(100) NULL");
+            addColumnIfMissing(activeConn, "patients", "allergies", "TEXT NULL");
+            addColumnIfMissing(activeConn, "patients", "medical_history", "TEXT NULL");
+            addColumnIfMissing(activeConn, "patients", "previous_cancellations", "INT NOT NULL DEFAULT 0");
+            addColumnIfMissing(activeConn, "patients", "birth_date", "DATE NULL");
+            addColumnIfMissing(activeConn, "patients", "created_at", "DATETIME NULL DEFAULT CURRENT_TIMESTAMP");
+            addColumnIfMissing(activeConn, "patients", "user_id", "INT NULL");
+        } catch (SQLException e) {
+            throw new RuntimeException("Impossible d'initialiser le schema patient: " + e.getMessage(), e);
+        }
+    }
+
+    private void addColumnIfMissing(Connection activeConn, String tableName, String columnName, String definition)
+            throws SQLException {
+        if (!columnExists(activeConn, tableName, columnName)) {
+            try (Statement stmt = activeConn.createStatement()) {
+                stmt.executeUpdate("ALTER TABLE `" + tableName + "` ADD COLUMN `" + columnName + "` " + definition);
+            }
+        }
+    }
+
+    private boolean columnExists(Connection activeConn, String tableName, String columnName) throws SQLException {
+        DatabaseMetaData metaData = activeConn.getMetaData();
+        try (ResultSet rs = metaData.getColumns(activeConn.getCatalog(), null, tableName, columnName)) {
+            return rs.next();
+        }
     }
 }

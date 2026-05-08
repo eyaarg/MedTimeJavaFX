@@ -20,24 +20,24 @@ public class EmailVerificationController {
 
     public static void showAsStage(String email) {
         Stage stage = new Stage();
-        stage.setTitle("V├®rification de l'email");
+        stage.setTitle("Vérification de l'email");
 
-        Text title = new Text("V├®rification de votre compte");
+        Text title = new Text("Vérification de votre compte");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 18));
 
-        Label infoLabel = new Label("Un code de v├®rification a ├®t├® envoy├® ├á :");
+        Label infoLabel = new Label("Un code de vérification a été envoyé à :");
         Label emailLabel = new Label(email);
         emailLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #1565C0;");
 
-        Label tokenLabel = new Label("Entrez le code re├ºu par email :");
+        Label tokenLabel = new Label("Entrez le code reçu par email :");
         TextField tokenField = new TextField();
-        tokenField.setPromptText("Code de v├®rification");
+        tokenField.setPromptText("Code de vérification");
         tokenField.setMaxWidth(300);
 
         Label statusLabel = new Label("");
         statusLabel.setStyle("-fx-text-fill: red;");
 
-        Button verifyButton = new Button("V├®rifier");
+        Button verifyButton = new Button("Vérifier");
         verifyButton.setStyle("-fx-background-color: #1565C0; -fx-text-fill: white; -fx-font-weight: bold;");
         Button resendButton = new Button("Renvoyer le code");
         Button backButton = new Button("Retour au login");
@@ -45,17 +45,17 @@ public class EmailVerificationController {
         verifyButton.setOnAction(event -> {
             String token = tokenField.getText().trim();
             if (token.isEmpty()) {
-                statusLabel.setText("Le code ne peut pas ├¬tre vide.");
+                statusLabel.setText("Le code ne peut pas être vide.");
                 return;
             }
             try {
                 boolean success = new ServiceUser().verifyEmailToken(token);
                 if (success) {
-                    showAlert(Alert.AlertType.INFORMATION, "Succ├¿s",
-                            "Email v├®rifi├® avec succ├¿s ! Vous pouvez maintenant vous connecter.");
+                    showAlert(Alert.AlertType.INFORMATION, "Succès",
+                            "Email vérifié avec succès ! Vous pouvez maintenant vous connecter.");
                     stage.close();
                 } else {
-                    statusLabel.setText("Code invalide ou expir├®. Veuillez r├®essayer.");
+                    statusLabel.setText("Code invalide ou expiré. Veuillez réessayer.");
                 }
             } catch (SQLException e) {
                 statusLabel.setText("Erreur : " + e.getMessage());
@@ -65,8 +65,8 @@ public class EmailVerificationController {
         resendButton.setOnAction(event -> {
             try {
                 new ServiceUser().resendVerificationEmail(email);
-                showAlert(Alert.AlertType.INFORMATION, "Email renvoy├®",
-                        "Un nouveau code a ├®t├® envoy├® ├á " + email);
+                showAlert(Alert.AlertType.INFORMATION, "Email renvoyé",
+                        "Un nouveau code a été envoyé à " + email);
             } catch (SQLException e) {
                 statusLabel.setText("Erreur lors du renvoi : " + e.getMessage());
             }

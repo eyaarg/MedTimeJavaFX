@@ -4,11 +4,13 @@ import esprit.fx.entities.Doctor_documents;
 import esprit.fx.utils.MyDB;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +21,9 @@ public class ServiceDoctorDocument {
     private static final String UPLOADS_DIR = "uploads/doctor_documents/";
 
     public void uploadDocument(int doctorId, File selectedFile) throws SQLException, IOException {
-        String storedName = UUID.randomUUID().toString();
+        ensureCompatibleSchema();
+
+        String storedName = UUID.randomUUID() + getFileExtension(selectedFile.getName());
         Path doctorDir = Paths.get(UPLOADS_DIR, String.valueOf(doctorId));
         Files.createDirectories(doctorDir);
 
@@ -76,6 +80,29 @@ public class ServiceDoctorDocument {
         return Paths.get(doc.getFolder_name(), doc.getStored_name()).toFile();
     }
 
+    public File getOpenableDocumentFile(Doctor_documents doc) throws IOException {
+        if (doc == null || doc.getFolder_name() == null || doc.getStored_name() == null) {
+            throw new FileNotFoundException("Document introuvable.");
+        }
+
+        Path storedPath = Paths.get(doc.getFolder_name(), doc.getStored_name())
+                .toAbsolutePath()
+                .normalize();
+        Path pdfPath = storedPath.getFileName().toString().toLowerCase().endsWith(".pdf")
+                ? storedPath
+                : storedPath.resolveSibling(storedPath.getFileName() + ".pdf");
+
+        if (Files.exists(pdfPath)) {
+            return pdfPath.toFile();
+        }
+        if (Files.exists(storedPath)) {
+            Files.copy(storedPath, pdfPath, StandardCopyOption.REPLACE_EXISTING);
+            return pdfPath.toFile();
+        }
+
+        throw new FileNotFoundException(pdfPath.toString());
+    }
+
     public void updateDocumentStatus(int documentId, String status) throws SQLException {
         String sql = "UPDATE doctor_documents SET status = ? WHERE id = ?";
         try (Connection conn = MyDB.getInstance().getConnection();
@@ -83,6 +110,53 @@ public class ServiceDoctorDocument {
             stmt.setString(1, status);
             stmt.setInt(2, documentId);
             stmt.executeUpdate();
+        }
+    }
+
+    private void ensureCompatibleSchema() throws SQLException {
+        try (Connection conn = MyDB.getInstance().getConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS doctor_documents (" +
+                            "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                            "original_name VARCHAR(255) NOT NULL, " +
+                            "stored_name VARCHAR(255) NOT NULL, " +
+                            "folder_name VARCHAR(500) NOT NULL, " +
+                            "mime_type VARCHAR(120) NULL, " +
+                            "size BIGINT NOT NULL DEFAULT 0, " +
+                            "status VARCHAR(30) NOT NULL DEFAULT 'pending', " +
+                            "uploaded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+                            "doctor_id INT NOT NULL, " +
+                            "INDEX idx_doctor_documents_doctor_id (doctor_id), " +
+                            "CONSTRAINT fk_doctor_documents_doctor FOREIGN KEY (doctor_id) " +
+                            "REFERENCES doctors(id) ON DELETE CASCADE" +
+                            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+            );
+
+            addColumnIfMissing(conn, "doctor_documents", "original_name", "VARCHAR(255) NULL");
+            addColumnIfMissing(conn, "doctor_documents", "stored_name", "VARCHAR(255) NULL");
+            addColumnIfMissing(conn, "doctor_documents", "folder_name", "VARCHAR(500) NULL");
+            addColumnIfMissing(conn, "doctor_documents", "mime_type", "VARCHAR(120) NULL");
+            addColumnIfMissing(conn, "doctor_documents", "size", "BIGINT NOT NULL DEFAULT 0");
+            addColumnIfMissing(conn, "doctor_documents", "status", "VARCHAR(30) NOT NULL DEFAULT 'pending'");
+            addColumnIfMissing(conn, "doctor_documents", "uploaded_at", "DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP");
+            addColumnIfMissing(conn, "doctor_documents", "doctor_id", "INT NULL");
+        }
+    }
+
+    private void addColumnIfMissing(Connection conn, String tableName, String columnName, String definition)
+            throws SQLException {
+        if (!columnExists(conn, tableName, columnName)) {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate("ALTER TABLE `" + tableName + "` ADD COLUMN `" + columnName + "` " + definition);
+            }
+        }
+    }
+
+    private boolean columnExists(Connection conn, String tableName, String columnName) throws SQLException {
+        DatabaseMetaData metaData = conn.getMetaData();
+        try (ResultSet rs = metaData.getColumns(conn.getCatalog(), null, tableName, columnName)) {
+            return rs.next();
         }
     }
 
@@ -98,5 +172,12 @@ public class ServiceDoctorDocument {
         doc.setUploaded_at(rs.getTimestamp("uploaded_at").toLocalDateTime()); // Convert Timestamp to LocalDateTime
         doc.setDoctor_id(rs.getInt("doctor_id"));
         return doc;
+    }
+
+    private String getFileExtension(String fileName) {
+        if (fileName == null) return "";
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex < 0 || dotIndex == fileName.length() - 1) return "";
+        return fileName.substring(dotIndex).toLowerCase();
     }
 }

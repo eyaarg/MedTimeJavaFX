@@ -11,7 +11,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 
-import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -65,9 +64,9 @@ public class OrdonnanceDetailControllerArij {
      */
     private void afficherTousLesChamps() {
         try {
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
             // 1. INFORMATIONS GÉNÉRALES
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
 
             // Numéro d'ordonnance
             String numOrd = ordonnance.getNumeroOrdonnance() != null 
@@ -89,9 +88,9 @@ public class OrdonnanceDetailControllerArij {
                 dateValiditeLabel.setText("Non disponible");
             }
 
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
             // 2. INFORMATIONS MÉDECIN
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
 
             // Médecin prescripteur
             if (ordonnance.getDoctorId() > 0) {
@@ -103,17 +102,17 @@ public class OrdonnanceDetailControllerArij {
             // Spécialité (à récupérer depuis la base de données)
             specialiteLabel.setText(getDoctorSpecialty(ordonnance.getDoctorId()));
 
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
             // 3. PRIX DE LA CONSULTATION
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
 
             // Prix (récupéré depuis la consultation)
             double prix = getConsultationPrice(ordonnance.getConsultationId());
             prixLabel.setText(String.format("%.2f TND", prix));
 
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
             // 4. DIAGNOSTIC
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
 
             String diagnosis = ordonnance.getDiagnosis() != null 
                 ? ordonnance.getDiagnosis() 
@@ -121,9 +120,9 @@ public class OrdonnanceDetailControllerArij {
             diagnosisArea.setText(diagnosis);
             diagnosisArea.setWrapText(true);
 
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
             // 5. CONTENU DE L'ORDONNANCE
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
 
             String content = ordonnance.getContent() != null 
                 ? ordonnance.getContent() 
@@ -131,15 +130,15 @@ public class OrdonnanceDetailControllerArij {
             contentArea.setText(content);
             contentArea.setWrapText(true);
 
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
             // 6. MÉDICAMENTS PRESCRITS
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
 
             afficherMedicaments();
 
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
             // 7. INSTRUCTIONS SUPPLÉMENTAIRES
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
 
             String instructions = ordonnance.getInstructions() != null 
                 ? ordonnance.getInstructions() 
@@ -147,18 +146,18 @@ public class OrdonnanceDetailControllerArij {
             instructionsArea.setText(instructions);
             instructionsArea.setWrapText(true);
 
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
             // 8. QR CODE DE VÉRIFICATION
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
 
             afficherQRCode();
 
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
             // 9. STATUT ET VALIDATION
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
 
             // Statut
-            statutLabel.setText("✅ Validée");
+            statutLabel.setText("✓ Validée");
             statutLabel.setStyle("-fx-text-fill: #059669;");
 
             // Jours restants
@@ -184,10 +183,10 @@ public class OrdonnanceDetailControllerArij {
                 accessTokenLabel.setText(maskedToken);
             }
 
-            System.out.println("[OrdonnanceDetailControllerArij] ✅ Tous les champs affichés avec succès");
+            System.out.println("[OrdonnanceDetailControllerArij] ✓ Tous les champs affichés avec succès");
 
         } catch (Exception e) {
-            System.err.println("[OrdonnanceDetailControllerArij] ❌ Erreur affichage ordonnance : " + e.getMessage());
+            System.err.println("[OrdonnanceDetailControllerArij] ✗ Erreur affichage ordonnance : " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -243,19 +242,13 @@ public class OrdonnanceDetailControllerArij {
     private void afficherQRCode() {
         try {
             if (ordonnance.getAccessToken() != null && !ordonnance.getAccessToken().isEmpty()) {
-                // QR Code génération (optionnel)
-                try {
-                    QRCodeServiceArij qrService = new QRCodeServiceArij();
-                    String scanUrl = ordonnance.buildScanUrl("http://localhost:8000");
-                    
-                    if (scanUrl != null && qrService != null) {
-                        // byte[] qrCodeBytes = qrService.generateQRCode(scanUrl, 200, 200);
-                        // Image qrImage = new Image(new ByteArrayInputStream(qrCodeBytes));
-                        // qrCodeImageView.setImage(qrImage);
-                        System.out.println("[OrdonnanceDetailControllerArij] QR Code génération skippée");
-                    }
-                } catch (Exception qrEx) {
-                    System.err.println("[OrdonnanceDetailControllerArij] QR Code error: " + qrEx.getMessage());
+                QRCodeServiceArij qrService = new QRCodeServiceArij();
+                Image qrImage = qrService.genererQRCodeOrdonnance(ordonnance.getId(), ordonnance.getAccessToken());
+                if (qrImage != null) {
+                    qrCodeImageView.setImage(qrImage);
+                    System.out.println("[OrdonnanceDetailControllerArij] QR Code généré avec succès");
+                } else {
+                    System.err.println("[OrdonnanceDetailControllerArij] QR Code generation failed - null image");
                 }
             }
         } catch (Exception e) {
@@ -322,7 +315,7 @@ public class OrdonnanceDetailControllerArij {
                 alert.setHeaderText("PDF Export");
                 alert.setContentText("Fonctionnalité de téléchargement PDF en cours de développement");
                 alert.showAndWait();
-                alert.setHeaderText("✅ Téléchargement réussi");
+                alert.setHeaderText("✓ Téléchargement réussi");
                 alert.setContentText("L'ordonnance a été téléchargée en PDF");
                 alert.showAndWait();
             }

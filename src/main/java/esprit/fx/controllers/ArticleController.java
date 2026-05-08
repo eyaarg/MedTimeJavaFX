@@ -59,8 +59,8 @@ public class ArticleController implements Initializable {
     private int totalPages   = 1;
 
     public void setRole(boolean isDoctor) {
-        this.isDoctor = "DOCTOR".equalsIgnoreCase(UserSession.getCurrentRole());
-        if (btnAjouter != null) { btnAjouter.setVisible(this.isDoctor); btnAjouter.setManaged(this.isDoctor); }
+        this.isDoctor = isDoctor;
+        updateArticleActionsVisibility();
         try { chargerFeed(); } catch (SQLException e) { e.printStackTrace(); }
     }
 
@@ -74,8 +74,15 @@ public class ArticleController implements Initializable {
         specialiteMap      = new HashMap<>();
         loadSpecialites();
         this.isDoctor = "DOCTOR".equalsIgnoreCase(UserSession.getCurrentRole());
-        if (btnAjouter != null) { btnAjouter.setVisible(false); btnAjouter.setManaged(false); }
+        updateArticleActionsVisibility();
         try { chargerFeed(); } catch (SQLException e) { throw new RuntimeException(e); }
+    }
+
+    private void updateArticleActionsVisibility() {
+        if (btnAjouter != null) {
+            btnAjouter.setVisible(isDoctor);
+            btnAjouter.setManaged(isDoctor);
+        }
     }
 
     private void loadSpecialites() {

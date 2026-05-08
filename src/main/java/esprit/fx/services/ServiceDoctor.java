@@ -19,12 +19,35 @@ public class ServiceDoctor implements IService<Doctor> {
     }
 
     public ServiceDoctor() {
+        ensureCompatibleSchema();
     }
 
     @Override
     public void ajouter(Doctor doctor) throws SQLException {
         // The user row is already created by ServiceUser.registerUser.
         // Insert the doctors row including the location fields (issue #8).
+        try (PreparedStatement existingPs = conn().prepareStatement(
+                "SELECT id FROM `doctors` WHERE `user_id` = ? LIMIT 1")) {
+            existingPs.setInt(1, doctor.getUserId());
+            try (ResultSet rs = existingPs.executeQuery()) {
+                if (rs.next()) {
+                    int doctorId = rs.getInt("id");
+                    try (PreparedStatement updatePs = conn().prepareStatement(
+                            "UPDATE `doctors` SET `license_code`=?, `updated_at`=?, `city`=?, `latitude`=?, `longitude`=? WHERE `id`=?")) {
+                        updatePs.setString(1, doctor.getLicenseCode() != null ? doctor.getLicenseCode() : "");
+                        updatePs.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+                        updatePs.setString(3, doctor.getCity());
+                        updatePs.setObject(4, doctor.getLatitude());
+                        updatePs.setObject(5, doctor.getLongitude());
+                        updatePs.setInt(6, doctorId);
+                        updatePs.executeUpdate();
+                    }
+                    doctor.setId(doctorId);
+                    return;
+                }
+            }
+        }
+
         String reqDoctor = "INSERT INTO `doctors` (`license_code`, `is_certified`, `created_at`, " +
                 "`updated_at`, `user_id`, `city`, `latitude`, `longitude`) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -119,6 +142,23 @@ public class ServiceDoctor implements IService<Doctor> {
         }
     }
 
+    @Override
+    public Doctor afficherParId(int id) throws SQLException {
+        String req = "SELECT u.*, d.id as doctor_id, d.license_code, d.is_certified, d.updated_at, " +
+                "d.city, d.latitude, d.longitude " +
+                "FROM `users` u JOIN `doctors` d ON u.id = d.user_id " +
+                "WHERE u.id = ?";
+        try (PreparedStatement ps = conn().prepareStatement(req)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapDoctor(rs);
+                }
+            }
+        }
+        return null;
+    }
+
     public List<Doctor> getDoctorsPendingVerification() throws SQLException {
         // Issue #8: include location columns in SELECT
         String query = "SELECT u.*, d.id as doctor_id, d.license_code, d.is_certified, d.updated_at, " +
@@ -172,9 +212,9 @@ public class ServiceDoctor implements IService<Doctor> {
                 if (rs.next()) {
                     String email    = rs.getString("email");
                     String username = rs.getString("username");
-                    System.out.println("Envoi email ├á : " + email);
+                    System.out.println("Envoi email à : " + email);
                     EmailService.sendDoctorApprovedEmail(email, username);
-                    System.out.println("[ServiceDoctor] Email approbation envoy├® ├á : " + email);
+                    System.out.println("[ServiceDoctor] Email approbation envoyé à : " + email);
                 }
             }
         } catch (Exception e) {
@@ -191,9 +231,9 @@ public class ServiceDoctor implements IService<Doctor> {
                 if (rs.next()) {
                     String email    = rs.getString("email");
                     String username = rs.getString("username");
-                    System.out.println("Envoi email ├á : " + email);
+                    System.out.println("Envoi email à : " + email);
                     EmailService.sendDoctorRejectedEmail(email, username, reason);
-                    System.out.println("[ServiceDoctor] Email refus envoy├® ├á : " + email);
+                    System.out.println("[ServiceDoctor] Email refus envoyé à : " + email);
                 }
             }
         } catch (Exception e) {
@@ -269,26 +309,57 @@ public class ServiceDoctor implements IService<Doctor> {
         d.setLatitude(rs.wasNull() ? null : lat);
         double lng = rs.getDouble("longitude");
         d.setLongitude(rs.wasNull() ? null : lng);
-        // adresse for OpenStreetMap map (moduleB_farah)
-        try { d.setAdresse(rs.getString("adresse")); } catch (Exception ignored) {}
         return d;
     }
 
-    /**
-     * Find a doctor by their user_id.
-     * Required by IService interface and used by moduleB_farah (DisponibiliteController).
-     */
-    @Override
-    public Doctor afficherParId(int userId) throws SQLException {
-        String sql = "SELECT u.*, d.id as doctor_id, d.license_code, d.is_certified, " +
-                     "d.updated_at, d.city, d.latitude, d.longitude, d.adresse " +
-                     "FROM users u JOIN doctors d ON u.id = d.user_id WHERE u.id = ?";
-        try (PreparedStatement ps = conn().prepareStatement(sql)) {
-            ps.setInt(1, userId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapDoctor(rs);
+    private void ensureCompatibleSchema() {
+        try {
+            Connection activeConn = conn();
+            try (Statement stmt = activeConn.createStatement()) {
+                stmt.executeUpdate(
+                        "CREATE TABLE IF NOT EXISTS `doctors` (" +
+                                "`id` INT AUTO_INCREMENT PRIMARY KEY, " +
+                                "`license_code` VARCHAR(100) NOT NULL DEFAULT '', " +
+                                "`is_certified` BOOLEAN NOT NULL DEFAULT FALSE, " +
+                                "`created_at` DATETIME NULL DEFAULT CURRENT_TIMESTAMP, " +
+                                "`updated_at` DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
+                                "`user_id` INT NOT NULL, " +
+                                "`city` VARCHAR(120) NULL, " +
+                                "`latitude` DOUBLE NULL, " +
+                                "`longitude` DOUBLE NULL, " +
+                                "UNIQUE KEY `uk_doctors_user_id` (`user_id`), " +
+                                "CONSTRAINT `fk_doctors_user` FOREIGN KEY (`user_id`) " +
+                                "REFERENCES `users` (`id`) ON DELETE CASCADE" +
+                                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+                );
+            }
+
+            addColumnIfMissing(activeConn, "doctors", "license_code", "VARCHAR(100) NOT NULL DEFAULT ''");
+            addColumnIfMissing(activeConn, "doctors", "is_certified", "BOOLEAN NOT NULL DEFAULT FALSE");
+            addColumnIfMissing(activeConn, "doctors", "created_at", "DATETIME NULL DEFAULT CURRENT_TIMESTAMP");
+            addColumnIfMissing(activeConn, "doctors", "updated_at", "DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+            addColumnIfMissing(activeConn, "doctors", "user_id", "INT NULL");
+            addColumnIfMissing(activeConn, "doctors", "city", "VARCHAR(120) NULL");
+            addColumnIfMissing(activeConn, "doctors", "latitude", "DOUBLE NULL");
+            addColumnIfMissing(activeConn, "doctors", "longitude", "DOUBLE NULL");
+        } catch (SQLException e) {
+            throw new RuntimeException("Impossible d'initialiser le schema medecin: " + e.getMessage(), e);
+        }
+    }
+
+    private void addColumnIfMissing(Connection activeConn, String tableName, String columnName, String definition)
+            throws SQLException {
+        if (!columnExists(activeConn, tableName, columnName)) {
+            try (Statement stmt = activeConn.createStatement()) {
+                stmt.executeUpdate("ALTER TABLE `" + tableName + "` ADD COLUMN `" + columnName + "` " + definition);
             }
         }
-        return null;
+    }
+
+    private boolean columnExists(Connection activeConn, String tableName, String columnName) throws SQLException {
+        DatabaseMetaData metaData = activeConn.getMetaData();
+        try (ResultSet rs = metaData.getColumns(activeConn.getCatalog(), null, tableName, columnName)) {
+            return rs.next();
+        }
     }
 }

@@ -23,12 +23,12 @@ public class ServiceRendezVous implements IService<RendezVous> {
             ps.setInt(1, rendezVous.getPatientId());
             ps.setInt(2, rendezVous.getDoctorId());
             ps.setTimestamp(3, Timestamp.valueOf(rendezVous.getDateHeure()));
-            ps.setInt(4, 40); // DurÃ©e par dÃ©faut: 40 minutes
+            ps.setInt(4, 40); // Durée par défaut: 40 minutes
             ps.setString(5, "IN_PERSON"); // Type de consultation: en personne
             ps.setString(6, rendezVous.getMotif());
             ps.setString(7, rendezVous.getStatut());
             ps.setString(8, rendezVous.getNotes());
-            ps.setBoolean(9, false); // Rappel non envoyÃ©
+            ps.setBoolean(9, false); // Rappel non envoyé
             ps.setTimestamp(10, Timestamp.valueOf(rendezVous.getDateCreation()));
             
             ps.executeUpdate();
@@ -221,7 +221,7 @@ public class ServiceRendezVous implements IService<RendezVous> {
             // Colonne peut ne pas exister
         }
         
-        // Informations supplÃ©mentaires
+        // Informations supplémentaires
         try {
             rv.setPatientNom(rs.getString("patient_nom"));
             rv.setPatientEmail(rs.getString("patient_email"));
@@ -230,7 +230,7 @@ public class ServiceRendezVous implements IService<RendezVous> {
         } catch (SQLException e) {
             // Ces colonnes viennent du JOIN, peuvent ne pas exister
             rv.setPatientNom("Patient " + rv.getPatientId());
-            rv.setDoctorNom("MÃ©decin " + rv.getDoctorId());
+            rv.setDoctorNom("Médecin " + rv.getDoctorId());
         }
         
         return rv;
@@ -249,7 +249,7 @@ public class ServiceRendezVous implements IService<RendezVous> {
                 rv.setDateHeure(dateHeure.toLocalDateTime());
             }
         } catch (SQLException e) {
-            System.err.println("Colonne appointment_date_time non trouvÃ©e: " + e.getMessage());
+            System.err.println("Colonne appointment_date_time non trouvée: " + e.getMessage());
         }
         
         // Utiliser reason
@@ -274,7 +274,7 @@ public class ServiceRendezVous implements IService<RendezVous> {
         
         // Noms temporaires
         rv.setPatientNom("Patient " + rv.getPatientId());
-        rv.setDoctorNom("MÃ©decin " + rv.getDoctorId());
+        rv.setDoctorNom("Médecin " + rv.getDoctorId());
         
         return rv;
     }

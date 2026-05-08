@@ -292,7 +292,12 @@ public class RendezVousController implements Initializable {
 
     private void ouvrirHistoriqueRdv(RendezVous rdv) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Historique.fxml"));
+            URL fxmlUrl = getClass().getResource("/fxml/Historique.fxml");
+            if (fxmlUrl == null) {
+                showAlert("Erreur", "Fichier FXML introuvable : /fxml/Historique.fxml");
+                return;
+            }
+            FXMLLoader loader = new FXMLLoader(fxmlUrl);
             Parent root = loader.load();
             HistoriqueController ctrl = loader.getController();
             ctrl.initHistorique(rdv);
@@ -302,6 +307,7 @@ public class RendezVousController implements Initializable {
             stage.setScene(new Scene(root));
             stage.show();
         } catch (IOException e) {
+            e.printStackTrace();
             showAlert("Erreur", "Impossible d'ouvrir l'historique : " + e.getMessage());
         }
     }
@@ -309,7 +315,12 @@ public class RendezVousController implements Initializable {
     @FXML
     private void ouvrirSuggestion() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SuggestionDisponibilite.fxml"));
+            URL fxmlUrl = getClass().getResource("/fxml/SuggestionDisponibilite.fxml");
+            if (fxmlUrl == null) {
+                showAlert("Erreur", "Fichier FXML introuvable : /fxml/SuggestionDisponibilite.fxml");
+                return;
+            }
+            FXMLLoader loader = new FXMLLoader(fxmlUrl);
             Parent root = loader.load();
             SuggestionController ctrl = loader.getController();
             ctrl.setParentController(this);
@@ -319,6 +330,7 @@ public class RendezVousController implements Initializable {
             stage.setScene(new Scene(root));
             stage.show();
         } catch (IOException e) {
+            e.printStackTrace();
             showAlert("Erreur", "Impossible d'ouvrir la suggestion : " + e.getMessage());
         }
     }
@@ -326,7 +338,12 @@ public class RendezVousController implements Initializable {
     @FXML
     private void ouvrirListeAttente() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ListeAttente.fxml"));
+            URL fxmlUrl = getClass().getResource("/fxml/ListeAttente.fxml");
+            if (fxmlUrl == null) {
+                showAlert("Erreur", "Fichier FXML introuvable : /fxml/ListeAttente.fxml");
+                return;
+            }
+            FXMLLoader loader = new FXMLLoader(fxmlUrl);
             Parent root = loader.load();
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
@@ -334,24 +351,53 @@ public class RendezVousController implements Initializable {
             stage.setScene(new Scene(root));
             stage.show();
         } catch (IOException e) {
+            e.printStackTrace();
             showAlert("Erreur", "Impossible d'ouvrir la liste d'attente : " + e.getMessage());
         }
     }
 
     private void ouvrirFormulaireRendezVous(RendezVous rdv) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/FormulaireRendezVous.fxml"));
+            URL fxmlUrl = getClass().getResource("/fxml/FormulaireRendezVous.fxml");
+            if (fxmlUrl == null) {
+                fxmlUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource("fxml/FormulaireRendezVous.fxml");
+            }
+            if (fxmlUrl == null) {
+                showAlert("Erreur", "Fichier FXML introuvable : FormulaireRendezVous.fxml\n" +
+                        "Verifiez que le fichier existe dans src/main/resources/fxml/");
+                return;
+            }
+
+            FXMLLoader loader = new FXMLLoader(fxmlUrl);
             Parent root = loader.load();
+
             FormulaireRendezVousController ctrl = loader.getController();
             ctrl.setRendezVous(rdv);
             ctrl.setParentController(this);
+
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle(rdv == null ? "Nouveau Rendez-vous" : "Modifier Rendez-vous");
             stage.setScene(new Scene(root));
             stage.showAndWait();
+
         } catch (IOException e) {
-            showAlert("Erreur", "Impossible d'ouvrir le formulaire : " + e.getMessage());
+            // Remonter la vraie cause (souvent une exception dans initialize())
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            Throwable root  = cause;
+            while (root.getCause() != null) root = root.getCause();
+
+            System.err.println("=== ERREUR FORMULAIRE RDV ===");
+            e.printStackTrace();
+            System.err.println("Cause racine: " + root.getClass().getSimpleName() + ": " + root.getMessage());
+
+            showAlert("Erreur", "Impossible d'ouvrir le formulaire.\n\n" +
+                    "Cause: " + root.getClass().getSimpleName() + "\n" +
+                    "Detail: " + root.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Erreur inattendue: " + e.getClass().getSimpleName() + ": " + e.getMessage());
         }
     }
 

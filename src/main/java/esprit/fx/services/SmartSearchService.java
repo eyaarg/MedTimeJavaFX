@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.List;
 
 public class SmartSearchService {
@@ -18,6 +19,13 @@ public class SmartSearchService {
     private final String MODEL = getConfig("groq.model", "llama-3.3-70b-versatile");
 
     public String askGroq(String userInput, List<String> availableProducts) throws Exception {
+        if (API_KEY == null || API_KEY.isBlank() || API_KEY.startsWith("YOUR_")) {
+            throw new IllegalStateException("Cle Groq manquante dans config.properties.");
+        }
+        if (userInput == null || userInput.isBlank() || availableProducts == null || availableProducts.isEmpty()) {
+            return "NONE";
+        }
+
         // 1. Préparation du contexte
         // Dans askGroq(...)
         String systemMessage = "Tu es un pharmacien intelligent. Voici tes produits : " + String.join(", ", availableProducts);
@@ -38,9 +46,12 @@ public class SmartSearchService {
         jsonBody.put("messages", messages);
 
         // 3. Envoi de la requête
-        HttpClient client = HttpClient.newHttpClient();
+        HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(15))
+                .build();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(GROQ_URL))
+                .timeout(Duration.ofSeconds(30))
                 .header("Authorization", "Bearer " + API_KEY)
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody.toString()))

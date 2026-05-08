@@ -3,114 +3,215 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Localisation Cabinet</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <title>Localisation cabinet</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #f8fafc; }
+        html, body { width: 100%; height: 100%; overflow: hidden; }
+        body { font-family: Arial, sans-serif; background: #eef4fb; color: #0f172a; }
 
         #info-bar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 58px;
+            background: linear-gradient(90deg, #2155d9 0%, #14a8df 100%);
             color: white;
-            padding: 12px 20px;
+            padding: 10px 18px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        #info-bar .title  { font-size: 15px; font-weight: 700; }
-        #info-bar .subtitle { font-size: 12px; opacity: 0.85; margin-top: 2px; }
 
-        #map { width: 100%; height: calc(100vh - 58px); }
+        #info-bar .title { font-size: 15px; font-weight: 700; }
+        #info-bar .subtitle { font-size: 12px; opacity: 0.9; margin-top: 2px; }
 
-        .custom-marker {
-            background: #e53e3e;
+        #map {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 58px);
+            overflow: hidden;
+            background: #dbeafe;
+        }
+
+        .tile {
+            position: absolute;
+            width: 256px;
+            height: 256px;
+            border: 0;
+        }
+
+        #marker {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 28px;
+            height: 28px;
+            margin-left: -14px;
+            margin-top: -28px;
+            z-index: 50;
+        }
+
+        #marker:before {
+            content: "";
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            left: 2px;
+            top: 0;
+            background: #1d4ed8;
             border: 3px solid white;
             border-radius: 50% 50% 50% 0;
             transform: rotate(-45deg);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 3px 12px rgba(15, 23, 42, 0.35);
         }
 
-        .leaflet-popup-content-wrapper {
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        #popup {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -132px);
+            z-index: 60;
+            min-width: 230px;
+            max-width: 320px;
+            background: white;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+            padding: 12px 14px;
+            text-align: center;
         }
-        .popup-inner { text-align: center; padding: 6px 4px; }
-        .popup-inner .popup-icon {
-            width: 40px; height: 40px;
-            background: #ebf8ff;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 8px;
+
+        #popup-name { color: #0f172a; font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+        #popup-address { color: #475569; font-size: 12px; line-height: 1.4; }
+
+        #error-message {
+            display: none;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            width: 360px;
+            max-width: calc(100% - 40px);
+            background: white;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+            padding: 22px;
+            text-align: center;
         }
-        .popup-inner .popup-icon svg { width: 22px; height: 22px; }
-        .popup-inner .popup-name  { font-weight: 700; font-size: 14px; color: #1f2937; margin-bottom: 4px; }
-        .popup-inner .popup-addr  { font-size: 12px; color: #6b7280; max-width: 200px; }
+
+        #error-message h3 { color: #1d4ed8; margin-bottom: 8px; }
+        #error-message p { color: #475569; font-size: 13px; line-height: 1.5; }
     </style>
 </head>
 <body>
-
 <div id="info-bar">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
         <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
     </svg>
     <div>
-        <div class="title"  id="bar-title">Cabinet medical</div>
+        <div class="title" id="bar-title">Cabinet medical</div>
         <div class="subtitle" id="bar-adresse">Chargement...</div>
     </div>
 </div>
 
-<div id="map"></div>
+<div id="map">
+    <div id="marker"></div>
+    <div id="popup">
+        <div id="popup-name">Cabinet medical</div>
+        <div id="popup-address">Tunis, Tunisie</div>
+    </div>
+    <div id="error-message">
+        <h3>Carte indisponible</h3>
+        <p>OpenStreetMap ne peut pas charger les tuiles pour le moment. Verifiez la connexion Internet.</p>
+    </div>
+</div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    var LAT     = 36.8065;
-    var LON     = 10.1815;
-    var NOM     = "Cabinet medical";
+    var LAT = 36.8065;
+    var LON = 10.1815;
+    var NOM = "Cabinet medical";
     var ADRESSE = "Tunis, Tunisie";
+    var ZOOM = 15;
+    var TILE_SIZE = 256;
+    var failedTiles = 0;
 
-    var map = L.map('map').setView([LAT, LON], 15);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
-        crossOrigin: true
-    }).addTo(map);
-
-    // Icone marqueur rouge avec SVG
-    var redIcon = L.divIcon({
-        html: '<div style="width:24px;height:24px;background:#e53e3e;border:3px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.4);"></div>',
-        iconSize:    [24, 24],
-        iconAnchor:  [12, 24],
-        popupAnchor: [0, -28],
-        className:   ''
-    });
-
-    var marker = L.marker([LAT, LON], { icon: redIcon }).addTo(map);
-
-    function buildPopup(nom, adresse) {
-        return '<div class="popup-inner">' +
-            '<div class="popup-icon">' +
-            '<svg viewBox="0 0 24 24" fill="#3182ce"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>' +
-            '</div>' +
-            '<div class="popup-name">' + nom + '</div>' +
-            '<div class="popup-addr">' + adresse + '</div>' +
-            '</div>';
+    function lonToTileX(lon, zoom) {
+        return (lon + 180) / 360 * Math.pow(2, zoom);
     }
 
-    marker.bindPopup(buildPopup(NOM, ADRESSE), { maxWidth: 250 }).openPopup();
+    function latToTileY(lat, zoom) {
+        var rad = lat * Math.PI / 180;
+        return (1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2 * Math.pow(2, zoom);
+    }
 
-    document.getElementById('bar-title').textContent   = NOM;
-    document.getElementById('bar-adresse').textContent = ADRESSE;
+    function clearTiles() {
+        var map = document.getElementById("map");
+        var tiles = map.getElementsByClassName("tile");
+        while (tiles.length > 0) {
+            map.removeChild(tiles[0]);
+        }
+    }
+
+    function updateTexts() {
+        document.getElementById("bar-title").textContent = NOM;
+        document.getElementById("bar-adresse").textContent = ADRESSE;
+        document.getElementById("popup-name").textContent = NOM;
+        document.getElementById("popup-address").textContent = ADRESSE;
+    }
+
+    function showError() {
+        document.getElementById("error-message").style.display = "block";
+    }
+
+    function renderMap() {
+        var map = document.getElementById("map");
+        var width = map.clientWidth || 750;
+        var height = map.clientHeight || 492;
+        var centerX = lonToTileX(LON, ZOOM) * TILE_SIZE;
+        var centerY = latToTileY(LAT, ZOOM) * TILE_SIZE;
+        var startX = Math.floor((centerX - width / 2) / TILE_SIZE);
+        var endX = Math.floor((centerX + width / 2) / TILE_SIZE);
+        var startY = Math.floor((centerY - height / 2) / TILE_SIZE);
+        var endY = Math.floor((centerY + height / 2) / TILE_SIZE);
+        var maxTile = Math.pow(2, ZOOM);
+
+        failedTiles = 0;
+        clearTiles();
+        updateTexts();
+        document.getElementById("error-message").style.display = "none";
+
+        for (var x = startX; x <= endX; x++) {
+            for (var y = startY; y <= endY; y++) {
+                if (y < 0 || y >= maxTile) {
+                    continue;
+                }
+
+                var normalizedX = ((x % maxTile) + maxTile) % maxTile;
+                var img = document.createElement("img");
+                img.className = "tile";
+                img.src = "https://tile.openstreetmap.org/" + ZOOM + "/" + normalizedX + "/" + y + ".png";
+                img.style.left = Math.round(x * TILE_SIZE - centerX + width / 2) + "px";
+                img.style.top = Math.round(y * TILE_SIZE - centerY + height / 2) + "px";
+                img.onerror = function() {
+                    failedTiles++;
+                    if (failedTiles > 3) {
+                        showError();
+                    }
+                };
+                map.insertBefore(img, map.firstChild);
+            }
+        }
+    }
 
     function updateMap(lat, lon, nom, adresse) {
-        LAT = lat; LON = lon; NOM = nom; ADRESSE = adresse;
-        map.setView([lat, lon], 15);
-        marker.setLatLng([lat, lon]);
-        marker.setPopupContent(buildPopup(nom, adresse));
-        marker.openPopup();
-        document.getElementById('bar-title').textContent   = nom;
-        document.getElementById('bar-adresse').textContent = adresse;
+        LAT = Number(lat) || 36.8065;
+        LON = Number(lon) || 10.1815;
+        NOM = nom || "Cabinet medical";
+        ADRESSE = adresse || "Tunis, Tunisie";
+        renderMap();
     }
+
+    window.onload = renderMap;
+    window.onresize = renderMap;
 </script>
 </body>
 </html>

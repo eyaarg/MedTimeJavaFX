@@ -111,6 +111,10 @@ public class MainControllerArij {
     @FXML
     private void showDashboardView() {
         setModuleActive(btnSideDashboard);
+        if (isAdmin()) {
+            showHubsView("Espace Admin", "Gerez les utilisateurs et les validations", buildAdminHubs());
+            return;
+        }
         loadView("/fxml/DashboardArij.fxml");
     }
 
@@ -159,6 +163,11 @@ public class MainControllerArij {
         loadView("/fxml/NotificationListArij.fxml");
         // Rafraîchir le badge après avoir vu les notifications
         Platform.runLater(() -> updateNotifBadge());
+    }
+
+    @FXML
+    private void showProfile() {
+        ProfileController.showAsStage();
     }
 
     @FXML
@@ -216,10 +225,10 @@ public class MainControllerArij {
 
     private void applyRoleUi() {
         if (footerRoleLabel != null) {
-            footerRoleLabel.setText(isDoctor() ? "Medecin" : "Patient");
+            footerRoleLabel.setText(formatRole(role));
         }
         if (avatarLabel != null && (avatarLabel.getText() == null || avatarLabel.getText().isBlank())) {
-            avatarLabel.setText(isDoctor() ? "M" : "P");
+            avatarLabel.setText(isAdmin() ? "A" : isDoctor() ? "M" : "P");
         }
     }
 
@@ -230,7 +239,9 @@ public class MainControllerArij {
         }
 
         try {
-            if (isDoctor()) {
+            if (isAdmin()) {
+                return;
+            } else if (isDoctor()) {
                 Doctor doctor = new ServiceDoctor().afficherParId(currentUser.getId());
                 if (doctor != null) {
                     doctorId = doctor.getId();
@@ -249,6 +260,9 @@ public class MainControllerArij {
     private String normalizeRole(String raw, int patientId, int doctorId) {
         if (raw != null && !raw.isBlank()) {
             String r = raw.trim().toUpperCase();
+            if ("ROLE_ADMIN".equals(r) || "ADMIN".equals(r)) {
+                return "ADMIN";
+            }
             if ("ROLE_DOCTOR".equals(r) || "DOCTOR".equals(r) || "MEDECIN".equals(r)) {
                 return "DOCTOR";
             }
@@ -261,6 +275,9 @@ public class MainControllerArij {
 
     private String formatRole(String role) {
         String normalized = normalizeRole(role, 0, 0);
+        if ("ADMIN".equals(normalized)) {
+            return "Admin";
+        }
         return "DOCTOR".equals(normalized) ? "Medecin" : "Patient";
     }
 
@@ -275,8 +292,20 @@ public class MainControllerArij {
         return "DOCTOR".equalsIgnoreCase(role);
     }
 
+    private boolean isAdmin() {
+        return "ADMIN".equalsIgnoreCase(role) || UserSession.isAdmin();
+    }
+
     private boolean isPatient() {
-        return !isDoctor();
+        return "PATIENT".equalsIgnoreCase(role);
+    }
+
+    private List<HubCard> buildAdminHubs() {
+        return Arrays.asList(
+                new HubCard("U", "Users", "Gerez les comptes et les roles", this::showUsers),
+                new HubCard("D", "Validation medecins", "Validez les dossiers des medecins", AdminDoctorValidationController::showAsStage),
+                new HubCard("S", "Statistiques", "Consultez les statistiques admin", AdminDashboardController::showAsStage)
+        );
     }
 
     private List<HubCard> buildConsultationHubs() {
@@ -303,6 +332,12 @@ public class MainControllerArij {
     }
 
     private List<HubCard> buildMarketHubs() {
+        if (isPatient()) {
+            return Arrays.asList(
+                    new HubCard("💊", "Liste des produits", "Parcourez le catalogue medical", () -> loadView("/fxml/ListProd.fxml"))
+            );
+        }
+
         return Arrays.asList(
                 new HubCard("💊", "Liste des produits", "Parcourez le catalogue medical", () -> loadView("/fxml/ListProd.fxml")),
                 new HubCard("➕", "Ajouter un produit", "Enregistrer un nouveau produit", () -> loadView("/fxml/AjoutProd.fxml"))

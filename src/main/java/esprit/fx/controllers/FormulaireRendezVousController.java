@@ -27,6 +27,7 @@ public class FormulaireRendezVousController implements Initializable {
     @FXML private ComboBox<User> comboPatient;
     @FXML private ComboBox<User> comboDocteur;
     @FXML private DatePicker datePickerRdv;
+    @FXML private Label labelPatient;
     @FXML private Label labelMeteo;
     @FXML private ComboBox<String> comboHeure;
     @FXML private TextArea textAreaMotif;
@@ -46,21 +47,25 @@ public class FormulaireRendezVousController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        serviceRendezVous = new ServiceRendezVous();
-        serviceUser = new ServiceUser();
-        serviceDisponibilite = new ServiceDisponibilite();
-        weatherService = new WeatherService();
-        
-        User currentUser = UserSession.getCurrentUser();
-        currentUserRole = UserSession.getCurrentRole();
-        currentUserId = currentUser != null ? currentUser.getId() : 0;
-        
-        initializeComboBoxes();
-        configureBasedOnRole();
-        setupWeatherListener();
+        try {
+            serviceRendezVous = new ServiceRendezVous();
+            serviceUser = new ServiceUser();
+            serviceDisponibilite = new ServiceDisponibilite();
+            weatherService = new WeatherService();
+
+            User currentUser = UserSession.getCurrentUser();
+            currentUserRole = UserSession.getCurrentRole();
+            currentUserId = currentUser != null ? currentUser.getId() : 0;
+
+            initializeComboBoxes();
+            configureBasedOnRole();
+            setupWeatherListener();
+        } catch (Exception e) {
+            System.err.println("Erreur initialisation FormulaireRendezVousController: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
-    /** ├ëcoute le DatePicker et d├®clenche l'appel m├®t├®o dans un thread s├®par├®. */
     private void setupWeatherListener() {
         datePickerRdv.valueProperty().addListener((obs, oldDate, newDate) -> {
             if (newDate == null) {
@@ -68,8 +73,7 @@ public class FormulaireRendezVousController implements Initializable {
                 labelMeteo.setManaged(false);
                 return;
             }
-            // Afficher un message de chargement imm├®diatement
-            labelMeteo.setText("ÔÅ│ Chargement de la m├®t├®o...");
+            labelMeteo.setText("Chargement de la meteo...");
             labelMeteo.setStyle(
                     "-fx-font-size: 12px; -fx-text-fill: #6b7280;" +
                     "-fx-background-color: #f3f4f6; -fx-background-radius: 6;" +
@@ -77,7 +81,6 @@ public class FormulaireRendezVousController implements Initializable {
             labelMeteo.setVisible(true);
             labelMeteo.setManaged(true);
 
-            // Appel API en arri├¿re-plan pour ne pas bloquer l'UI
             Thread thread = new Thread(() -> {
                 WeatherService.MeteoResult result = weatherService.getMeteo(newDate);
                 Platform.runLater(() -> afficherMeteo(newDate, result));
@@ -87,17 +90,15 @@ public class FormulaireRendezVousController implements Initializable {
         });
     }
 
-    /** Met ├á jour le label m├®t├®o avec le r├®sultat de l'API. */
     private void afficherMeteo(LocalDate date, WeatherService.MeteoResult result) {
         if (result == null) {
-            labelMeteo.setText("ÔÜá´©Å M├®t├®o indisponible pour cette date (hors plage 5 jours)");
+            labelMeteo.setText("Meteo indisponible pour cette date (hors plage 5 jours)");
             labelMeteo.setStyle(
                     "-fx-font-size: 12px; -fx-text-fill: #92400e;" +
                     "-fx-background-color: #fef3c7; -fx-background-radius: 6;" +
                     "-fx-padding: 6 10; -fx-border-color: #fde68a; -fx-border-radius: 6;");
         } else {
             labelMeteo.setText(result.toDisplayString(date));
-            // Couleur selon la m├®t├®o
             boolean isBad = result.icone.startsWith("09") || result.icone.startsWith("10")
                          || result.icone.startsWith("11") || result.icone.startsWith("13");
             if (isBad) {
@@ -117,32 +118,34 @@ public class FormulaireRendezVousController implements Initializable {
     }
 
     private void initializeComboBoxes() {
-        // Heures disponibles (de 8h ├á 18h par cr├®neaux de 30 minutes)
         for (int hour = 8; hour <= 18; hour++) {
             comboHeure.getItems().add(String.format("%02d:00", hour));
             if (hour < 18) {
                 comboHeure.getItems().add(String.format("%02d:30", hour));
             }
         }
-        
-        // Statuts
+
         comboStatut.setItems(FXCollections.observableArrayList(
             "DEMANDE", "CONFIRME", "ANNULE", "TERMINE"
         ));
         comboStatut.setValue("DEMANDE");
-        
-        // Charger les utilisateurs
+
         chargerUtilisateurs();
     }
 
     private void configureBasedOnRole() {
         if ("PATIENT".equals(currentUserRole)) {
-            // Les patients ne peuvent pas changer le patient (c'est eux)
+            labelPatient.setVisible(false);
+            labelPatient.setManaged(false);
+            comboPatient.setVisible(false);
+            comboPatient.setManaged(false);
             comboPatient.setDisable(true);
-            // Ils ne peuvent pas changer le statut
             comboStatut.setDisable(true);
         } else if ("DOCTOR".equals(currentUserRole)) {
-            // Les m├®decins ne peuvent pas changer le m├®decin (c'est eux)
+            labelPatient.setVisible(true);
+            labelPatient.setManaged(true);
+            comboPatient.setVisible(true);
+            comboPatient.setManaged(true);
             comboDocteur.setDisable(true);
         }
     }
@@ -150,91 +153,59 @@ public class FormulaireRendezVousController implements Initializable {
     private void chargerUtilisateurs() {
         try {
             List<User> users = serviceUser.getAll();
-            
-            // S├®parer patients et m├®decins
-            List<User> patients = users.stream()
-                .filter(user -> user.getRoles().stream()
-                    .anyMatch(role -> "PATIENT".equals(role.getName())))
-                .toList();
-                
-            List<User> doctors = users.stream()
-                .filter(user -> user.getRoles().stream()
-                    .anyMatch(role -> "DOCTOR".equals(role.getName())))
-                .toList();
-            
+
+            List<User> patients = users.stream().filter(this::isPatient).toList();
+            List<User> doctors  = users.stream().filter(this::isDoctor).toList();
+
             comboPatient.setItems(FXCollections.observableArrayList(patients));
             comboDocteur.setItems(FXCollections.observableArrayList(doctors));
-            
-            // Configurer l'affichage des noms dans les ComboBox
-            comboPatient.setCellFactory(listView -> new ListCell<User>() {
-                @Override
-                protected void updateItem(User user, boolean empty) {
-                    super.updateItem(user, empty);
-                    if (empty || user == null) {
-                        setText(null);
-                    } else {
-                        setText(user.getUsername() + " (" + user.getEmail() + ")");
-                    }
+
+            comboPatient.setCellFactory(lv -> new ListCell<>() {
+                @Override protected void updateItem(User u, boolean empty) {
+                    super.updateItem(u, empty);
+                    setText(empty || u == null ? null : u.getUsername());
                 }
             });
-            
-            comboPatient.setButtonCell(new ListCell<User>() {
-                @Override
-                protected void updateItem(User user, boolean empty) {
-                    super.updateItem(user, empty);
-                    if (empty || user == null) {
-                        setText(null);
-                    } else {
-                        setText(user.getUsername());
-                    }
+            comboPatient.setButtonCell(new ListCell<>() {
+                @Override protected void updateItem(User u, boolean empty) {
+                    super.updateItem(u, empty);
+                    setText(empty || u == null ? null : u.getUsername());
                 }
             });
-            
-            comboDocteur.setCellFactory(listView -> new ListCell<User>() {
-                @Override
-                protected void updateItem(User user, boolean empty) {
-                    super.updateItem(user, empty);
-                    if (empty || user == null) {
-                        setText(null);
-                    } else {
-                        setText(user.getUsername() + " (" + user.getEmail() + ")");
-                    }
+            comboDocteur.setCellFactory(lv -> new ListCell<>() {
+                @Override protected void updateItem(User u, boolean empty) {
+                    super.updateItem(u, empty);
+                    setText(empty || u == null ? null : u.getUsername());
                 }
             });
-            
-            comboDocteur.setButtonCell(new ListCell<User>() {
-                @Override
-                protected void updateItem(User user, boolean empty) {
-                    super.updateItem(user, empty);
-                    if (empty || user == null) {
-                        setText(null);
-                    } else {
-                        setText(user.getUsername());
-                    }
+            comboDocteur.setButtonCell(new ListCell<>() {
+                @Override protected void updateItem(User u, boolean empty) {
+                    super.updateItem(u, empty);
+                    setText(empty || u == null ? null : u.getUsername());
                 }
             });
-            
-            // Pr├®-s├®lectionner l'utilisateur actuel selon son r├┤le
-            if ("PATIENT".equals(currentUserRole)) {
-                User currentUser = UserSession.getCurrentUser();
-                comboPatient.setValue(currentUser);
-            } else if ("DOCTOR".equals(currentUserRole)) {
-                User currentUser = UserSession.getCurrentUser();
-                comboDocteur.setValue(currentUser);
+
+            if (currentUserId > 0) {
+                if ("PATIENT".equals(currentUserRole)) {
+                    User p = findUserById(patients, currentUserId);
+                    if (p != null) comboPatient.setValue(p);
+                } else if ("DOCTOR".equals(currentUserRole)) {
+                    User d = findUserById(doctors, currentUserId);
+                    if (d != null) comboDocteur.setValue(d);
+                }
             }
-            
-        } catch (SQLException e) {
-            showAlert("Erreur", "Impossible de charger les utilisateurs : " + e.getMessage());
+
+        } catch (Exception e) {
+            // Ne pas faire crasher initialize() - afficher l'erreur après que la scène soit prête
+            System.err.println("Erreur chargement utilisateurs: " + e.getMessage());
+            e.printStackTrace();
+            Platform.runLater(() -> showAlert("Erreur", "Impossible de charger les utilisateurs : " + e.getMessage()));
         }
     }
 
     public void setRendezVous(RendezVous rendezVous) {
         this.rendezVousActuel = rendezVous;
-        
-        if (rendezVous != null) {
-            // Mode modification
-            remplirFormulaire(rendezVous);
-        }
+        if (rendezVous != null) remplirFormulaire(rendezVous);
     }
 
     public void setParentController(RendezVousController parentController) {
@@ -243,76 +214,57 @@ public class FormulaireRendezVousController implements Initializable {
 
     private void remplirFormulaire(RendezVous rdv) {
         try {
-            // Trouver et s├®lectionner le patient
             User patient = serviceUser.afficherParId(rdv.getPatientId());
-            if (patient != null) {
-                comboPatient.setValue(patient);
-            }
-            
-            // Trouver et s├®lectionner le m├®decin
+            if (patient != null) comboPatient.setValue(patient);
+
             User doctor = serviceUser.afficherParId(rdv.getDoctorId());
-            if (doctor != null) {
-                comboDocteur.setValue(doctor);
-            }
-            
-            // Date et heure
+            if (doctor != null) comboDocteur.setValue(doctor);
+
             if (rdv.getDateHeure() != null) {
                 datePickerRdv.setValue(rdv.getDateHeure().toLocalDate());
-                String heure = String.format("%02d:%02d", 
-                    rdv.getDateHeure().getHour(), 
-                    rdv.getDateHeure().getMinute());
-                comboHeure.setValue(heure);
+                comboHeure.setValue(String.format("%02d:%02d",
+                    rdv.getDateHeure().getHour(), rdv.getDateHeure().getMinute()));
             }
-            
-            // Autres champs
+
             textAreaMotif.setText(rdv.getMotif());
             textAreaNotes.setText(rdv.getNotes());
             comboStatut.setValue(rdv.getStatut());
-            
+
         } catch (SQLException e) {
-            showAlert("Erreur", "Erreur lors du chargement des donn├®es : " + e.getMessage());
+            showAlert("Erreur", "Erreur lors du chargement : " + e.getMessage());
         }
     }
 
     @FXML
     private void sauvegarder() {
-        if (!validerFormulaire()) {
-            return;
-        }
-        
+        if (!validerFormulaire()) return;
+
         try {
             RendezVous rdv = rendezVousActuel != null ? rendezVousActuel : new RendezVous();
-            
-            // Remplir les donn├®es
+
             rdv.setPatientId(comboPatient.getValue().getId());
             rdv.setDoctorId(comboDocteur.getValue().getId());
-            
-            // Construire la date/heure
+
             LocalDate date = datePickerRdv.getValue();
-            String[] heureMinute = comboHeure.getValue().split(":");
-            LocalTime time = LocalTime.of(Integer.parseInt(heureMinute[0]), Integer.parseInt(heureMinute[1]));
-            rdv.setDateHeure(LocalDateTime.of(date, time));
-            
+            String[] hm = comboHeure.getValue().split(":");
+            rdv.setDateHeure(LocalDateTime.of(date, LocalTime.of(Integer.parseInt(hm[0]), Integer.parseInt(hm[1]))));
+
             rdv.setMotif(textAreaMotif.getText());
             rdv.setNotes(textAreaNotes.getText());
             rdv.setStatut(comboStatut.getValue());
-            
-            // Sauvegarder
+
             if (rendezVousActuel == null) {
                 serviceRendezVous.ajouter(rdv);
-                showInfo("Succ├¿s", "Rendez-vous cr├®├® avec succ├¿s.");
+                showInfo("Succes", "Rendez-vous cree avec succes.");
             } else {
                 rdv.setDateModification(LocalDateTime.now());
                 serviceRendezVous.modifier(rdv);
-                showInfo("Succ├¿s", "Rendez-vous modifi├® avec succ├¿s.");
+                showInfo("Succes", "Rendez-vous modifie avec succes.");
             }
-            
-            // Rafra├«chir la liste parent et fermer
-            if (parentController != null) {
-                parentController.rafraichir();
-            }
+
+            if (parentController != null) parentController.rafraichir();
             fermer();
-            
+
         } catch (SQLException e) {
             showAlert("Erreur", "Erreur lors de la sauvegarde : " + e.getMessage());
         } catch (Exception e) {
@@ -327,37 +279,29 @@ public class FormulaireRendezVousController implements Initializable {
 
     private boolean validerFormulaire() {
         if (comboPatient.getValue() == null) {
-            showAlert("Validation", "Veuillez s├®lectionner un patient.");
+            showAlert("Validation", "Veuillez selectionner un patient.");
             return false;
         }
-        
         if (comboDocteur.getValue() == null) {
-            showAlert("Validation", "Veuillez s├®lectionner un m├®decin.");
+            showAlert("Validation", "Veuillez selectionner un medecin.");
             return false;
         }
-        
         if (datePickerRdv.getValue() == null) {
-            showAlert("Validation", "Veuillez s├®lectionner une date.");
+            showAlert("Validation", "Veuillez selectionner une date.");
             return false;
         }
-        
         if (comboHeure.getValue() == null) {
-            showAlert("Validation", "Veuillez s├®lectionner une heure.");
+            showAlert("Validation", "Veuillez selectionner une heure.");
             return false;
         }
-        
         if (textAreaMotif.getText().trim().isEmpty()) {
             showAlert("Validation", "Veuillez saisir le motif du rendez-vous.");
             return false;
         }
-        
-        // V├®rifier que la date n'est pas dans le pass├®
-        LocalDate selectedDate = datePickerRdv.getValue();
-        if (selectedDate.isBefore(LocalDate.now())) {
-            showAlert("Validation", "La date ne peut pas ├¬tre dans le pass├®.");
+        if (datePickerRdv.getValue().isBefore(LocalDate.now())) {
+            showAlert("Validation", "La date ne peut pas etre dans le passe.");
             return false;
         }
-        
         return true;
     }
 
@@ -380,5 +324,32 @@ public class FormulaireRendezVousController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private boolean isPatient(User user) {
+        if (user == null || user.getRoles() == null) return false;
+        return user.getRoles().stream().anyMatch(role -> {
+            if (role == null || role.getName() == null) return false;
+            String r = role.getName().trim().toUpperCase();
+            return "PATIENT".equals(r) || "ROLE_PATIENT".equals(r);
+        });
+    }
+
+    private boolean isDoctor(User user) {
+        if (user == null || user.getRoles() == null) return false;
+        return user.getRoles().stream().anyMatch(role -> {
+            if (role == null || role.getName() == null) return false;
+            String r = role.getName().trim().toUpperCase();
+            return "DOCTOR".equals(r) || "ROLE_DOCTOR".equals(r)
+                || "PHYSICIAN".equals(r) || "ROLE_PHYSICIAN".equals(r)
+                || "MEDECIN".equals(r);
+        });
+    }
+
+    private User findUserById(List<User> users, int userId) {
+        if (users == null || users.isEmpty()) return null;
+        return users.stream()
+            .filter(u -> u != null && u.getId() == userId)
+            .findFirst().orElse(null);
     }
 }

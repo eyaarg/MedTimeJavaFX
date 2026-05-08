@@ -452,6 +452,8 @@ public class DisponibiliteController implements Initializable {
         dialog.setTitle(disponibilite == null ?
                 "Ô×ò Nouvelle Disponibilit├®" : "Ô£Å´©Å Modifier Disponibilit├®");
 
+        dialog.getDialogPane().setPrefWidth(640);
+        dialog.getDialogPane().setMaxHeight(680);
         dialog.getDialogPane().setStyle(
                 "-fx-background-color: white;" +
                         "-fx-background-radius: 16;" +
@@ -470,13 +472,13 @@ public class DisponibiliteController implements Initializable {
         VBox header = new VBox(8);
         header.setStyle(
                 "-fx-background-color: linear-gradient(to right, #1d4ed8 0%, #0ea5e9 100%);" +
-                        "-fx-padding: 25;" +
+                        "-fx-padding: 18 24;" +
                         "-fx-background-radius: 16 16 0 0;"
         );
         Label titleLabel = new Label(disponibilite == null ?
                 "Ô×ò Nouvelle Disponibilit├®" : "Ô£Å´©Å Modifier Disponibilit├®");
         titleLabel.setStyle(
-                "-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;"
+                "-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;"
         );
         Label subtitleLabel = new Label("Remplissez tous les champs obligatoires");
         subtitleLabel.setStyle(
@@ -484,8 +486,8 @@ public class DisponibiliteController implements Initializable {
         );
         header.getChildren().addAll(titleLabel, subtitleLabel);
 
-        VBox formContainer = new VBox(20);
-        formContainer.setPadding(new Insets(30));
+        VBox formContainer = new VBox(12);
+        formContainer.setPadding(new Insets(18, 24, 14, 24));
         formContainer.setStyle("-fx-background-color: white;");
 
         String inputStyle =
@@ -493,7 +495,7 @@ public class DisponibiliteController implements Initializable {
                         "-fx-border-color: #e5e7eb;" +
                         "-fx-border-radius: 8;" +
                         "-fx-background-radius: 8;" +
-                        "-fx-padding: 12;" +
+                        "-fx-padding: 8 10;" +
                         "-fx-font-size: 14px;";
 
         String labelStyle =
@@ -501,45 +503,88 @@ public class DisponibiliteController implements Initializable {
         String errorStyle =
                 "-fx-font-size: 12px; -fx-text-fill: #ef4444; -fx-padding: 4 0 0 0;";
 
-        // Champ M├®decin
+        // Champ Médecin
         VBox doctorBox = new VBox(6);
-        Label doctorLabel = new Label("M├®decin *");
+        Label doctorLabel = new Label("Médecin *");
         doctorLabel.setStyle(labelStyle);
-        ComboBox<String> doctorCombo = new ComboBox<>();
-        doctorCombo.setPromptText("S├®lectionner un m├®decin");
+        ComboBox<User> doctorCombo = new ComboBox<>();
+        doctorCombo.setPromptText("Sélectionner un médecin");
         doctorCombo.setPrefWidth(400);
         doctorCombo.setStyle(inputStyle);
         Label doctorError = new Label();
         doctorError.setStyle(errorStyle);
         doctorError.setVisible(false);
-        doctorBox.getChildren().addAll(doctorLabel, doctorCombo, doctorError);
+        Button btnVoirCabinet = new Button("Voir le cabinet");
+        btnVoirCabinet.setDisable(true);
+        btnVoirCabinet.setStyle(
+                "-fx-background-color: #eff6ff;" +
+                        "-fx-text-fill: #1d4ed8;" +
+                        "-fx-font-weight: 600;" +
+                        "-fx-padding: 7 14;" +
+                        "-fx-border-color: #bfdbfe;" +
+                        "-fx-border-radius: 8;" +
+                        "-fx-background-radius: 8;" +
+                        "-fx-cursor: hand;"
+        );
+        doctorBox.getChildren().addAll(doctorLabel, doctorCombo, btnVoirCabinet, doctorError);
+
+        // Configurer l'affichage du ComboBox pour montrer seulement le nom
+        doctorCombo.setCellFactory(lv -> new javafx.scene.control.ListCell<User>() {
+            @Override
+            protected void updateItem(User doctor, boolean empty) {
+                super.updateItem(doctor, empty);
+                if (empty || doctor == null) {
+                    setText(null);
+                } else {
+                    setText("Dr. " + doctor.getUsername());
+                }
+            }
+        });
+        
+        doctorCombo.setButtonCell(new javafx.scene.control.ListCell<User>() {
+            @Override
+            protected void updateItem(User doctor, boolean empty) {
+                super.updateItem(doctor, empty);
+                if (empty || doctor == null) {
+                    setText(null);
+                } else {
+                    setText("Dr. " + doctor.getUsername());
+                }
+            }
+        });
 
         try {
             List<User> doctors = serviceDisponibilite.getAllDoctors();
             if (!doctors.isEmpty()) {
-                for (User doctor : doctors) {
-                    doctorCombo.getItems().add(
-                            doctor.getId() + " - " + doctor.getUsername()
-                    );
-                }
+                doctorCombo.getItems().addAll(doctors);
             } else {
+                // Fallback: créer des objets User temporaires
                 List<Disponibilite> existingDispos = serviceDisponibilite.getAll();
                 java.util.Set<Integer> doctorIds = new java.util.HashSet<>();
                 for (Disponibilite d : existingDispos) {
                     doctorIds.add(d.getDoctorId());
                 }
                 for (Integer id : doctorIds) {
-                    doctorCombo.getItems().add(id + " - M├®decin " + id);
+                    User tempDoctor = new User();
+                    tempDoctor.setId(id);
+                    tempDoctor.setUsername("Médecin " + id);
+                    doctorCombo.getItems().add(tempDoctor);
                 }
             }
         } catch (Exception e) {
-            doctorCombo.getItems().addAll("1 - M├®decin 1", "2 - M├®decin 2");
+            // Fallback en cas d'erreur
+            User doc1 = new User();
+            doc1.setId(1);
+            doc1.setUsername("Test");
+            User doc2 = new User();
+            doc2.setId(2);
+            doc2.setUsername("Médecin 2");
+            doctorCombo.getItems().addAll(doc1, doc2);
         }
 
         doctorCombo.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            if (!isNowFocused &&
-                    (doctorCombo.getValue() == null || doctorCombo.getValue().isEmpty())) {
-                doctorError.setText("ÔÜá Le m├®decin est obligatoire");
+            if (!isNowFocused && doctorCombo.getValue() == null) {
+                doctorError.setText("⚠️ Le médecin est obligatoire");
                 doctorError.setVisible(true);
                 doctorCombo.setStyle(
                         inputStyle + "-fx-border-color: #ef4444; -fx-border-width: 2;"
@@ -551,6 +596,23 @@ public class DisponibiliteController implements Initializable {
         });
 
         // Date d├®but
+        doctorCombo.valueProperty().addListener((obs, oldDoctor, selectedDoctor) ->
+                btnVoirCabinet.setDisable(selectedDoctor == null)
+        );
+        btnVoirCabinet.setOnAction(e -> {
+            User selectedDoctor = doctorCombo.getValue();
+            if (selectedDoctor == null) {
+                doctorError.setText("Selectionnez un medecin pour voir son cabinet");
+                doctorError.setVisible(true);
+                return;
+            }
+
+            Disponibilite tempDispo = new Disponibilite();
+            tempDispo.setDoctorId(selectedDoctor.getId());
+            tempDispo.setDoctorNom(selectedDoctor.getUsername());
+            ouvrirCarte(tempDispo);
+        });
+
         VBox dateDebutBox = new VBox(6);
         Label dateDebutLabel = new Label("Date et heure de d├®but *");
         dateDebutLabel.setStyle(labelStyle);
@@ -605,7 +667,8 @@ public class DisponibiliteController implements Initializable {
         notesArea.setPromptText(
                 "Ajoutez des notes suppl├®mentaires (minimum 4 caract├¿res)..."
         );
-        notesArea.setPrefRowCount(3);
+        notesArea.setPrefRowCount(2);
+        notesArea.setPrefHeight(70);
         notesArea.setStyle(inputStyle);
         Label notesError = new Label();
         notesError.setStyle(errorStyle);
@@ -628,9 +691,10 @@ public class DisponibiliteController implements Initializable {
 
         // Remplir si modification
         if (disponibilite != null) {
-            for (String item : doctorCombo.getItems()) {
-                if (item.startsWith(disponibilite.getDoctorId() + " ")) {
-                    doctorCombo.setValue(item);
+            // Trouver et sélectionner le médecin par ID
+            for (User doctor : doctorCombo.getItems()) {
+                if (doctor.getId() == disponibilite.getDoctorId()) {
+                    doctorCombo.setValue(doctor);
                     break;
                 }
             }
@@ -657,13 +721,18 @@ public class DisponibiliteController implements Initializable {
                 doctorBox, dateDebutBox, dateFinBox, statutBox, notesBox
         );
         mainContainer.getChildren().addAll(header, formContainer);
-        dialog.getDialogPane().setContent(mainContainer);
+        ScrollPane scrollPane = new ScrollPane(mainContainer);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPrefViewportHeight(600);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setStyle("-fx-background-color: transparent; -fx-background: white;");
+        dialog.getDialogPane().setContent(scrollPane);
 
         dialog.getDialogPane().lookupButton(saveButtonType).setStyle(
                 "-fx-background-color: #10b981;" +
                         "-fx-text-fill: white;" +
                         "-fx-font-weight: 600;" +
-                        "-fx-padding: 12 24;" +
+                        "-fx-padding: 9 20;" +
                         "-fx-background-radius: 8;" +
                         "-fx-font-size: 14px;" +
                         "-fx-cursor: hand;"
@@ -673,7 +742,7 @@ public class DisponibiliteController implements Initializable {
                 "-fx-background-color: #f3f4f6;" +
                         "-fx-text-fill: #374151;" +
                         "-fx-font-weight: 600;" +
-                        "-fx-padding: 12 24;" +
+                        "-fx-padding: 9 20;" +
                         "-fx-background-radius: 8;" +
                         "-fx-font-size: 14px;" +
                         "-fx-cursor: hand;"
@@ -684,15 +753,14 @@ public class DisponibiliteController implements Initializable {
                 try {
                     boolean isValid = true;
 
-                    if (doctorCombo.getValue() == null ||
-                            doctorCombo.getValue().isEmpty()) {
-                        doctorError.setText("ÔÜá Le m├®decin est obligatoire");
+                    if (doctorCombo.getValue() == null) {
+                        doctorError.setText("⚠️ Le médecin est obligatoire");
                         doctorError.setVisible(true);
                         isValid = false;
                     }
 
                     if (dateDebutPicker.getValue() == null) {
-                        dateDebutError.setText("ÔÜá La date de d├®but est obligatoire");
+                        dateDebutError.setText("⚠️ La date de début est obligatoire");
                         dateDebutError.setVisible(true);
                         isValid = false;
                     }
@@ -700,14 +768,14 @@ public class DisponibiliteController implements Initializable {
                     if (!heureDebutField.getText()
                             .matches("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")) {
                         dateDebutError.setText(
-                                "ÔÜá Format d'heure invalide (HH:mm, ex: 09:00)"
+                                "⚠️ Format d'heure invalide (HH:mm, ex: 09:00)"
                         );
                         dateDebutError.setVisible(true);
                         isValid = false;
                     }
 
                     if (dateFinPicker.getValue() == null) {
-                        dateFinError.setText("ÔÜá La date de fin est obligatoire");
+                        dateFinError.setText("⚠️ La date de fin est obligatoire");
                         dateFinError.setVisible(true);
                         isValid = false;
                     }
@@ -715,7 +783,7 @@ public class DisponibiliteController implements Initializable {
                     if (!heureFinField.getText()
                             .matches("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")) {
                         dateFinError.setText(
-                                "ÔÜá Format d'heure invalide (HH:mm, ex: 17:00)"
+                                "⚠️ Format d'heure invalide (HH:mm, ex: 17:00)"
                         );
                         dateFinError.setVisible(true);
                         isValid = false;
@@ -724,7 +792,7 @@ public class DisponibiliteController implements Initializable {
                     String notesText = notesArea.getText().trim();
                     if (!notesText.isEmpty() && notesText.length() < 4) {
                         notesError.setText(
-                                "ÔÜá Les notes doivent contenir au moins 4 caract├¿res"
+                                "⚠️ Les notes doivent contenir au moins 4 caractères"
                         );
                         notesError.setVisible(true);
                         isValid = false;
@@ -732,9 +800,8 @@ public class DisponibiliteController implements Initializable {
 
                     if (!isValid) return null;
 
-                    int doctorId = Integer.parseInt(
-                            doctorCombo.getValue().split(" - ")[0]
-                    );
+                    // Récupérer l'ID du médecin depuis l'objet User
+                    int doctorId = doctorCombo.getValue().getId();
 
                     String[] heureDebutParts = heureDebutField.getText().split(":");
                     String[] heureFinParts = heureFinField.getText().split(":");
@@ -752,7 +819,7 @@ public class DisponibiliteController implements Initializable {
 
                     if (dateFin.isBefore(dateDebut) || dateFin.isEqual(dateDebut)) {
                         dateFinError.setText(
-                                "ÔÜá La date de fin doit ├¬tre sup├®rieure ├á la date de d├®but"
+                                "⚠️ La date de fin doit être supérieure à la date de début"
                         );
                         dateFinError.setVisible(true);
                         return null;

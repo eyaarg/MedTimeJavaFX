@@ -40,9 +40,17 @@ public class OpenStreetMapService {
      */
     public Coordonnees getCoordonnees(String adresse) {
         try {
+            if (adresse == null || adresse.isBlank()) {
+                System.err.println("[OpenStreetMapService] Adresse vide");
+                return null;
+            }
+            
             String query = URLEncoder.encode(adresse, StandardCharsets.UTF_8);
             String url   = NOMINATIM_URL + "?q=" + query
                          + "&format=json&limit=1&addressdetails=1";
+
+            System.out.println("[OpenStreetMapService] Recherche: " + adresse);
+            System.out.println("[OpenStreetMapService] URL: " + url);
 
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
@@ -56,13 +64,13 @@ public class OpenStreetMapService {
                     client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != 200) {
-                System.err.println("Nominatim HTTP " + response.statusCode());
+                System.err.println("[OpenStreetMapService] Nominatim HTTP " + response.statusCode());
                 return null;
             }
 
             JSONArray results = new JSONArray(response.body());
             if (results.isEmpty()) {
-                System.err.println("Nominatim: aucun résultat pour → " + adresse);
+                System.err.println("[OpenStreetMapService] Aucun resultat pour: " + adresse);
                 return null;
             }
 
@@ -71,10 +79,12 @@ public class OpenStreetMapService {
             double lon        = Double.parseDouble(first.getString("lon"));
             String displayName = first.getString("display_name");
 
+            System.out.println("[OpenStreetMapService] Coordonnees trouvees: " + lat + ", " + lon);
             return new Coordonnees(lat, lon, displayName);
 
         } catch (Exception e) {
-            System.err.println("OpenStreetMapService erreur: " + e.getMessage());
+            System.err.println("[OpenStreetMapService] Erreur: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }

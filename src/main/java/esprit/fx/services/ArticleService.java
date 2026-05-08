@@ -61,8 +61,12 @@ public class ArticleService implements IService<Article> {
     public List<Article> getAllByRole(boolean isDoctor) throws SQLException {
         List<Article> articles = new ArrayList<>();
         String sql = isDoctor
-            ? "SELECT id, titre, contenu, image, date_creation, nb_vues, statut, specialite_id FROM article"
-            : "SELECT id, titre, contenu, image, date_creation, nb_vues, statut, specialite_id FROM article WHERE statut = 'publie' OR statut = 'publié'";
+            ? "SELECT id, titre, contenu, image, date_creation, nb_vues, statut, specialite_id FROM article ORDER BY date_creation DESC"
+            : "SELECT id, titre, contenu, image, date_creation, nb_vues, statut, specialite_id " +
+              "FROM article " +
+              "WHERE LOWER(TRIM(statut)) IN ('publie', 'publié', 'public', 'published') " +
+              "AND LOWER(TRIM(statut)) NOT IN ('brouillon', 'draft') " +
+              "ORDER BY date_creation DESC";
         Statement st = con.createStatement();
         ResultSet rs = st.executeQuery(sql);
         while (rs.next()) {

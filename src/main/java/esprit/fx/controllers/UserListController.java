@@ -666,7 +666,7 @@ public class UserListController {
     private String normalizeRoleForFilter(String role) {
         if (role == null || role.isBlank()) return "PATIENT";
         String n = role.trim().toUpperCase(Locale.ROOT);
-        if (n.contains("DOCTOR") || n.contains("MEDECIN")) return "DOCTOR";
+        if (n.contains("DOCTOR") || n.contains("MEDECIN") || n.contains("PHYSICIAN")) return "DOCTOR";
         if (n.contains("ADMIN"))  return "ADMIN";
         return "PATIENT";
     }

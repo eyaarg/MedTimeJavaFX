@@ -136,7 +136,13 @@ public class LoginController {
             stage.setMaximized(true);
         } catch (IOException e) {
             System.err.println("Erreur ouverture MainView: " + e.getMessage());
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir l'application : " + e.getMessage());
             LOGGER.log(Level.SEVERE, "Erreur ouverture MainView", e);
+        } catch (Exception e) {
+            System.err.println("Erreur inattendue MainView: " + e.getMessage());
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur inattendue : " + e.getMessage());
         }
     }
 

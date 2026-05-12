@@ -85,22 +85,41 @@ public class ServiceDoctorDocument {
             throw new FileNotFoundException("Document introuvable.");
         }
 
-        Path storedPath = Paths.get(doc.getFolder_name(), doc.getStored_name())
-                .toAbsolutePath()
-                .normalize();
-        Path pdfPath = storedPath.getFileName().toString().toLowerCase().endsWith(".pdf")
-                ? storedPath
-                : storedPath.resolveSibling(storedPath.getFileName() + ".pdf");
+        String folderName = doc.getFolder_name();
+        String storedName = doc.getStored_name();
 
-        if (Files.exists(pdfPath)) {
-            return pdfPath.toFile();
-        }
-        if (Files.exists(storedPath)) {
-            Files.copy(storedPath, pdfPath, StandardCopyOption.REPLACE_EXISTING);
-            return pdfPath.toFile();
+        // List of base paths to try (JavaFX uploads, Symfony uploads, absolute)
+        String[] basePaths = {
+            "uploads/doctor_documents/",                                    // JavaFX DoctorRegistrationController
+            "C:/xampp/htdocs/MedTime/public/uploads/doctors/",             // Symfony web upload
+            "C:/xampp/htdocs/MedTime/uploads/doctors/",                    // Symfony alt path
+            ""                                                              // folder_name is already absolute
+        };
+
+        for (String base : basePaths) {
+            Path candidate = Paths.get(base + folderName, storedName).toAbsolutePath().normalize();
+            if (java.nio.file.Files.exists(candidate)) {
+                // Ensure .pdf extension
+                if (!candidate.getFileName().toString().toLowerCase().endsWith(".pdf")) {
+                    Path pdfPath = candidate.resolveSibling(candidate.getFileName() + ".pdf");
+                    java.nio.file.Files.copy(candidate, pdfPath, StandardCopyOption.REPLACE_EXISTING);
+                    return pdfPath.toFile();
+                }
+                return candidate.toFile();
+            }
         }
 
-        throw new FileNotFoundException(pdfPath.toString());
+        // Also try folder_name as absolute path directly
+        Path direct = Paths.get(folderName, storedName);
+        if (java.nio.file.Files.exists(direct)) {
+            return direct.toFile();
+        }
+
+        throw new FileNotFoundException(
+            "Fichier PDF introuvable. Chemins essayés:\n" +
+            "- uploads/doctor_documents/" + folderName + "/" + storedName + "\n" +
+            "- C:/xampp/htdocs/MedTime/public/uploads/doctors/" + folderName + "/" + storedName
+        );
     }
 
     public void updateDocumentStatus(int documentId, String status) throws SQLException {

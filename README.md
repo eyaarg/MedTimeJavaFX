@@ -4,16 +4,6 @@ MedTimeFX est une application desktop développée en JavaFX et connectée à un
 
 Le projet permet de gérer une plateforme médicale avec plusieurs espaces : patient, médecin et administrateur.
 
-## Aperçu
-
-Ajouter ici les captures d’écran du projet :
-
-```text
-docs/screenshots/login.png
-docs/screenshots/dashboard.png
-docs/screenshots/consultations.png
-```
-
 ## Table des matières
 
 - Description

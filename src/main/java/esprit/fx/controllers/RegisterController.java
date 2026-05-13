@@ -26,44 +26,25 @@ public class RegisterController {
     private static final Pattern PHONE_PATTERN = Pattern.compile("^(\\d{8}|\\+[1-9]\\d{6,14})$");
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).+$");
 
-    @FXML
-    private TextField usernameField;
-
-    @FXML
-    private TextField emailAddressField;
-
-    @FXML
-    private TextField phoneField;
-
-    @FXML
-    private PasswordField passwordField;
-
-    @FXML
-    private ComboBox<String> roleComboBox;
-
-    @FXML
-    private ComboBox<String> regionComboBox;
-
-    @FXML
-    private CheckBox termsCheckBox;
-
-    @FXML
-    private Button createAccountBtn;
-
-    @FXML
-    private Text signInLink;
+    @FXML private TextField usernameField;
+    @FXML private TextField emailAddressField;
+    @FXML private TextField phoneField;
+    @FXML private PasswordField passwordField;
+    @FXML private ComboBox<String> roleComboBox;
+    @FXML private ComboBox<String> regionComboBox;
+    @FXML private CheckBox termsCheckBox;
+    @FXML private Button createAccountBtn;
+    @FXML private Text signInLink;
 
     private final ServiceUser serviceUser = new ServiceUser();
     private final ServicePatient servicePatient = new ServicePatient();
 
-    // Initialisation (optionnel, car les items sont déjà dans le FXML)
     @FXML
     public void initialize() {
         roleComboBox.setValue("Patient");
         regionComboBox.setValue("Tunis");
     }
 
-    // Action du bouton Create Account
     @FXML
     private void handleCreateAccount() {
         String username = usernameField.getText();
@@ -78,64 +59,54 @@ public class RegisterController {
             showAlert("Erreur", "Veuillez entrer votre nom d'utilisateur");
             return;
         }
-
         if (email == null || email.isBlank()) {
             showAlert("Erreur", "Veuillez entrer votre email");
             return;
         }
-
         if (!EMAIL_PATTERN.matcher(email.trim()).matches()) {
             showAlert("Erreur", "Email invalide (format attendu: exemple@domaine.com).");
             return;
         }
-
         if (phone == null || phone.isBlank()) {
             showAlert("Erreur", "Veuillez entrer votre numero de telephone");
             return;
         }
-
         if (!PHONE_PATTERN.matcher(phone.trim()).matches()) {
             showAlert("Erreur", "Le numéro de téléphone doit contenir 8 chiffres ou être au format international (ex: +21629110800).");
             return;
         }
-
         if (password == null || password.isBlank()) {
             showAlert("Erreur", "Veuillez entrer votre mot de passe");
             return;
         }
-
         if (password.length() < 8) {
             showAlert("Erreur", "Le mot de passe doit contenir au moins 8 caractères.");
             return;
         }
-
         if (!PASSWORD_PATTERN.matcher(password).matches()) {
             showAlert("Erreur", "Le mot de passe doit contenir des lettres et des chiffres.");
             return;
         }
-
         if (username.trim().length() < 3 || username.trim().length() > 80
                 || !username.trim().matches("^[\\p{L}0-9_.\\-]+$")) {
             showAlert("Erreur", "Le username doit contenir entre 3 et 80 caractères (lettres, chiffres, point, tiret, underscore).");
             return;
         }
-
         if (role == null) {
             showAlert("Erreur", "Veuillez sélectionner un rôle");
             return;
         }
-
         if (!termsAccepted) {
             showAlert("Erreur", "Veuillez accepter les conditions d'utilisation");
             return;
         }
-        if (role != null && (role.equalsIgnoreCase("Doctor") ||
-                role.equalsIgnoreCase("Medecin"))) {
+
+        if (role.equalsIgnoreCase("Doctor") || role.equalsIgnoreCase("Medecin")) {
             try {
                 User userToCreate = new User();
                 userToCreate.setUsername(username.trim());
                 userToCreate.setEmail(email.trim());
-                userToCreate.setPhoneNumber(phone == null ? null : phone.trim());
+                userToCreate.setPhoneNumber(phone.trim());
                 userToCreate.setPassword(password);
                 userToCreate.setRequestedRole(role);
                 userToCreate.setCreatedAt(LocalDateTime.now());
@@ -159,7 +130,7 @@ public class RegisterController {
             User userToCreate = new User();
             userToCreate.setUsername(username.trim());
             userToCreate.setEmail(email.trim());
-            userToCreate.setPhoneNumber(phone == null ? null : phone.trim());
+            userToCreate.setPhoneNumber(phone.trim());
             userToCreate.setPassword(password);
             userToCreate.setRequestedRole(role);
             userToCreate.setCreatedAt(LocalDateTime.now());
@@ -188,17 +159,6 @@ public class RegisterController {
         openLoginPage();
     }
 
-    private String extractPrimaryRole(User user) {
-        if (user == null) {
-            return "PATIENT";
-        }
-        List<Role> roles = user.getRoles();
-        if (roles == null || roles.isEmpty() || roles.get(0) == null || roles.get(0).getName() == null) {
-            return "PATIENT";
-        }
-        return roles.get(0).getName().toUpperCase();
-    }
-
     private void openLoginPage() {
         try {
             Parent root = FXMLLoader.load(Objects.requireNonNull(
@@ -217,17 +177,13 @@ public class RegisterController {
         }
     }
 
-    private void openMainView() {
-        try {
-            Parent root = FXMLLoader.load(Objects.requireNonNull(
-                    RegisterController.class.getResource("/fxml/MainViewArij.fxml")));
-            Stage stage = (Stage) createAccountBtn.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("MedTimeFX");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showAlert("Erreur", "Impossible d'ouvrir la page principale : " + e.getMessage());
+    private String extractPrimaryRole(User user) {
+        if (user == null) return "PATIENT";
+        List<Role> roles = user.getRoles();
+        if (roles == null || roles.isEmpty() || roles.get(0) == null || roles.get(0).getName() == null) {
+            return "PATIENT";
         }
+        return roles.get(0).getName().toUpperCase();
     }
 
     private void showAlert(String title, String message) {
@@ -247,9 +203,7 @@ public class RegisterController {
     }
 
     private String normalizeRegion(String region) {
-        if (region == null || region.isBlank()) {
-            return "Tunis";
-        }
+        if (region == null || region.isBlank()) return "Tunis";
         return region.trim();
     }
 }

@@ -628,17 +628,17 @@ public class UserListController {
     // ─────────────────────────────────────────────────────────────────────────
 
     private boolean isPending(User u) {
-        // Médecin en attente : is_verified=true, is_active=false, is_certified=false
+        // Médecin en attente de validation : a un profil doctor avec is_certified=false
+        // On ne vérifie PAS is_active car certains flux peuvent laisser is_active=true
         if (!"DOCTOR".equals(primaryRoleKey(u))) return false;
-        if (u.isActive()) return false;
-        if (!u.isVerified()) return false;
         Doctor d = findDoctor(u);
         return d != null && !d.isCertified();
     }
 
     private boolean isBlocked(User u) {
-        // Bloqué : is_active=false ET failed_attempts >= 5 (pas un médecin en attente)
-        return !u.isActive() && u.getFailedAttempts() >= 5;
+        // Bloqué : is_active=false ET failed_attempts >= 5 ET pas un médecin en attente
+        if (!u.isActive() && u.getFailedAttempts() >= 5) return true;
+        return false;
     }
 
     private boolean isDoctorCertified(User u) {

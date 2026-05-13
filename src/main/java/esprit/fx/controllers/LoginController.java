@@ -59,14 +59,13 @@ public class LoginController {
         try {
             User user = serviceUser.login(username, password);
 
-            // Identifiant ou mot de passe incorrect
             if (user == null) {
                 showAlert(Alert.AlertType.ERROR, "Connexion échouée", "Identifiant ou mot de passe incorrect.");
                 return;
             }
 
             String role = extractPrimaryRole(user);
-            boolean isDoctor = role.contains("DOCTOR") || role.contains("MEDECIN");
+            boolean isDoctor = role.contains("DOCTOR") || role.contains("MEDECIN") || role.contains("PHYSICIAN");
 
             // CAS 1 — Email non vérifié
             if (!user.isVerified()) {
@@ -86,7 +85,7 @@ public class LoginController {
                 return;
             }
 
-            // CAS 3 — Compte bloqué (non médecin)
+            // CAS 3 — Compte bloqué
             if (!user.isActive()) {
                 showAlert(Alert.AlertType.ERROR, "Compte suspendu",
                         "Votre compte a été suspendu suite à plusieurs tentatives de connexion échouées. " +

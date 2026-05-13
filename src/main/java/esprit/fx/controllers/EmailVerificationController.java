@@ -1,8 +1,10 @@
 package esprit.fx.controllers;
 
 import esprit.fx.services.ServiceUser;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -12,7 +14,9 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Objects;
 
 public class EmailVerificationController {
 
@@ -54,6 +58,7 @@ public class EmailVerificationController {
                     showAlert(Alert.AlertType.INFORMATION, "Succès",
                             "Email vérifié avec succès ! Vous pouvez maintenant vous connecter.");
                     stage.close();
+                    openLoginPage();
                 } else {
                     statusLabel.setText("Code invalide ou expiré. Veuillez réessayer.");
                 }
@@ -93,5 +98,28 @@ public class EmailVerificationController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private static void openLoginPage() {
+        try {
+            Parent root = FXMLLoader.load(Objects.requireNonNull(
+                    EmailVerificationController.class.getResource("/Login.fxml")));
+            Stage loginStage = new Stage();
+            loginStage.setScene(new Scene(root));
+            loginStage.setTitle("MedTimeFX — Connexion");
+            loginStage.setMinWidth(900);
+            loginStage.setMinHeight(680);
+            loginStage.setWidth(980);
+            loginStage.setHeight(720);
+            loginStage.centerOnScreen();
+            loginStage.show();
+        } catch (IOException e) {
+            // Fallback: show error — login page will still be accessible
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur");
+            alert.setHeaderText(null);
+            alert.setContentText("Impossible d'ouvrir la page de connexion : " + e.getMessage());
+            alert.showAndWait();
+        }
     }
 }

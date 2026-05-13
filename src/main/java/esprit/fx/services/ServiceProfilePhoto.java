@@ -8,76 +8,116 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Service séparé pour la gestion des photos de profil.
- * Stockage local : uploads/profile_photos/{userId}.{ext}
+ * Gestion des photos de profil partagées entre JavaFX et Symfony.
+ *
+ * Les deux applications utilisent le même répertoire physique :
+ *   {SYMFONY_PUBLIC}/uploads/users/{username}/pfp.{ext}
+ *
+ * Et le même format de chemin en base de données :
+ *   /uploads/users/{username}/pfp.{ext}
+ *
+ * Ainsi, une photo uploadée dans l'une des apps est immédiatement
+ * visible dans l'autre.
  */
 public class ServiceProfilePhoto {
 
-    private static final String UPLOADS_DIR = "uploads/profile_photos/";
+    /**
+     * Répertoire public de Symfony — à adapter si l'installation diffère.
+     * Ce chemin est résolu en absolu pour garantir la portabilité.
+     */
+    private static final String SYMFONY_PUBLIC =
+            "C:/xampp/htdocs/MedTime/public";
 
-    private Connection conn() {
+    private java.sql.Connection conn() {
         return MyDB.getInstance().getConnection();
     }
 
-    /**
-     * Upload une photo de profil pour un utilisateur.
-     * Copie le fichier dans uploads/profile_photos/ et met à jour la DB.
-     *
-     * @param userId       id de l'utilisateur
-     * @param selectedFile fichier image sélectionné (jpg/png)
-     * @return chemin relatif du fichier stocké
-     */
-    public String uploadProfilePhoto(int userId, File selectedFile) throws SQLException, IOException {
-        // Créer le dossier si nécessaire
-        Path dir = Paths.get(UPLOADS_DIR);
-        Files.createDirectories(dir);
+    // ── Upload ────────────────────────────────────────────────────────────────
 
-        // Déterminer l'extension
+    /**
+     * Copie {@code selectedFile} dans le répertoire Symfony partagé et
+     * met à jour la colonne {@code profile_photo} de la table {@code users}.
+     *
+     * @param userId       identifiant de l'utilisateur
+     * @param username     nom d'utilisateur (utilisé pour le chemin)
+     * @param selectedFile fichier image choisi par l'utilisateur
+     * @return chemin relatif stocké en DB (ex: {@code /uploads/users/alice/pfp.jpg})
+     */
+    public String uploadProfilePhoto(int userId, String username, File selectedFile)
+            throws SQLException, IOException {
+
+        String safeUsername = sanitize(username);
+
+        // Extension du fichier source
         String originalName = selectedFile.getName();
         String ext = originalName.contains(".")
-                ? originalName.substring(originalName.lastIndexOf('.'))
+                ? originalName.substring(originalName.lastIndexOf('.')).toLowerCase()
                 : ".jpg";
 
-        // Nom de fichier : userId.ext (écrase l'ancienne photo)
-        String storedName = userId + ext;
-        Path destination = dir.resolve(storedName);
+        // Répertoire cible : {SYMFONY_PUBLIC}/uploads/users/{username}/
+        Path userDir = Paths.get(SYMFONY_PUBLIC, "uploads", "users", safeUsername);
+        Files.createDirectories(userDir);
 
+        // Fichier cible : pfp.{ext}  (écrase l'ancienne photo)
+        String filename = "pfp" + ext;
+        Path destination = userDir.resolve(filename);
         Files.copy(selectedFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
 
-        String relativePath = UPLOADS_DIR + storedName;
+        // Chemin relatif stocké en DB — même format que Symfony
+        String dbPath = "/uploads/users/" + safeUsername + "/" + filename;
+        savePhotoPath(userId, dbPath);
 
-        // Sauvegarder le chemin dans la colonne profile_photo de la table users
-        savePhotoPath(userId, relativePath);
-
-        return relativePath;
+        return dbPath;
     }
 
+    // ── Lecture ───────────────────────────────────────────────────────────────
+
     /**
-     * Récupère le chemin de la photo de profil depuis la DB.
-     * Retourne null si aucune photo n'est définie.
+     * Retourne le chemin DB de la photo de profil, ou {@code null} si absent.
      */
     public String getPhotoPath(int userId) throws SQLException {
         String sql = "SELECT profile_photo FROM users WHERE id = ?";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getString("profile_photo");
-                }
+                if (rs.next()) return rs.getString("profile_photo");
             }
         }
         return null;
     }
 
     /**
-     * Met à jour le chemin de la photo dans la DB.
+     * Retourne le {@link File} correspondant à la photo de profil si elle
+     * existe sur le disque, {@code null} sinon.
+     *
+     * Gère les deux formats de chemin :
+     * <ul>
+     *   <li>Nouveau (partagé) : {@code /uploads/users/{username}/pfp.jpg}</li>
+     *   <li>Ancien (JavaFX)   : {@code uploads/profile_photos/{userId}.jpg}</li>
+     * </ul>
      */
+    public File getPhotoFile(int userId) throws SQLException {
+        String path = getPhotoPath(userId);
+        if (path == null || path.isBlank()) return null;
+
+        // Nouveau format : chemin relatif à SYMFONY_PUBLIC
+        if (path.startsWith("/uploads/users/")) {
+            File f = new File(SYMFONY_PUBLIC + path);
+            return f.exists() ? f : null;
+        }
+
+        // Ancien format : chemin relatif au répertoire de travail JavaFX
+        File f = new File(path);
+        return f.exists() ? f : null;
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
     private void savePhotoPath(int userId, String path) throws SQLException {
         String sql = "UPDATE users SET profile_photo = ? WHERE id = ?";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
@@ -88,12 +128,12 @@ public class ServiceProfilePhoto {
     }
 
     /**
-     * Retourne le fichier image si il existe sur le disque, null sinon.
+     * Sanitise un nom d'utilisateur pour l'utiliser comme nom de répertoire
+     * (même logique que Symfony : remplace tout caractère non alphanumérique
+     * par un underscore).
      */
-    public File getPhotoFile(int userId) throws SQLException {
-        String path = getPhotoPath(userId);
-        if (path == null || path.isBlank()) return null;
-        File f = new File(path);
-        return f.exists() ? f : null;
+    private static String sanitize(String username) {
+        if (username == null || username.isBlank()) return "unknown";
+        return username.trim().replaceAll("[^a-zA-Z0-9_.-]", "_");
     }
 }

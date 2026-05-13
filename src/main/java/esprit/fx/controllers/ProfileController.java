@@ -192,7 +192,7 @@ public class ProfileController {
             }
 
             try {
-                String path = photoService.uploadProfilePhoto(user.getId(), selected);
+                String path = photoService.uploadProfilePhoto(user.getId(), user.getUsername(), selected);
 
                 // Mettre à jour l'aperçu dans cet écran
                 updateAvatarWithImage(preview, selected);

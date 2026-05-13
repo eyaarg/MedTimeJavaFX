@@ -9,10 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServiceDisponibilite implements IService<Disponibilite> {
-    private Connection conn;
+
+    private Connection conn() {
+        return MyDB.getInstance().getConnection();
+    }
 
     public ServiceDisponibilite() {
-        conn = MyDB.getInstance().getConnection();
+        // Connection is obtained fresh on each call via conn()
     }
 
     @Override
@@ -24,8 +27,8 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
         System.out.println("========================================\n");
         
         // D'abord, découvrir la structure de la table
-        DatabaseMetaData metaData = conn.getMetaData();
-        ResultSet columns = metaData.getColumns(null, null, "availability", null);
+        DatabaseMetaData metaData = conn().getMetaData();
+        ResultSet columns = metaData.getColumns("mediplatform_test_test", null, "availability", null);
         
         List<String> columnNames = new ArrayList<>();
         List<String> requiredColumns = new ArrayList<>();
@@ -123,7 +126,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
         
         System.out.println("Requête SQL générée: " + sql);
         
-        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             int paramIndex = 1;
             
             for (String field : fieldsToInsert) {
@@ -189,8 +192,8 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
                         System.out.println("âš  Colonne inconnue '" + field + "', tentative de dÃ©tection du type");
                         
                         // RÃ©cupÃ©rer le type de la colonne
-                        DatabaseMetaData meta = conn.getMetaData();
-                        ResultSet colInfo = meta.getColumns(null, null, "availability", field);
+                        DatabaseMetaData meta = conn().getMetaData();
+                        ResultSet colInfo = meta.getColumns("mediplatform_test_test", null, "availability", field);
                         
                         if (colInfo.next()) {
                             int dataType = colInfo.getInt("DATA_TYPE");
@@ -241,8 +244,8 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
     @Override
     public void modifier(Disponibilite disponibilite) throws SQLException {
         // D'abord, découvrir la structure de la table
-        DatabaseMetaData metaData = conn.getMetaData();
-        ResultSet columns = metaData.getColumns(null, null, "availability", null);
+        DatabaseMetaData metaData = conn().getMetaData();
+        ResultSet columns = metaData.getColumns("mediplatform_test_test", null, "availability", null);
         
         List<String> columnNames = new ArrayList<>();
         
@@ -299,7 +302,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
         
         System.out.println("Requête UPDATE générée: " + sql);
         
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             int paramIndex = 1;
             
             for (String field : fieldsToUpdate) {
@@ -369,7 +372,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
         // Vérifier d'abord s'il y a des rendez-vous liés
         String checkSql = "SELECT COUNT(*) as count FROM rendez_vous WHERE disponibilite_id = ?";
         
-        try (PreparedStatement checkPs = conn.prepareStatement(checkSql)) {
+        try (PreparedStatement checkPs = conn().prepareStatement(checkSql)) {
             checkPs.setInt(1, id);
             ResultSet rs = checkPs.executeQuery();
             
@@ -394,7 +397,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
         // Si pas de rendez-vous liÃ©s, procÃ©der Ã  la suppression
         String sql = "DELETE FROM availability WHERE id=?";
         
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, id);
             int rowsAffected = ps.executeUpdate();
             System.out.println("âœ“ DisponibilitÃ© supprimÃ©e - ID: " + id + " (" + rowsAffected + " ligne(s) supprimÃ©e(s))");
@@ -419,7 +422,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
 
         List<Disponibilite> disponibilites = new ArrayList<>();
 
-        try (Statement stmt = conn.createStatement();
+        try (Statement stmt = conn().createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
@@ -440,7 +443,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
             WHERE d.id = ?
             """;
         
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, id);
             
             try (ResultSet rs = ps.executeQuery()) {
@@ -483,7 +486,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
         
         List<Disponibilite> disponibilites = new ArrayList<>();
         
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, doctorId);
             
             try (ResultSet rs = ps.executeQuery()) {
@@ -511,7 +514,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
         
         List<Disponibilite> disponibilites = new ArrayList<>();
         
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setTimestamp(1, Timestamp.valueOf(dateFin));
             ps.setTimestamp(2, Timestamp.valueOf(dateDebut));
             
@@ -539,7 +542,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
         
         List<Disponibilite> disponibilites = new ArrayList<>();
         
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, doctorId);
             ps.setTimestamp(2, Timestamp.valueOf(date));
             
@@ -557,7 +560,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
     public void marquerIndisponible(int disponibiliteId) throws SQLException {
         String sql = "UPDATE availability SET available = false WHERE id = ?";
         
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, disponibiliteId);
             ps.executeUpdate();
         }
@@ -710,7 +713,7 @@ public class ServiceDisponibilite implements IService<Disponibilite> {
                      "INNER JOIN roles r ON ur.role_id = r.id " +
                      "WHERE r.name IN ('DOCTOR', 'ROLE_DOCTOR', 'Medecin', 'MEDECIN') " +
                      "AND u.is_active = 1 ORDER BY u.username";
-        try (Statement stmt = conn.createStatement();
+        try (Statement stmt = conn().createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 esprit.fx.entities.User doctor = new esprit.fx.entities.User();

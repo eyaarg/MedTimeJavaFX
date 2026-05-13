@@ -494,7 +494,13 @@ public class ServiceUser implements IService<User> {
     private boolean passwordMatches(String rawPassword, String storedPassword) {
         if (storedPassword == null) return false;
         try {
-            return BCrypt.checkpw(rawPassword, storedPassword);
+            // PHP uses $2y$ prefix, Java jBCrypt uses $2a$ — they are identical algorithms.
+            // Normalize $2y$ and $2b$ to $2a$ so jBCrypt can verify PHP-generated hashes.
+            String normalizedHash = storedPassword;
+            if (storedPassword.startsWith("$2y$") || storedPassword.startsWith("$2b$")) {
+                normalizedHash = "$2a$" + storedPassword.substring(4);
+            }
+            return BCrypt.checkpw(rawPassword, normalizedHash);
         } catch (IllegalArgumentException ex) {
             return rawPassword.equals(storedPassword);
         }

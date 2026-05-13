@@ -475,9 +475,16 @@ public class MainControllerArij {
             }
 
             contentArea.getChildren().setAll(view);
-        } catch (IOException | NullPointerException e) {
+        } catch (Exception e) {
             System.err.println("Erreur chargement vue " + fxmlPath + ": " + e.getMessage());
             e.printStackTrace();
+            // Show error to user so it's not silent
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                    javafx.scene.control.Alert.AlertType.ERROR);
+            alert.setTitle("Erreur");
+            alert.setHeaderText("Impossible de charger la vue");
+            alert.setContentText(e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
+            alert.showAndWait();
         }
     }
 
